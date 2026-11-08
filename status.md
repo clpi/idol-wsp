@@ -6,7 +6,7 @@ evidence or are marked UNMEASURED / UNVERIFIED / OPEN.
 
 ## The three proofs, tracked separately
 
-### 1. The language — OPEN, with landed evidence at the weight layer
+### 1. The language — slice-one battery green at the pin
 
 The upstream weight-space slice runs end to end in Idol and its battery
 is green at its pin (see [weight-space.md](weight-space.md)): the
@@ -15,14 +15,33 @@ premises, premise digests, and fall-and-stand derivations. The WSP agent
 now exists in this repo (`src/agent.id`, home `wsp.agent`): the whole
 slice-one loop — seatings, derivations, the tool surface, learning,
 retraction — is expressed in Idol over the landed faces, against the
-spec. Its battery (`gate/agent.id`, cases B1–B15) is implemented; its
-execution is staged, not yet run (see W1 in [work.md](work.md): the
-build VM's prebuilt compiler currently dies with an illegal instruction
-inside its own sha2 on the sandbox's present CPU placement — an
-environment fault, reproduced on the known-good control program; the
-substrate control battery itself ran green at the pin in this staging,
-36 ok / 0 fail). The language proof for the deliverable stays OPEN
-until slice one's battery runs green in this repo.
+spec. Its battery (`gate/agent.id`, cases B1–B15) has been executed at
+the pin, on bytes identical to the ones landed in this repo: **pass 126
+/ skip 0 / fail 0 / total 126, exit 0, closing line "battery: OK"** —
+pin clpi/idol 7ad63393f2748a24b907182ce8820c785e79915c, the clean pin
+compiler (C route), run on the Mac mini. The landed home and gate match
+the executed candidate byte for byte (home md5
+9b2d7bf02ed67e9c0b7f698d90516c92, gate md5
+e1029698964ee4ec8ab4d2a25a1dab89; landed in commit
+61197dfe783f5ae733b2cc280fe278c0d6b8cc68). The measure gate
+(`gate/measure.id`) also compiles and runs at the pin, exit 0; no
+timing was taken in that run, so slice speed stays UNMEASURED.
+
+That first execution did real work on both sides of the boundary. It
+convicted two defects in the home, both fixed in the landed bytes: a
+reweight fell records beyond its readers (case B3; the fix carries two
+tiers — the full check for a record's own standing, and existence-only
+falls through derivation citations), and load appended a generation
+instead of replacing the instance, so caller handles addressed the
+stale generation (case B11; the fix allocates by generation ordinal
+and records each book entry's own offset, with sealed marks). It also
+convicted three defects in the compiler at the pin — open compiler
+work orders in clpi/idol, not defects of this home — around which the
+landed bytes carry semantics-preserving accommodations, named under
+"Named dependencies" below. The substrate control battery itself ran
+green at the pin in this staging, 36 ok / 0 fail. This proof's stated
+condition — slice one's battery runs green in this repo — is met at
+the pin, on the landed bytes.
 
 ### 2. The model — OPEN, does not exist
 
@@ -31,7 +50,7 @@ proof closes only when the slice-one agent performs its fixture coding
 task through the specified loop and the comparison cell below has a
 same-contract run.
 
-### 3. Weight space programming — OPEN, mechanism landed upstream
+### 3. Weight space programming — mechanism executed at the pin
 
 Programming by premise-bound weights is landed and batteried upstream
 (a read weight's change invalidates exactly its dependents; an unread
@@ -40,9 +59,14 @@ an agent* by live reweighting — the claim this repo exists to test — is
 implemented in this repo: the learning rule publishes a learned seating
 citing the outcomes it was learned from, and the battery carries the
 cone-retraction cases (B5, B10), the persistence case (B11), and the
-lookup-count case (B13). The claim is unproven until that battery runs
-green; its execution is staged on the same condition as the language
-proof above.
+lookup-count case (B13). That battery has now run green at the pin (the
+execution recorded under proof 1): the cone-retraction cases retract
+exactly their cones, the persistence case reproduces every standings
+answer after a reload, and the lookup-count case reads the specified
+counts (5, 6, 5, 9). The mechanism claim is therefore executed evidence
+at the pin. What remains unproven is the comparison: whether the agent
+so taught outperforms similar-size models is proof 2's cell, and it
+stays UNMEASURED.
 
 ## The bar — comparison cell WSP-BF1
 
@@ -69,23 +93,28 @@ codes inside a wider value. Alongside them: the parameter count. Slice
 one's battery asserts the fixture's three numbers against hand-computed
 values; every landing restates them at its pin in this document.
 
-At this landing (by the fixture's definition, before the staged
-battery run): parameter count **14** (choice 6 + caution 6 + spare 2,
-spec section 9); payload **32** bits per weight (the seated f32 word);
-carrier **32** (no wider carrier is used); wire is the one number
-that must come from the executed battery — the accounting face
-computes 8 × seating bytes / values per table and case B12 asserts it
-against the same formula computed in the battery — so wire reads
-**staged, not yet measured** until W1's run.
+At this landing (values as executed in case B12 of the green run at
+the pin): parameter count **14** (choice 6 + caution 6 + spare 2, spec
+section 9); payload **32** bits per weight (the seated f32 word);
+carrier **32** (no wider carrier is used); wire — case B12 asserts, per
+table, that the accounting face's wire figure equals 8 × seating bytes
+/ values in the table, computed independently in the battery from the
+fixture's own seating bytes, and that payload is at or under wire;
+every assertion passed in the executed run.
 
-## What exists today (2026-11-07)
+## What exists today (2026-11-08)
 
 - This repo's founding documents and the slice-one spec.
-- Slice one's implementation, landed in this repo in the same commit
-  as this status: the agent (`src/agent.id`), its battery
-  (`gate/agent.id`, cases B1–B15), and the section 10 speed program
-  (`gate/measure.id`). Execution of the battery and the speed program
-  is staged (W1); no executed verdict is claimed for them yet.
+- Slice one, landed in this repo (commit
+  61197dfe783f5ae733b2cc280fe278c0d6b8cc68): the agent
+  (`src/agent.id`), its battery (`gate/agent.id`, cases B1–B15), and
+  the section 10 speed program (`gate/measure.id`).
+- The executed battery verdict at the pin (clpi/idol
+  7ad63393f2748a24b907182ce8820c785e79915c, the clean pin compiler, C
+  route, run on the Mac mini): pass 126 / skip 0 / fail 0 / total 126,
+  exit 0, closing line "battery: OK", on bytes identical to the landed
+  commit. The measure gate compiles and runs at the pin, exit 0; it
+  was run as a compile-and-run check only — no wall times were taken.
 - Upstream in clpi/idol, landed: the weight-space surface and its green
   battery (PR #1911), the digest face, the premise machinery, the
   substrate admission and resident producers — all as recorded in
@@ -98,12 +127,13 @@ against the same formula computed in the battery — so wire reads
 
 ## What does not exist
 
-- An executed verdict for this repo's battery or speed program:
-  both are implemented and staged to run (W1). Speed UNMEASURED;
-  the bar cell UNMEASURED.
-- The learned bundle artifact (`learned/bundle.txt`): it is produced
-  by the battery's case B11 print and lands with the execution
-  commit, not before — no bundle is claimed from an unrun battery.
+- A timing measurement for slice one: the speed program has been
+  compiled and run at the pin but never timed. Speed UNMEASURED; the
+  bar cell UNMEASURED.
+- The learned bundle artifact (`learned/bundle.txt`): case B11 ran
+  and passed in the executed battery — its print is the bundle — but
+  the artifact has not yet been extracted from that print into this
+  repo. Tracked as W5 in [work.md](work.md).
 - The compiler integration of Idiom (spec-only upstream; see below).
 - A live MCP binding and a live Idol Eyes feed binding for this
   program (slice one specifies a fixture surface and a recorded
@@ -144,6 +174,42 @@ against the same formula computed in the battery — so wire reads
   stream, per its spec. The live binding is W3.
 - **The MCP surfaces** — slice one specifies and builds against a
   fixture tool surface defined in its spec. The live binding is W3.
+
+**Open upstream — compiler work orders in clpi/idol, accommodated in
+the landed bytes:**
+
+Slice one's first execution convicted three defects in the compiler
+at the pin. Each is a compiler defect, not a defect of this home:
+each was convicted with a standalone control program carrying no WSP
+code, and each carries its own fix lane upstream. The landed bytes
+accommodate each with a semantics-preserving form; when an upstream
+fix lands, its accommodation comes out and the battery re-runs at the
+new pin.
+
+- **Work order 3 — two-form table seating.** The C realizer seats a
+  module table in one of two forms: a hash form whose absent reads
+  yield nil, or a bounded inline-array form whose reads abort ahead of
+  the realizer's own nil path. Which form a table gets follows the
+  module survey's whole-graph classification, so a source-preserving
+  restructure silently flips a table between running and trapping.
+  Accommodation: init pre-seeds the role tables and the parts lengths
+  over their full index ranges, so no absent read of them is taken.
+- **Work order 4 — table values in record fields.** A table stored
+  into a module record field does not read back: the split and the
+  store survive, and the first read through the field faults. The same
+  shape is refused outright in a root gate — admitted in library mode,
+  refused in root mode, broken in both. Accommodation: split's four
+  parts tables live in module tables, not record fields.
+- **Work order 5 — concatenation truncates at a zero byte.** The C
+  realizer's string concatenation copies each operand under a
+  NUL-terminated discipline while lengths are tracked separately, so
+  concatenating binary strings silently drops everything after the
+  first zero byte (measured byte for byte against a control: the
+  corruption differed at 80 positions, the target byte unchanged).
+  This defect, not the battery's expectation, is what first failed
+  case B7. Accommodation: the gate builds its one-byte-corrupted
+  fixture through the byte-table idiom, so B7 measures the intended
+  read-back refusal; the defect keeps its own control upstream.
 
 ## Host seams
 
