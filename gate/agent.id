@@ -1,0 +1,461 @@
+# Standing battery for the WSP agent, slice one.
+# Spec: spec-slice-one.md in clpi/idol-wsp, section 11 —
+# cases B1 to B15, in an order that keeps each case's
+# preconditions true in one process: destructive cases
+# (withdrawals) run after the cases that need their
+# premises, withdrawn facts are re-registered (healed)
+# before reuse, and the bundle case runs last. Every case
+# starts from the fixture state of spec section 4, seated
+# through the slice's own builder face. Exits 1 on any
+# violation.
+#
+# The battery's own byte builder below exists for one
+# case: B8's non-finite file, which the slice's builder
+# cannot express (its values are integers). It is the
+# substrate battery's builder, carried here unchanged.
+
+state = { fails = 0, bytes = {} }
+
+run = {}
+
+put: i64 = (b: i64)
+    state.bytes[state.bytes:len() + 1] = b
+    state.bytes:len()
+
+w16: i64 = (n: i64)
+    put(n & 255)
+    put(n >> 8 & 255)
+    0
+
+w32: i64 = (n: i64)
+    v = n
+    i = 1
+    while i <= 4
+        put(v & 255)
+        v = v >> 8
+        i = i + 1
+    0
+
+w64: i64 = (n: i64)
+    v = n
+    i = 1
+    while i <= 8
+        put(v & 255)
+        v = v >> 8
+        i = i + 1
+    0
+
+wtext: i64 = (s: str)
+    w64(s:len())
+    i = 1
+    while i <= s:len()
+        put(s:byte(i))
+        i = i + 1
+    0
+
+pack: str = ()
+    chars = {}
+    for b in state.bytes
+        chars[chars:len() + 1] = b:char()
+    chars:concat()
+
+pad: i64 = ()
+    while state.bytes:len() % 32 != 0
+        put(0)
+    0
+
+meta: i64 = ()
+    wtext("general.architecture")
+    w32(4)
+    w32(7)
+    wtext("tokenizer.ggml.tokens")
+    w32(9)
+    w32(8)
+    w64(3)
+    wtext("a")
+    wtext("b")
+    wtext("c")
+    0
+
+wild: str = ()
+    state.bytes = {}
+    w32(1179993927)
+    w32(3)
+    w64(1)
+    w64(2)
+    meta()
+    wtext("wild")
+    w32(1)
+    w64(32)
+    w32(6)
+    w64(0)
+    pad()
+    w16(32512)
+    i = 1
+    while i <= 32
+        put(1)
+        i = i + 1
+    pack()
+
+expect: i64 = (ok: bool, label: str)
+    if ok
+        print("ok: " .. label)
+    else
+        print("FAIL: " .. label)
+        state.fails = state.fails + 1
+    0
+
+digits: str = (v: i64)
+    if v == 0
+        return "0"
+    out = ""
+    n: i64 = v
+    while n > 0
+        out = "0123456789":sub(n % 10 + 1, n % 10 + 1) .. out
+        n = n // 10
+    out
+
+flip: str = (s: str, pos: i64, b: i64)
+    if pos == 1
+        return b:char() .. s:sub(2, s:len())
+    if pos == s:len()
+        return s:sub(1, pos - 1) .. b:char()
+    s:sub(1, pos - 1) .. b:char() .. s:sub(pos + 1, s:len())
+
+# The fixture of spec section 4, seated through the
+# slice's builder; a correcting re-seat on every call, so
+# each case starts from the same fixture state.
+
+fixture: i64 = ()
+    fc = wsp.agent.fileof(5, 3, 4, 4, 2, 6, 6, 3, 2, "choice")
+    h = wsp.agent.seatfile(1, fc, "", 3, 2)
+    wsp.agent.setvals(h, 5, 3, 4, 4, 2, 6, 6)
+    fu = wsp.agent.fileof(0, 0, 0, 0, 0, 1, 6, 3, 2, "caution")
+    h = wsp.agent.seatfile(2, fu, "", 3, 2)
+    wsp.agent.setvals(h, 0, 0, 0, 0, 0, 1, 6)
+    fs = wsp.agent.fileof(7, 7, 0, 0, 0, 0, 2, 2, 0, "spare")
+    h = wsp.agent.seatfile(3, fs, "", 2, 0)
+    wsp.agent.setvals(h, 7, 7, 0, 0, 0, 0, 2)
+    1
+
+# The battery's own clean derivation (case B2): the same
+# fixture inputs, no caching or carrying, computed here.
+
+cvals = {}
+
+uvals = {}
+
+setup: i64 = ()
+    cvals[1] = 5
+    cvals[2] = 3
+    cvals[3] = 4
+    cvals[4] = 4
+    cvals[5] = 2
+    cvals[6] = 6
+    uvals[1] = 0
+    uvals[2] = 0
+    uvals[3] = 0
+    uvals[4] = 0
+    uvals[5] = 0
+    uvals[6] = 1
+    1
+
+clean: i64 = (k: i64)
+    chosen = 0
+    best = 0
+    j = 0
+    while j < 2
+        sc = cvals[(k - 1) * 2 + j + 1]
+        cu = uvals[(k - 1) * 2 + j + 1]
+        if cu <= 0
+            if chosen == 0 or sc > best
+                chosen = j + 1
+                best = sc
+        j = j + 1
+    chosen
+
+cleanscore: i64 = (k: i64)
+    c = clean(k)
+    cvals[(k - 1) * 2 + c]
+
+inset: i64 = (r: i64, d: str)
+    i = 1
+    while i <= wsp.agent.ncites(r)
+        if wsp.agent.citeof(r, i) == d
+            return 1
+        i = i + 1
+    0
+
+main: i64 = ()
+    setup()
+    expect(wsp.agent.init() == 1, "slice: the agent initialises its fixture candidates and facts")
+    fixture()
+
+    # B1 — seat and derive: the three steps choose read-a,
+    # write-a, run-a, and every record's cited identity set
+    # equals the citation table of spec section 5.
+    s1 = wsp.agent.step(1)
+    expect(wsp.agent.choiceof(s1) == 1, "B1: step 1 chooses read-a (5 over 3)")
+    expect(wsp.agent.scoreof(s1) == 5, "B1: step 1 score is 5")
+    expect(wsp.agent.ncites(s1) == 3, "B1: step 1 cites three premises")
+    expect(inset(s1, wsp.agent.sdigest(wsp.agent.seating(1))) == 1, "B1: step 1 cites the choice seating")
+    expect(inset(s1, wsp.agent.sdigest(wsp.agent.seating(2))) == 1, "B1: step 1 cites the caution seating")
+    expect(inset(s1, wsp.agent.fact(1)) == 1, "B1: step 1 cites P1")
+    o1 = wsp.agent.result(1)
+    expect(wsp.agent.ncites(o1) == 2, "B1: result O1 cites two premises")
+    expect(inset(o1, wsp.agent.recid(s1)) == 1, "B1: O1 cites the step 1 output")
+    expect(inset(o1, wsp.agent.fact(4)) == 1, "B1: O1 cites the corroborating observation Q1")
+    s2 = wsp.agent.step(2)
+    expect(wsp.agent.choiceof(s2) == 1, "B1: step 2 chooses write-a (tie 4-4, earliest wins)")
+    expect(wsp.agent.scoreof(s2) == 4, "B1: step 2 score is 4")
+    expect(wsp.agent.ncites(s2) == 4, "B1: step 2 cites four premises")
+    expect(inset(s2, wsp.agent.fact(1)) == 1, "B1: step 2 cites P1")
+    expect(inset(s2, wsp.agent.recid(o1)) == 1, "B1: step 2 cites O1")
+    o2 = wsp.agent.result(2)
+    expect(wsp.agent.ncites(o2) == 1, "B1: result O2 cites one premise")
+    expect(inset(o2, wsp.agent.recid(s2)) == 1, "B1: O2 cites the step 2 output")
+    s3 = wsp.agent.step(3)
+    expect(wsp.agent.choiceof(s3) == 1, "B1: step 3 chooses run-a (run-b vetoed by caution)")
+    expect(wsp.agent.scoreof(s3) == 2, "B1: step 3 score is 2")
+    expect(wsp.agent.ncites(s3) == 3, "B1: step 3 cites three premises")
+    expect(inset(s3, wsp.agent.fact(2)) == 1, "B1: step 3 cites P2")
+    o3 = wsp.agent.result(3)
+    expect(wsp.agent.ncites(o3) == 1, "B1: result O3 cites one premise")
+    expect(wsp.agent.stands(s1) == 1, "B1: step 1 stands")
+    expect(wsp.agent.stands(o1) == 1, "B1: O1 stands")
+    expect(wsp.agent.stands(s2) == 1, "B1: step 2 stands")
+    expect(wsp.agent.stands(o2) == 1, "B1: O2 stands")
+    expect(wsp.agent.stands(s3) == 1, "B1: step 3 stands")
+    expect(wsp.agent.stands(o3) == 1, "B1: O3 stands")
+
+    # B2 — clean-room equality: the battery's own derivation
+    # of the same inputs chooses the same calls, same scores.
+    expect(clean(1) == wsp.agent.choiceof(s1), "B2: clean derivation agrees on step 1")
+    expect(clean(2) == wsp.agent.choiceof(s2), "B2: clean derivation agrees on step 2")
+    expect(clean(3) == wsp.agent.choiceof(s3), "B2: clean derivation agrees on step 3")
+    expect(cleanscore(1) == 5, "B2: clean score for step 1 is the hand value 5")
+    expect(cleanscore(2) == 4, "B2: clean score for step 2 is the hand value 4")
+    expect(cleanscore(3) == 2, "B2: clean score for step 3 is the hand value 2")
+
+    # B9 — the loop, end to end: the executed sequence is
+    # exactly the three calls, and a task-complete record
+    # citing O3 closes the run.
+    expect(wsp.agent.calls() == 3, "B9: exactly three calls executed")
+    expect(wsp.agent.callat(1) == "read-a", "B9: first call is read-a")
+    expect(wsp.agent.callat(2) == "write-a", "B9: second call is write-a")
+    expect(wsp.agent.callat(3) == "run-a", "B9: third call is run-a")
+    tk = wsp.agent.task()
+    expect(wsp.agent.ncites(tk) == 1, "B9: the task record cites one premise")
+    expect(inset(tk, wsp.agent.recid(o3)) == 1, "B9: the task record cites O3")
+    expect(wsp.agent.stands(tk) == 1, "B9: the task record stands")
+
+    # B3 — a reweight falls its reader, with the exact
+    # re-derived choice; readers of untouched rows stand.
+    fc2 = wsp.agent.fileof(1, 3, 4, 4, 2, 6, 6, 3, 2, "choice")
+    h = wsp.agent.seatfile(1, fc2, "", 3, 2)
+    wsp.agent.setvals(h, 1, 3, 4, 4, 2, 6, 6)
+    expect(wsp.agent.stands(s1) == 0, "B3: the read-row reweight falls step 1")
+    expect(wsp.agent.stands(s2) == 1, "B3: step 2 standing unchanged (its row untouched)")
+    expect(wsp.agent.stands(s3) == 1, "B3: step 3 standing unchanged (its row untouched)")
+    s1b = wsp.agent.step(1)
+    expect(wsp.agent.choiceof(s1b) == 2, "B3: re-derivation chooses read-b (3 over 1)")
+    expect(wsp.agent.scoreof(s1b) == 3, "B3: re-derived score is exactly 3")
+    expect(wsp.agent.stands(s1b) == 1, "B3: the re-derived step stands")
+    fixture()
+
+    # B4 — an unread reweight leaves everything standing
+    # and republishes nothing.
+    n = wsp.agent.nrecords()
+    fs2 = wsp.agent.fileof(1, 2, 0, 0, 0, 0, 2, 2, 0, "spare")
+    h = wsp.agent.seatfile(3, fs2, "", 2, 0)
+    wsp.agent.setvals(h, 1, 2, 0, 0, 0, 0, 2)
+    expect(wsp.agent.stands(s1) == 1, "B4: step 1 still stands")
+    expect(wsp.agent.stands(s2) == 1, "B4: step 2 still stands")
+    expect(wsp.agent.stands(s3) == 1, "B4: step 3 still stands")
+    expect(wsp.agent.stands(tk) == 1, "B4: the task record still stands")
+    expect(wsp.agent.nrecords() == n, "B4: no record is republished")
+    fixture()
+
+    # B6 — a shape-only change moves identity and falls
+    # every derivation citing the table.
+    dbefore = wsp.agent.sdigest(wsp.agent.seating(1))
+    fc3 = wsp.agent.fileof(5, 3, 4, 4, 2, 6, 6, 2, 3, "choice")
+    h = wsp.agent.seatfile(1, fc3, "", 2, 3)
+    wsp.agent.setvals(h, 5, 3, 4, 4, 2, 6, 6)
+    expect(wsp.agent.sdigest(wsp.agent.seating(1)) != dbefore, "B6: the reshaped seating's identity differs")
+    expect(wsp.agent.stands(s1) == 0, "B6: step 1 falls on the shape change")
+    expect(wsp.agent.stands(s2) == 0, "B6: step 2 falls on the shape change")
+    expect(wsp.agent.stands(s3) == 0, "B6: step 3 falls on the shape change")
+    fixture()
+
+    # B7 — same-length corruption is caught at read-back:
+    # the seat refuses by name, nothing registers, nothing
+    # publishes. Byte 194 is the second byte of the first
+    # seated value's word in the builder's layout.
+    n = wsp.agent.nrecords()
+    good = wsp.agent.fileof(5, 3, 4, 4, 2, 6, 6, 3, 2, "choice")
+    bad = flip(good, 194, 1)
+    expect(bad:len() == good:len(), "B7: the corrupted seating has the same length")
+    r = wsp.agent.seatfile(1, bad, wsp.agent.sdigest(wsp.agent.seating(1)), 3, 2)
+    expect(r == -2, "B7: the corrupted seat is refused")
+    expect(wsp.agent.refusal() == "readback digest", "B7: the refusal names the read-back digest check")
+    expect(wsp.agent.nrecords() == n, "B7: nothing publishes")
+    expect(wsp.agent.stands(s1) == 1, "B7: the standing derivation is undisturbed")
+
+    # B8 — failure publishes nothing: a non-finite table is
+    # refused at seat by the resident producer.
+    n = wsp.agent.nrecords()
+    r = wsp.agent.seatfile(1, wild(), "", 32, 0)
+    expect(r == -1, "B8: the non-finite file is refused at seat")
+    expect(wsp.agent.nrecords() == n, "B8: nothing publishes")
+
+    # B15 — the rule version is a premise: both versions'
+    # records publish and stand side by side.
+    n = wsp.agent.nrecords()
+    s1v2 = wsp.agent.stepv(1, "derive-2")
+    expect(wsp.agent.nrecords() == n + 1, "B15: the second rule version publishes its own record")
+    expect(wsp.agent.stands(s1v2) == 1, "B15: the derive-2 record stands")
+    expect(wsp.agent.stands(s1) == 1, "B15: the derive-1 record still stands")
+
+    # B14 — an unknown tool is never guessed: the winning
+    # candidate's tool leaves the surface, the step
+    # publishes UNKNOWN and halts by name, no call executes.
+    wsp.agent.retool(1, 2, "jump")
+    fc4 = wsp.agent.fileof(1, 9, 4, 4, 2, 6, 6, 3, 2, "choice")
+    h = wsp.agent.seatfile(1, fc4, "", 3, 2)
+    wsp.agent.setvals(h, 1, 9, 4, 4, 2, 6, 6)
+    nc = wsp.agent.calls()
+    u = wsp.agent.step(1)
+    expect(wsp.agent.kindof(u) == 5, "B14: the step publishes UNKNOWN")
+    expect(wsp.agent.halt() == "tool outside the surface", "B14: the halt names the unknown tool")
+    expect(wsp.agent.calls() == nc, "B14: no call executes")
+    wsp.agent.retool(1, 2, "read")
+    fixture()
+
+    # B13 — lookup counts, exactly: 5, 6, 5 for the steps,
+    # 9 for learning. The same run serves B5 below.
+    c0 = wsp.agent.count()
+    a1 = wsp.agent.step(1)
+    expect(wsp.agent.count() - c0 == 5, "B13: step 1 performs exactly 5 lookups")
+    b1 = wsp.agent.result(1)
+    c0 = wsp.agent.count()
+    a2 = wsp.agent.step(2)
+    expect(wsp.agent.count() - c0 == 6, "B13: step 2 performs exactly 6 lookups")
+    b2 = wsp.agent.result(2)
+    c0 = wsp.agent.count()
+    a3 = wsp.agent.step(3)
+    expect(wsp.agent.count() - c0 == 5, "B13: step 3 performs exactly 5 lookups")
+    b3 = wsp.agent.result(3)
+    c0 = wsp.agent.count()
+    ln = wsp.agent.learn()
+    expect(ln > 0, "B13: learning publishes the learned seating")
+    expect(wsp.agent.count() - c0 == 9, "B13: learning performs exactly 9 lookups")
+    expect(wsp.agent.ncites(ln) == 4, "B13: the learned seating cites the original table and three outcomes")
+
+    # Section 7 — under the learned seating the same
+    # sequence is chosen, with scores 6, 5, 3.
+    wsp.agent.activate(wsp.agent.learnedseating())
+    r1 = wsp.agent.step(1)
+    expect(wsp.agent.choiceof(r1) == 1, "learning: re-derived step 1 still chooses read-a")
+    expect(wsp.agent.scoreof(r1) == 6, "learning: re-derived step 1 scores 6")
+    r2 = wsp.agent.step(2)
+    expect(wsp.agent.choiceof(r2) == 1, "learning: re-derived step 2 still chooses write-a")
+    expect(wsp.agent.scoreof(r2) == 5, "learning: re-derived step 2 scores 5")
+    r3 = wsp.agent.step(3)
+    expect(wsp.agent.choiceof(r3) == 1, "learning: re-derived step 3 still chooses run-a (run-b still vetoed)")
+    expect(wsp.agent.scoreof(r3) == 3, "learning: re-derived step 3 scores 3")
+    wsp.agent.activate(wsp.agent.current(1))
+
+    # B5 — a corrected fact retracts exactly its cone.
+    expect(wsp.agent.withdraw(wsp.agent.fact(3)) == 1, "B5: P3 withdraws")
+    expect(wsp.agent.stands(a1) == 1, "B5: withdrawing P3 retracts nothing (step 1 stands)")
+    expect(wsp.agent.stands(b1) == 1, "B5: withdrawing P3 retracts nothing (O1 stands)")
+    expect(wsp.agent.stands(a2) == 1, "B5: withdrawing P3 retracts nothing (step 2 stands)")
+    expect(wsp.agent.stands(b2) == 1, "B5: withdrawing P3 retracts nothing (O2 stands)")
+    expect(wsp.agent.stands(a3) == 1, "B5: withdrawing P3 retracts nothing (step 3 stands)")
+    expect(wsp.agent.stands(b3) == 1, "B5: withdrawing P3 retracts nothing (O3 stands)")
+    expect(wsp.agent.stands(ln) == 1, "B5: withdrawing P3 retracts nothing (the learned seating stands)")
+    expect(wsp.agent.withdraw(wsp.agent.fact(1)) == 1, "B5: P1 withdraws")
+    expect(wsp.agent.stands(a1) == 0, "B5: P1's cone retracts step 1")
+    expect(wsp.agent.stands(b1) == 0, "B5: P1's cone retracts O1")
+    expect(wsp.agent.stands(a2) == 0, "B5: P1's cone retracts step 2")
+    expect(wsp.agent.stands(b2) == 0, "B5: P1's cone retracts O2")
+    expect(wsp.agent.stands(ln) == 0, "B5: P1's cone retracts the learned seating")
+    expect(wsp.agent.stands(a3) == 1, "B5: step 3 stands throughout (it never cited P1)")
+    expect(wsp.agent.stands(b3) == 1, "B5: O3 stands throughout")
+    expect(wsp.agent.stands(tk) == 1, "B5: the first run's task record stands throughout")
+    wsp.agent.premise("the target file is f", 1)
+
+    # B10 — a contradicted observation retracts its cone.
+    fixture()
+    c1 = wsp.agent.step(1)
+    d1 = wsp.agent.result(1)
+    c2 = wsp.agent.step(2)
+    d2 = wsp.agent.result(2)
+    c3 = wsp.agent.step(3)
+    d3 = wsp.agent.result(3)
+    ln2 = wsp.agent.learn()
+    expect(wsp.agent.contradict() == 1, "B10: the contradicting observation arrives")
+    expect(wsp.agent.stands(d1) == 0, "B10: Q1's cone retracts O1")
+    expect(wsp.agent.stands(c2) == 0, "B10: Q1's cone retracts step 2")
+    expect(wsp.agent.stands(d2) == 0, "B10: Q1's cone retracts O2")
+    expect(wsp.agent.stands(ln2) == 0, "B10: Q1's cone retracts the learned seating")
+    expect(wsp.agent.stands(c1) == 1, "B10: step 1 stands (it never cited Q1)")
+    expect(wsp.agent.stands(c3) == 1, "B10: step 3 stands")
+    expect(wsp.agent.stands(d3) == 1, "B10: O3 stands")
+    nc = wsp.agent.calls()
+    u2 = wsp.agent.step(2)
+    expect(wsp.agent.kindof(u2) == 5, "B10: re-deriving step 2 publishes UNKNOWN")
+    expect(wsp.agent.halt() == "result premise fallen", "B10: the halt names the fallen result premise")
+    expect(wsp.agent.calls() == nc, "B10: no write executes on an uncorroborated read")
+
+    # B12 — compactness accounting: 14 parameters, wire by
+    # the section 9 formula per table, payload <= wire.
+    expect(wsp.agent.params() == 14, "B12: the parameter count is exactly 14")
+    fc = wsp.agent.fileof(5, 3, 4, 4, 2, 6, 6, 3, 2, "choice")
+    expect(wsp.agent.wireof(1) == 8 * fc:len() // 6, "B12: choice wire bits per weight equal the formula")
+    fu = wsp.agent.fileof(0, 0, 0, 0, 0, 1, 6, 3, 2, "caution")
+    expect(wsp.agent.wireof(2) == 8 * fu:len() // 6, "B12: caution wire bits per weight equal the formula")
+    fs = wsp.agent.fileof(7, 7, 0, 0, 0, 0, 2, 2, 0, "spare")
+    expect(wsp.agent.wireof(3) == 8 * fs:len() // 2, "B12: spare wire bits per weight equal the formula")
+    expect(wsp.agent.payload() == 32, "B12: payload is 32 bits per weight")
+    expect(wsp.agent.payload() <= wsp.agent.wireof(1), "B12: payload <= wire")
+    print("accounting: params " .. digits(wsp.agent.params()) .. ", payload " .. digits(wsp.agent.payload()) .. ", wire " .. digits(wsp.agent.wireof(1)) .. ", carrier " .. digits(wsp.agent.carrier()))
+
+    # B11 — learning persists: the bundle loads into a
+    # fresh instance and every standings answer over the
+    # enumerated records is identical.
+    vec = {}
+    vec[1] = wsp.agent.stands(c1)
+    vec[2] = wsp.agent.stands(d1)
+    vec[3] = wsp.agent.stands(c2)
+    vec[4] = wsp.agent.stands(d2)
+    vec[5] = wsp.agent.stands(c3)
+    vec[6] = wsp.agent.stands(d3)
+    vec[7] = wsp.agent.stands(ln2)
+    vec[8] = wsp.agent.stands(u2)
+    nr = wsp.agent.nrecords()
+    bundle = wsp.agent.store()
+    expect(bundle:len() > 0, "B11: the learned bundle stores")
+    expect(wsp.agent.load(bundle) == 1, "B11: the learned bundle loads into a fresh instance")
+    expect(wsp.agent.nrecords() == nr, "B11: the record count is identical after the reload")
+    expect(wsp.agent.stands(c1) == vec[1], "B11: step 1 standing identical after reload")
+    expect(wsp.agent.stands(d1) == vec[2], "B11: O1 standing identical after reload")
+    expect(wsp.agent.stands(c2) == vec[3], "B11: step 2 standing identical after reload")
+    expect(wsp.agent.stands(d2) == vec[4], "B11: O2 standing identical after reload")
+    expect(wsp.agent.stands(c3) == vec[5], "B11: step 3 standing identical after reload")
+    expect(wsp.agent.stands(d3) == vec[6], "B11: O3 standing identical after reload")
+    expect(wsp.agent.stands(ln2) == vec[7], "B11: the learned seating standing identical after reload")
+    expect(wsp.agent.stands(u2) == vec[8], "B11: the UNKNOWN record standing identical after reload")
+    print("bundle bytes: " .. digits(bundle:len()))
+    print("learned choice digest: " .. wsp.agent.sdigest(wsp.agent.learnedseating()))
+    print("bundle:")
+    print(bundle)
+
+    if state.fails > 0
+        print("battery: FAIL")
+        return 1
+    print("battery: OK - the agent derives its choices from its weights, learns by reweighting under premises, and retracts exactly the cone of a corrected premise")
+    0
+
+os.exit(main())

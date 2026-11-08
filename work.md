@@ -7,21 +7,45 @@ evidence recorded in [status.md](status.md).
 
 ## W1 — Build slice one
 
-- **State:** OPEN, unbuilt. The spec is landed
-  ([spec-slice-one.md](spec-slice-one.md)); no code exists.
+- **State:** IMPLEMENTED, STAGED TO RUN. The agent, its battery
+  (B1–B15), and the section 10 speed program are landed in this repo
+  (`src/agent.id`, `gate/agent.id`, `gate/measure.id`) in the same
+  commit as this state. No upstream change to clpi/idol was needed.
+  The compiler's own checks were exercised as far as the venue
+  allowed: the substrate control battery ran green at the pin in
+  this staging (36 ok / 0 fail); the agent home initially refused in
+  the C99 realizer (an index-assignment lowering bail at a book-
+  surgery construct in the retool face), the construct was removed
+  (candidate tools now live in a string table; retool is a
+  single-slot overwrite), and five minimal probe homes covering
+  every state shape the slice uses compile clean — but the final
+  agent compile has not yet been observed, because the venue's
+  compiler then began dying before analysis (below).
 - **Scope:** the loop, fixture surface, recorded stream, learning rule,
   accounting face, and lookup counter of the spec, in pure Idol,
   consuming the landed upstream faces the spec names. No upstream
   change to clpi/idol is expected; if one proves necessary, it lands
   upstream first, on its own clean pair, and this item names it here.
-- **Next action:** stage the upstream substrate faces at a named
-  clpi/idol pin in a clean tree; implement the slice and its battery;
-  execute the battery; land here on the spec's landing discipline
-  (battery green, naming gate, status updated in the same commit with
-  the battery vector, the three compactness numbers, and the speed
-  measurements at that pin).
-- **Condition:** a venue that can build the Idol compiler at the
-  chosen pin.
+- **Next action:** execute the staged runbook on the first venue
+  where the pin's compiler runs: compile the agent home, the
+  battery, and the speed program (phases 1–3 × sizes 1 and 10, five
+  wall times each, medians reported); link with the C runtime shim
+  plus `gate/d1-hash-runtime.c`. On a green battery, land the
+  execution commit the same day: status updated with the battery
+  vector (pass / skip / fail / total), the three compactness
+  numbers as measured (wire from case B12), the section 10 speed
+  medians at the pin, and `learned/bundle.txt` extracted from the
+  battery's B11 print. On any FAIL row or refusal, the verdict
+  lands here verbatim instead — never softened.
+- **Condition:** a venue where the prebuilt compiler at the pin
+  executes. The current build VM fails this in two phases seen so
+  far: a write fault that denies the compiler's output writes
+  (intermittent), and a CPU-placement phase in which the compiler
+  dies with an illegal instruction inside its own sha2 (the
+  sandbox's exposed CPU flags lack the SHA extension the binary
+  was built for; reproduced on the known-good control program, so
+  it is the venue, not the pin and not this code). The runbook
+  retries through both; it fires unattended on the first window.
 
 ## W2 — The same-contract run for cell WSP-BF1
 

@@ -12,9 +12,17 @@ The upstream weight-space slice runs end to end in Idol and its battery
 is green at its pin (see [weight-space.md](weight-space.md)): the
 language today expresses weight tables as checked values and as
 premises, premise digests, and fall-and-stand derivations. The WSP agent
-itself does not exist yet, so the language proof for the deliverable —
-Idol expressing and running the whole agent — is OPEN. It closes only
-when slice one's battery runs green in this repo.
+now exists in this repo (`src/agent.id`, home `wsp.agent`): the whole
+slice-one loop — seatings, derivations, the tool surface, learning,
+retraction — is expressed in Idol over the landed faces, against the
+spec. Its battery (`gate/agent.id`, cases B1–B15) is implemented; its
+execution is staged, not yet run (see W1 in [work.md](work.md): the
+build VM's prebuilt compiler currently dies with an illegal instruction
+inside its own sha2 on the sandbox's present CPU placement — an
+environment fault, reproduced on the known-good control program; the
+substrate control battery itself ran green at the pin in this staging,
+36 ok / 0 fail). The language proof for the deliverable stays OPEN
+until slice one's battery runs green in this repo.
 
 ### 2. The model — OPEN, does not exist
 
@@ -29,8 +37,12 @@ Programming by premise-bound weights is landed and batteried upstream
 (a read weight's change invalidates exactly its dependents; an unread
 weight's change leaves derivations standing). Programming and *teaching
 an agent* by live reweighting — the claim this repo exists to test — is
-unproven until slice one's learning battery (its cone-retraction cases)
-runs green.
+implemented in this repo: the learning rule publishes a learned seating
+citing the outcomes it was learned from, and the battery carries the
+cone-retraction cases (B5, B10), the persistence case (B11), and the
+lookup-count case (B13). The claim is unproven until that battery runs
+green; its execution is staged on the same condition as the language
+proof above.
 
 ## The bar — comparison cell WSP-BF1
 
@@ -57,20 +69,41 @@ codes inside a wider value. Alongside them: the parameter count. Slice
 one's battery asserts the fixture's three numbers against hand-computed
 values; every landing restates them at its pin in this document.
 
+At this landing (by the fixture's definition, before the staged
+battery run): parameter count **14** (choice 6 + caution 6 + spare 2,
+spec section 9); payload **32** bits per weight (the seated f32 word);
+carrier **32** (no wider carrier is used); wire is the one number
+that must come from the executed battery — the accounting face
+computes 8 × seating bytes / values per table and case B12 asserts it
+against the same formula computed in the battery — so wire reads
+**staged, not yet measured** until W1's run.
+
 ## What exists today (2026-11-07)
 
 - This repo's founding documents and the slice-one spec.
+- Slice one's implementation, landed in this repo in the same commit
+  as this status: the agent (`src/agent.id`), its battery
+  (`gate/agent.id`, cases B1–B15), and the section 10 speed program
+  (`gate/measure.id`). Execution of the battery and the speed program
+  is staged (W1); no executed verdict is claimed for them yet.
 - Upstream in clpi/idol, landed: the weight-space surface and its green
   battery (PR #1911), the digest face, the premise machinery, the
   substrate admission and resident producers — all as recorded in
-  [weight-space.md](weight-space.md).
+  [weight-space.md](weight-space.md). The substrate control battery
+  was re-executed in this slice's staging at the pin
+  (clpi/idol 7ad63393, the compiler build of record): 36 ok / 0 fail /
+  exit 0, closing line as recorded upstream; the link required the
+  tree's own hash-runtime supplement (`gate/d1-hash-runtime.c`,
+  upstream gap G-hashrt-c99) beside the C runtime shim.
 
 ## What does not exist
 
-- Any code in this repo. The agent, the model, the tool-use loop, and
-  the learning loop are specified, not built.
-- Any measurement of this program: speed UNMEASURED, compactness
-  UNMEASURED, the bar cell UNMEASURED.
+- An executed verdict for this repo's battery or speed program:
+  both are implemented and staged to run (W1). Speed UNMEASURED;
+  the bar cell UNMEASURED.
+- The learned bundle artifact (`learned/bundle.txt`): it is produced
+  by the battery's case B11 print and lands with the execution
+  commit, not before — no bundle is claimed from an unrun battery.
 - The compiler integration of Idiom (spec-only upstream; see below).
 - A live MCP binding and a live Idol Eyes feed binding for this
   program (slice one specifies a fixture surface and a recorded
@@ -114,9 +147,15 @@ values; every landing restates them at its pin in this document.
 
 ## Host seams
 
-None in this repo: there is no code here yet, and no seam has been
-admitted. Standing rule, from the founding directive: any unavoidable
-host seam is named in this section as a defect with its elimination
-path, in the same commit that introduces it. A seam that appears in
-code without appearing here is a defect in this document, and the
-landing that introduced it is not complete until both are fixed.
+One, named at this landing: slice one's execution route at its pin is
+the compiler's C route — the same route the upstream weight-space
+battery ran on — with the tree's C runtime shim and the tree's own
+hash-runtime supplement at the link. No foreign code is in this repo;
+the route is upstream scaffolding whose elimination is the upstream
+pure-Idol program's standing work, and this repo's claims are stated
+for the route actually run, never upgraded past it. Standing rule,
+from the founding directive: any unavoidable host seam is named in
+this section as a defect with its elimination path, in the same
+commit that introduces it. A seam that appears in code without
+appearing here is a defect in this document, and the landing that
+introduced it is not complete until both are fixed.

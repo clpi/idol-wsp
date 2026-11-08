@@ -1,0 +1,142 @@
+# Speed measurement for the WSP agent, slice one (spec
+# section 10): one quantity per build, selected by the two
+# constant faces below — phase 1: one step derivation;
+# phase 2: a stands check over all fixture records;
+# phase 3: re-derivation after one reweighting. Size 1 is
+# the fixture; size 10 is the spec's extension (every row
+# repeated ten times under distinct argument identities,
+# twenty candidates per kind, values repeating the fixture
+# pattern). The program prints its operation count; the
+# driver times the process, five runs, median reported.
+# Method and numbers land in status.md at the build pin.
+
+phase: i64 = ()
+    1
+
+xsize: i64 = ()
+    1
+
+digits: str = (v: i64)
+    if v == 0
+        return "0"
+    out = ""
+    n: i64 = v
+    while n > 0
+        out = "0123456789":sub(n % 10 + 1, n % 10 + 1) .. out
+        n = n // 10
+    out
+
+baseof: i64 = (kind: i64, j: i64, caution: i64)
+    if caution == 1
+        if kind == 3
+            return j % 2
+        return 0
+    if kind == 1
+        if j % 2 == 0
+            return 5
+        return 3
+    if kind == 2
+        return 4
+    if j % 2 == 0
+        return 2
+    6
+
+csvof: str = (caution: i64)
+    out = ""
+    rep = 0
+    while rep < 10
+        kind = 1
+        while kind <= 3
+            j = 0
+            while j < 20
+                if out != ""
+                    out = out .. ","
+                out = out .. digits(baseof(kind, j, caution))
+                j = j + 1
+            kind = kind + 1
+        rep = rep + 1
+    out
+
+main: i64 = ()
+    wsp.agent.init()
+    if xsize() == 1
+        fc = wsp.agent.fileof(5, 3, 4, 4, 2, 6, 6, 3, 2, "choice")
+        h = wsp.agent.seatfile(1, fc, "", 3, 2)
+        wsp.agent.setvals(h, 5, 3, 4, 4, 2, 6, 6)
+        fu = wsp.agent.fileof(0, 0, 0, 0, 0, 1, 6, 3, 2, "caution")
+        h = wsp.agent.seatfile(2, fu, "", 3, 2)
+        wsp.agent.setvals(h, 0, 0, 0, 0, 0, 1, 6)
+        fs = wsp.agent.fileof(7, 7, 0, 0, 0, 0, 2, 2, 0, "spare")
+        h = wsp.agent.seatfile(3, fs, "", 2, 0)
+        wsp.agent.setvals(h, 7, 7, 0, 0, 0, 0, 2)
+    else
+        cc = csvof(0)
+        fc = wsp.agent.filecsv(cc, 600, 30, 20, "choice")
+        h = wsp.agent.seatfile(1, fc, "", 30, 20)
+        wsp.agent.setcsv(h, cc, 600)
+        cu = csvof(1)
+        fu = wsp.agent.filecsv(cu, 600, 30, 20, "caution")
+        h = wsp.agent.seatfile(2, fu, "", 30, 20)
+        wsp.agent.setcsv(h, cu, 600)
+        fs = wsp.agent.fileof(7, 7, 0, 0, 0, 0, 2, 2, 0, "spare")
+        h = wsp.agent.seatfile(3, fs, "", 2, 0)
+        wsp.agent.setvals(h, 7, 7, 0, 0, 0, 0, 2)
+    ops = 0
+    if phase() == 1
+        n = 3000
+        if xsize() == 10
+            n = 300
+        i = 0
+        while i < n
+            wsp.agent.step(1)
+            i = i + 1
+            ops = ops + 1
+    if phase() == 2
+        s1 = wsp.agent.step(1)
+        o1 = wsp.agent.result(1)
+        s2 = wsp.agent.step(2)
+        o2 = wsp.agent.result(2)
+        s3 = wsp.agent.step(3)
+        o3 = wsp.agent.result(3)
+        tk = wsp.agent.task()
+        n = 3000
+        if xsize() == 10
+            n = 300
+        i = 0
+        while i < n
+            t = 0
+            t = t + wsp.agent.stands(s1)
+            t = t + wsp.agent.stands(o1)
+            t = t + wsp.agent.stands(s2)
+            t = t + wsp.agent.stands(o2)
+            t = t + wsp.agent.stands(s3)
+            t = t + wsp.agent.stands(o3)
+            t = t + wsp.agent.stands(tk)
+            i = i + 1
+            ops = ops + 1
+    if phase() == 3
+        if xsize() == 1
+            vf = wsp.agent.fileof(4, 3, 4, 4, 2, 6, 6, 3, 2, "choice")
+            n = 300
+            i = 0
+            while i < n
+                h = wsp.agent.seatfile(1, vf, "", 3, 2)
+                wsp.agent.setvals(h, 4, 3, 4, 4, 2, 6, 6)
+                wsp.agent.step(1)
+                i = i + 1
+                ops = ops + 1
+        else
+            cc = csvof(0)
+            vf = wsp.agent.filecsv(cc, 600, 30, 20, "choice")
+            n = 30
+            i = 0
+            while i < n
+                h = wsp.agent.seatfile(1, vf, "", 30, 20)
+                wsp.agent.setcsv(h, cc, 600)
+                wsp.agent.step(1)
+                i = i + 1
+                ops = ops + 1
+    print("ops: " .. digits(ops))
+    0
+
+os.exit(main())

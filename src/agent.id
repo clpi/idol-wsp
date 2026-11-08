@@ -1,0 +1,1430 @@
+# The WSP agent, slice one: the deliverable in miniature.
+# Home wsp.agent, staged into the compiler tree as lib/wsp.
+#
+# Spec: spec-slice-one.md in clpi/idol-wsp (the repo of record).
+# A pure-Idol agent whose behaviour is derived from a live
+# weight space: every choice is a premise-tracked derivation
+# over the landed weight-space surface (ml.space), tool calls
+# are derivations whose results re-enter as premises, and
+# learning is reweighting under premises — a learned seating
+# of the choice table, published by the learning rule, citing
+# the outcomes it was learned from, retractable exactly by
+# the premise cone of what it cites.
+#
+# Representation (the spec's section 8 law): tables, premises
+# and records are held in tables keyed by identity digest.
+# Premise sets are identity sets. A lookup counter counts
+# every identity-keyed read a derivation or the learning rule
+# performs: value reads through get, premise citations
+# through cite. No operation rescans a text representation
+# to answer a membership, standing, or cone question.
+#
+# Standing rule for a step record's table citation (the
+# substrate battery's read-span rule, applied per row): the
+# step falls when the role's current seating has a different
+# shape than the cited seating, or different values in the
+# row the step read. A learned seating is additive: it does
+# not displace the current seating, so derivations over the
+# original seating are untouched by learning; a correcting
+# seating displaces the current one and withdraws it as a
+# premise, so what was learned from it retracts.
+#
+# A derivation's identity, which later records cite, is the
+# sha256 of its premise record form — output digest, rule
+# version, and its citations in order — so a citation names
+# one derivation, never every derivation that shares an
+# output statement.
+
+own = {}
+
+bld = { bytes = {} }
+
+srole = {}
+
+sdig = {}
+
+swd = {}
+
+slrn = {}
+
+sflen = {}
+
+soff = {}
+
+slen = {}
+
+sdim = {}
+
+sgen = {}
+
+sval = {}
+
+pdig = {}
+
+pkind = {}
+
+pwd = {}
+
+pgen = {}
+
+rkind = {}
+
+rstep = {}
+
+rch = {}
+
+rscore = {}
+
+rstart = {}
+
+rrlen = {}
+
+rbytes = {}
+
+rout = {}
+
+ridbytes = {}
+
+rgen = {}
+
+coff = {}
+
+cnum = {}
+
+cbytes = {}
+
+ckind = {}
+
+crow = {}
+
+resstart = {}
+
+reslen = {}
+
+resbytes = {}
+
+cnstart = {}
+
+cnlen = {}
+
+cnbytes = {}
+
+ctstart = {}
+
+ctlen = {}
+
+ctbytes = {}
+
+clstart = {}
+
+cllen = {}
+
+clbytes = {}
+
+crstart = {}
+
+crlen = {}
+
+crbytes = {}
+
+cgen = {}
+
+# ---- byte book helpers (the tree's idiom: one growing byte
+# table per book, integer offset tables beside it; the book
+# selector keeps one pair of faces for all ten books)
+
+putb: i64 = (book: i64, b: i64)
+    if book == 1
+        sdig[sdig:len() + 1] = b
+        return sdig:len()
+    if book == 2
+        rbytes[rbytes:len() + 1] = b
+        return rbytes:len()
+    if book == 3
+        cbytes[cbytes:len() + 1] = b
+        return cbytes:len()
+    if book == 4
+        rout[rout:len() + 1] = b
+        return rout:len()
+    if book == 5
+        resbytes[resbytes:len() + 1] = b
+        return resbytes:len()
+    if book == 6
+        cnbytes[cnbytes:len() + 1] = b
+        return cnbytes:len()
+    if book == 7
+        ctbytes[ctbytes:len() + 1] = b
+        return ctbytes:len()
+    if book == 8
+        clbytes[clbytes:len() + 1] = b
+        return clbytes:len()
+    if book == 9
+        crbytes[crbytes:len() + 1] = b
+        return crbytes:len()
+    if book == 10
+        ridbytes[ridbytes:len() + 1] = b
+        return ridbytes:len()
+    pdig[pdig:len() + 1] = b
+    pdig:len()
+
+getb: i64 = (book: i64, at: i64)
+    if book == 1
+        return sdig[at]
+    if book == 2
+        return rbytes[at]
+    if book == 3
+        return cbytes[at]
+    if book == 4
+        return rout[at]
+    if book == 5
+        return resbytes[at]
+    if book == 6
+        return cnbytes[at]
+    if book == 7
+        return ctbytes[at]
+    if book == 8
+        return clbytes[at]
+    if book == 9
+        return crbytes[at]
+    if book == 10
+        return ridbytes[at]
+    pdig[at]
+
+puttext: i64 = (book: i64, s: str)
+    j = 1
+    while j <= s:len()
+        putb(book, s:byte(j))
+        j = j + 1
+    s:len()
+
+piece: str = (book: i64, off: i64, len: i64)
+    out = ""
+    j = 0
+    while j < len
+        b = getb(book, off + j + 1)
+        out = out .. b:char()
+        j = j + 1
+    out
+
+digits: str = (v: i64)
+    if v == 0
+        return "0"
+    out = ""
+    n: i64 = v
+    while n > 0
+        out = "0123456789":sub(n % 10 + 1, n % 10 + 1) .. out
+        n = n // 10
+    out
+
+# ---- the seating builder: one tensor per file, through the
+# substrate admission route (the fixture contract's shape)
+
+bput: i64 = (b: i64)
+    bld.bytes[bld.bytes:len() + 1] = b
+    bld.bytes:len()
+
+bw16: i64 = (n: i64)
+    bput(n & 255)
+    bput(n >> 8 & 255)
+    0
+
+bw32: i64 = (n: i64)
+    v = n
+    i = 1
+    while i <= 4
+        bput(v & 255)
+        v = v >> 8
+        i = i + 1
+    0
+
+bw64: i64 = (n: i64)
+    v = n
+    i = 1
+    while i <= 8
+        bput(v & 255)
+        v = v >> 8
+        i = i + 1
+    0
+
+bwtext: i64 = (s: str)
+    bw64(s:len())
+    i = 1
+    while i <= s:len()
+        bput(s:byte(i))
+        i = i + 1
+    0
+
+bpack: str = ()
+    chars = {}
+    for b in bld.bytes
+        chars[chars:len() + 1] = b:char()
+    chars:concat()
+
+bpad: i64 = ()
+    while bld.bytes:len() % 32 != 0
+        bput(0)
+    0
+
+bmeta: i64 = ()
+    bwtext("general.architecture")
+    bw32(4)
+    bw32(7)
+    bwtext("tokenizer.ggml.tokens")
+    bw32(9)
+    bw32(8)
+    bw64(3)
+    bwtext("a")
+    bwtext("b")
+    bwtext("c")
+    0
+
+f64of: f64 = (v: i64)
+    r: f64 = 0.0
+    i = 0
+    if v >= 0
+        while i < v
+            r = r + 1.0
+            i = i + 1
+    else
+        while i > v
+            r = r - 1.0
+            i = i - 1
+    r
+
+wordof: i64 = (v: i64)
+    fv: f64 = f64of(v)
+    if fv == 0.0
+        return 0
+    sign = 0
+    m: f64 = fv
+    if m < 0.0
+        sign = 1
+        m = 0.0 - m
+    e = 0
+    while m >= 2.0
+        m = m / 2.0
+        e = e + 1
+    while m < 1.0
+        m = m * 2.0
+        e = e - 1
+    frac: f64 = (m - 1.0) * 8388608.0
+    fi = 0
+    bit: f64 = 4194304.0
+    rem: f64 = frac
+    while bit >= 1.0
+        fi = fi * 2
+        if rem >= bit
+            rem = rem - bit
+            fi = fi + 1
+        bit = bit / 2.0
+    sign * 2147483648 + (e + 127) * 8388608 + fi
+
+fileof: str = (a: i64, b: i64, c: i64, d: i64, e: i64, f: i64, n: i64, d1: i64, d2: i64, name: str)
+    vals = {}
+    vals[1] = a
+    vals[2] = b
+    vals[3] = c
+    vals[4] = d
+    vals[5] = e
+    vals[6] = f
+    bld.bytes = {}
+    bw32(1179993927)
+    bw32(3)
+    bw64(1)
+    bw64(2)
+    bmeta()
+    bwtext(name)
+    if d2 == 0
+        bw32(1)
+        bw64(d1)
+    else
+        bw32(2)
+        bw64(d1)
+        bw64(d2)
+    bw32(0)
+    bw64(0)
+    bpad()
+    j = 1
+    while j <= n
+        bw32(wordof(vals[j]))
+        j = j + 1
+    bpack()
+
+filecsv: str = (csv: str, n: i64, d1: i64, d2: i64, name: str)
+    split(csv, 44, 1)
+    bld.bytes = {}
+    bw32(1179993927)
+    bw32(3)
+    bw64(1)
+    bw64(2)
+    bmeta()
+    bwtext(name)
+    if d2 == 0
+        bw32(1)
+        bw64(d1)
+    else
+        bw32(2)
+        bw64(d1)
+        bw64(d2)
+    bw32(0)
+    bw64(0)
+    bpad()
+    j = 1
+    while j <= n
+        bw32(wordof(vat(1, j)))
+        j = j + 1
+    bpack()
+
+setcsv: i64 = (h: i64, csv: str, n: i64)
+    split(csv, 44, 1)
+    slen[h] = n
+    j = 1
+    while j <= n
+        sval[sval:len() + 1] = vat(1, j)
+        j = j + 1
+    n
+
+# ---- generations: reset starts a fresh instance by
+# advancing the generation; older entries stay in the
+# tables but no lookup sees them
+
+gen: i64 = ()
+    if own.gen == nil
+        return 1
+    own.gen
+
+looks0: i64 = ()
+    if own.looks == nil
+        own.looks = 0
+    own.looks
+
+setact1: i64 = (h: i64)
+    own.act1 = h
+    h
+
+setact2: i64 = (h: i64)
+    own.act2 = h
+    h
+
+setact3: i64 = (h: i64)
+    own.act3 = h
+    h
+
+setcur1: i64 = (h: i64)
+    own.cur1 = h
+    h
+
+setcur2: i64 = (h: i64)
+    own.cur2 = h
+    h
+
+setcur3: i64 = (h: i64)
+    own.cur3 = h
+    h
+
+act: i64 = (role: i64)
+    v = 0
+    if role == 1
+        v = own.act1
+    if role == 2
+        v = own.act2
+    if role == 3
+        v = own.act3
+    if v == nil
+        return 0
+    v
+
+cur: i64 = (role: i64)
+    v = 0
+    if role == 1
+        v = own.cur1
+    if role == 2
+        v = own.cur2
+    if role == 3
+        v = own.cur3
+    if v == nil
+        return 0
+    v
+
+setact: i64 = (role: i64, h: i64)
+    if role == 1
+        return setact1(h)
+    if role == 2
+        return setact2(h)
+    setact3(h)
+
+setcur: i64 = (role: i64, h: i64)
+    if role == 1
+        return setcur1(h)
+    if role == 2
+        return setcur2(h)
+    setcur3(h)
+
+# ---- seatings
+
+sdigest: str = (h: i64)
+    piece(1, (h - 1) * 64, 64)
+
+findseat: i64 = (d: str)
+    hit = 0
+    h = 1
+    while h <= srole:len()
+        if sgen[h] == gen()
+            if sdigest(h) == d
+                hit = h
+        h = h + 1
+    hit
+
+regseat: i64 = (role: i64, d: str, wdv: i64, lrn: i64, flen: i64, d1: i64, d2: i64)
+    h = srole:len() + 1
+    srole[h] = role
+    puttext(1, d)
+    swd[h] = wdv
+    slrn[h] = lrn
+    sflen[h] = flen
+    sgen[h] = gen()
+    soff[h] = sval:len()
+    slen[h] = 0
+    sdim[h] = d1 * 100 + d2
+    h
+
+setvals: i64 = (h: i64, a: i64, b: i64, c: i64, d: i64, e: i64, f: i64, n: i64)
+    vals = {}
+    vals[1] = a
+    vals[2] = b
+    vals[3] = c
+    vals[4] = d
+    vals[5] = e
+    vals[6] = f
+    slen[h] = n
+    j = 1
+    while j <= n
+        sval[sval:len() + 1] = vals[j]
+        j = j + 1
+    n
+
+seatfile: i64 = (role: i64, data: str, expected: str, d1: i64, d2: i64)
+    r = ml.space.seat(data)
+    if r != 1
+        own.why = "seat refused"
+        return -1
+    dg = ml.space.digest(1)
+    if dg == ""
+        own.why = "digest refused"
+        return -1
+    if expected != ""
+        if dg != expected
+            own.why = "readback digest"
+            return -2
+    old = cur(role)
+    h = regseat(role, dg, 0, 0, data:len(), d1, d2)
+    if old > 0
+        if old != h
+            swd[old] = 1
+    setcur(role, h)
+    setact(role, h)
+    h
+
+refusal: str = ()
+    if own.why == nil
+        return ""
+    own.why
+
+# ---- premises: facts and observations, identity = the
+# sha256 of the statement text (the digest face refuses a
+# statement carrying a zero byte by construction of its
+# inputs being text)
+
+regprem: i64 = (d: str, kind: i64, wdv: i64)
+    i = pkind:len() + 1
+    puttext(0, d)
+    pkind[i] = kind
+    pwd[i] = wdv
+    pgen[i] = gen()
+    i
+
+premise: str = (text: str, kind: i64)
+    d = compiler.digest.sha256(text)
+    regprem(d, kind, 0)
+    d
+
+pdigest: str = (i: i64)
+    piece(0, (i - 1) * 64, 64)
+
+findprem: i64 = (d: str)
+    hit = 0
+    i = 1
+    while i <= pkind:len()
+        if pgen[i] == gen()
+            if pdigest(i) == d
+                hit = i
+        i = i + 1
+    hit
+
+withdraw: i64 = (d: str)
+    pi = findprem(d)
+    if pi > 0
+        pwd[pi] = 1
+        return 1
+    h = findseat(d)
+    if h > 0
+        swd[h] = 1
+        return 1
+    0
+
+# ---- the fixture's candidates and facts (spec section 4
+# and 5: the candidate order is fixed)
+
+ctools = {}
+
+putcand: i64 = (idx: i64, name: str, tool: str)
+    cnstart[idx] = booklen(6)
+    cnlen[idx] = name:len()
+    puttext(6, name)
+    ctools[ctools:len() + 1] = tool
+    idx
+
+candname: str = (k: i64, j: i64)
+    idx = (k - 1) * 2 + j
+    piece(6, cnstart[idx], cnlen[idx])
+
+candtool: str = (k: i64, j: i64)
+    idx = (k - 1) * 2 + j
+    ctools[idx]
+
+retool: i64 = (k: i64, j: i64, tool: str)
+    idx = (k - 1) * 2 + j
+    ctools[idx] = tool
+    1
+
+init: i64 = ()
+    if own.gen == nil
+        own.gen = 1
+    own.looks = 0
+    putcand(1, "read-a", "read")
+    putcand(2, "read-b", "read")
+    putcand(3, "write-a", "write")
+    putcand(4, "write-b", "write")
+    putcand(5, "run-a", "run")
+    putcand(6, "run-b", "run")
+    own.p1 = premise("the target file is f", 1)
+    own.p2 = premise("the check command is c", 1)
+    own.p3 = premise("the tree has one file", 1)
+    1
+
+fact: str = (w: i64)
+    if w == 1
+        return own.p1
+    if w == 2
+        return own.p2
+    if w == 3
+        return own.p3
+    if w == 4
+        if own.q1 == nil
+            return ""
+        return own.q1
+    if own.q2 == nil
+        return ""
+    own.q2
+
+observe: str = ()
+    if own.q1 == nil
+        own.q1 = premise("the read of f returned the expected digest", 2)
+    if own.q1 == ""
+        own.q1 = premise("the read of f returned the expected digest", 2)
+    own.q1
+
+contradict: i64 = ()
+    own.q2 = premise("the read of f returned a different digest", 2)
+    if own.q1 != nil
+        withdraw(own.q1)
+    1
+
+# ---- counted reads: the lookup counter of spec section 8
+
+get: i64 = (h: i64, idx: i64)
+    own.looks = looks0() + 1
+    sval[soff[h] + idx + 1]
+
+cite: i64 = (d: str)
+    own.looks = looks0() + 1
+    if findprem(d) > 0
+        return 1
+    if findseat(d) > 0
+        return 1
+    if findrout(d) > 0
+        return 1
+    0
+
+count: i64 = ()
+    looks0()
+
+seating: i64 = (role: i64)
+    act(role)
+
+current: i64 = (role: i64)
+    cur(role)
+
+booklen: i64 = (book: i64)
+    if book == 1
+        return sdig:len()
+    if book == 2
+        return rbytes:len()
+    if book == 3
+        return cbytes:len()
+    if book == 4
+        return rout:len()
+    if book == 5
+        return resbytes:len()
+    if book == 6
+        return cnbytes:len()
+    if book == 7
+        return ctbytes:len()
+    if book == 8
+        return clbytes:len()
+    if book == 9
+        return crbytes:len()
+    if book == 10
+        return ridbytes:len()
+    pdig:len()
+
+# ---- premise records: a derivation publishes its kind, its
+# choice, its rule version, its output digest, and its
+# citation set — digests with a citation kind (1 table row,
+# 2 premise, 3 derivation, 4 seating) and, for table
+# citations, the row read
+
+begin: i64 = (kind: i64, stepk: i64, ch: i64, score: i64)
+    r = rkind:len() + 1
+    rkind[r] = kind
+    rstep[r] = stepk
+    rch[r] = ch
+    rscore[r] = score
+    coff[r] = cbytes:len() // 64
+    cnum[r] = 0
+    rgen[r] = gen()
+    resstart[r] = 0
+    reslen[r] = 0
+    r
+
+citeadd: i64 = (r: i64, d: str, ck: i64, row: i64)
+    puttext(3, d)
+    e = coff[r] + cnum[r] + 1
+    ckind[e] = ck
+    crow[e] = row
+    cnum[r] = cnum[r] + 1
+    1
+
+seal: i64 = (r: i64, rule: str, outd: str)
+    rstart[r] = booklen(2)
+    rrlen[r] = rule:len()
+    puttext(2, rule)
+    puttext(4, outd)
+    form = outd .. rule
+    i = 1
+    while i <= cnum[r]
+        form = form .. citeof(r, i)
+        i = i + 1
+    puttext(10, compiler.digest.sha256(form))
+    r
+
+recid: str = (r: i64)
+    piece(10, (r - 1) * 64, 64)
+
+setres: i64 = (r: i64, s: str)
+    resstart[r] = booklen(5)
+    reslen[r] = s:len()
+    puttext(5, s)
+    1
+
+kindof: i64 = (r: i64)
+    rkind[r]
+
+stepof: i64 = (r: i64)
+    rstep[r]
+
+choiceof: i64 = (r: i64)
+    rch[r]
+
+scoreof: i64 = (r: i64)
+    rscore[r]
+
+outof: str = (r: i64)
+    piece(4, (r - 1) * 64, 64)
+
+ruleof: str = (r: i64)
+    piece(2, rstart[r], rrlen[r])
+
+resof: str = (r: i64)
+    if reslen[r] == 0
+        return ""
+    piece(5, resstart[r], reslen[r])
+
+ncites: i64 = (r: i64)
+    cnum[r]
+
+citeof: str = (r: i64, i: i64)
+    piece(3, (coff[r] + i - 1) * 64, 64)
+
+citekind: i64 = (r: i64, i: i64)
+    ckind[coff[r] + i]
+
+findrout: i64 = (d: str)
+    hit = 0
+    r = 1
+    while r <= rkind:len()
+        if rgen[r] == gen()
+            if recid(r) == d
+                hit = r
+        r = r + 1
+    hit
+
+steprec: i64 = (k: i64, rule: str)
+    hit = 0
+    r = 1
+    while r <= rkind:len()
+        if rgen[r] == gen()
+            if rkind[r] == 1
+                if rstep[r] == k
+                    if ruleof(r) == rule
+                        hit = r
+        r = r + 1
+    hit
+
+resrec: i64 = (k: i64)
+    hit = 0
+    r = 1
+    while r <= rkind:len()
+        if rgen[r] == gen()
+            if rkind[r] == 2
+                if rstep[r] == k
+                    hit = r
+        r = r + 1
+    hit
+
+nrecords: i64 = ()
+    n = 0
+    r = 1
+    while r <= rkind:len()
+        if rgen[r] == gen()
+            n = n + 1
+        r = r + 1
+    n
+
+# ---- standing, read by recomputation over the citations
+
+falls: i64 = (r: i64, depth: i64)
+    if rgen[r] != gen()
+        return 1
+    if depth > 10
+        return 0
+    i = 1
+    while i <= cnum[r]
+        d = citeof(r, i)
+        ck = citekind(r, i)
+        if ck == 2
+            pi = findprem(d)
+            if pi == 0
+                return 1
+            if pwd[pi] == 1
+                return 1
+        if ck == 3
+            o = findrout(d)
+            if o == 0
+                return 1
+            if falls(o, depth + 1) == 1
+                return 1
+        if ck == 4
+            h = findseat(d)
+            if h == 0
+                return 1
+            if swd[h] == 1
+                return 1
+        if ck == 1
+            h = findseat(d)
+            if h == 0
+                return 1
+            role = srole[h]
+            c = cur(role)
+            if c == 0
+                return 1
+            if c != h
+                if sdim[c] != sdim[h]
+                    return 1
+                row = crow[coff[r] + i]
+                rl = sdim[h] % 100
+                if rl == 0
+                    rl = slen[h]
+                j = 0
+                while j < rl
+                    a = sval[soff[h] + row * rl + j + 1]
+                    b = sval[soff[c] + row * rl + j + 1]
+                    if a != b
+                        return 1
+                    j = j + 1
+        i = i + 1
+    0
+
+stands: i64 = (r: i64)
+    if falls(r, 0) == 1
+        return 0
+    1
+
+# ---- the fixture tool surface: deterministic execution;
+# an executed call is logged with its result statement
+
+exec: str = (name: str)
+    res = ""
+    if name == "read-a"
+        res = "the contents of f"
+    if name == "read-b"
+        res = "the contents of the tree"
+    if name == "write-a"
+        res = "f written"
+    if name == "write-b"
+        res = "g written"
+    if name == "run-a"
+        res = "check c passed"
+    if name == "run-b"
+        res = "check c passed for the tree"
+    ci = cgen:len() + 1
+    clstart[ci] = booklen(8)
+    cllen[ci] = name:len()
+    puttext(8, name)
+    crstart[ci] = booklen(9)
+    crlen[ci] = res:len()
+    puttext(9, res)
+    cgen[ci] = gen()
+    res
+
+calls: i64 = ()
+    n = 0
+    i = 1
+    while i <= cgen:len()
+        if cgen[i] == gen()
+            n = n + 1
+        i = i + 1
+    n
+
+callat: str = (want: i64)
+    n = 0
+    i = 1
+    while i <= cgen:len()
+        if cgen[i] == gen()
+            n = n + 1
+            if n == want
+                return piece(8, clstart[i], cllen[i])
+        i = i + 1
+    ""
+
+halt: str = ()
+    if own.halt == nil
+        return ""
+    own.halt
+
+# ---- the step derivation (spec section 5)
+
+citesfor: i64 = (r: i64, k: i64)
+    ac = act(1)
+    au = act(2)
+    citeadd(r, sdigest(ac), 1, k - 1)
+    citeadd(r, sdigest(au), 1, k - 1)
+    if k == 1
+        cite(own.p1)
+        citeadd(r, own.p1, 2, 0)
+    if k == 2
+        cite(own.p1)
+        citeadd(r, own.p1, 2, 0)
+        o1 = resrec(1)
+        cite(recid(o1))
+        citeadd(r, recid(o1), 3, 0)
+    if k == 3
+        cite(own.p2)
+        citeadd(r, own.p2, 2, 0)
+    1
+
+stepv: i64 = (k: i64, rule: str)
+    ac = act(1)
+    au = act(2)
+    if ac == 0
+        return -1
+    if au == 0
+        return -1
+    if k == 2
+        o1 = resrec(1)
+        if o1 == 0
+            return -3
+        if falls(o1, 0) == 1
+            r = begin(5, k, 0, 0)
+            citesfor(r, k)
+            own.halt = "result premise fallen"
+            seal(r, rule, compiler.digest.sha256("UNKNOWN"))
+            return r
+    per = sdim[ac] % 100
+    if per == 0
+        per = slen[ac]
+    chosen = 0
+    best = 0
+    j = 0
+    while j < per
+        sc = get(ac, (k - 1) * per + j)
+        cu = get(au, (k - 1) * per + j)
+        if cu <= 0
+            if chosen == 0 or sc > best
+                chosen = j + 1
+                best = sc
+        j = j + 1
+    if chosen == 0
+        r = begin(5, k, 0, 0)
+        citesfor(r, k)
+        own.halt = "every candidate vetoed"
+        seal(r, rule, compiler.digest.sha256("UNKNOWN"))
+        return r
+    name = candname(k, chosen)
+    tool = candtool(k, chosen)
+    if tool != "read" and tool != "write" and tool != "run"
+        r = begin(5, k, 0, 0)
+        citesfor(r, k)
+        own.halt = "tool outside the surface"
+        seal(r, rule, compiler.digest.sha256("UNKNOWN"))
+        return r
+    r = begin(1, k, chosen, best)
+    citesfor(r, k)
+    res = exec(name)
+    setres(r, res)
+    seal(r, rule, compiler.digest.sha256(name))
+    r
+
+step: i64 = (k: i64)
+    stepv(k, "derive-1")
+
+result: i64 = (k: i64)
+    sr = steprec(k, "derive-1")
+    if sr == 0
+        return -1
+    if k == 1
+        observe()
+    r = begin(2, k, 0, 0)
+    citeadd(r, recid(sr), 3, 0)
+    if k == 1
+        citeadd(r, own.q1, 2, 0)
+    seal(r, "derive-1", compiler.digest.sha256(resof(sr)))
+    r
+
+learn: i64 = ()
+    ac = cur(1)
+    if ac == 0
+        return -1
+    if resrec(1) == 0
+        return -1
+    if resrec(2) == 0
+        return -1
+    if resrec(3) == 0
+        return -1
+    chs = {}
+    k = 1
+    while k <= 3
+        sr = steprec(k, "derive-1")
+        if sr == 0
+            return -1
+        chs[k] = rch[sr]
+        k = k + 1
+    nv = {}
+    i = 0
+    while i < 6
+        v = get(ac, i)
+        kk = i // 2 + 1
+        if chs[kk] == i % 2 + 1
+            v = v + 1
+            if v > 9
+                v = 9
+        nv[i + 1] = v
+        i = i + 1
+    lf = fileof(nv[1], nv[2], nv[3], nv[4], nv[5], nv[6], 6, 3, 2, "choice")
+    s = ml.space.seat(lf)
+    if s != 1
+        return -1
+    d = ml.space.digest(1)
+    if d == ""
+        return -1
+    h = regseat(1, d, 0, 1, lf:len(), 3, 2)
+    setvals(h, nv[1], nv[2], nv[3], nv[4], nv[5], nv[6], 6)
+    o1 = recid(resrec(1))
+    o2 = recid(resrec(2))
+    o3 = recid(resrec(3))
+    cite(o1)
+    cite(o2)
+    cite(o3)
+    r = begin(3, 0, 0, 0)
+    citeadd(r, sdigest(ac), 4, 0)
+    citeadd(r, o1, 3, 0)
+    citeadd(r, o2, 3, 0)
+    citeadd(r, o3, 3, 0)
+    seal(r, "learn-1", d)
+    r
+
+activate: i64 = (h: i64)
+    setact(srole[h], h)
+    1
+
+learnedseating: i64 = ()
+    hit = 0
+    h = 1
+    while h <= srole:len()
+        if sgen[h] == gen()
+            if slrn[h] == 1
+                hit = h
+        h = h + 1
+    hit
+
+lastrecord: i64 = ()
+    rkind:len()
+
+task: i64 = ()
+    o3 = resrec(3)
+    if o3 == 0
+        return -1
+    r = begin(4, 0, 0, 0)
+    citeadd(r, recid(o3), 3, 0)
+    seal(r, "derive-1", compiler.digest.sha256("the task is complete"))
+    r
+
+benchstep: i64 = (k: i64)
+    ac = act(1)
+    au = act(2)
+    per = sdim[ac] % 100
+    if per == 0
+        per = slen[ac]
+    chosen = 0
+    best = 0
+    j = 0
+    while j < per
+        sc = get(ac, (k - 1) * per + j)
+        cu = get(au, (k - 1) * per + j)
+        if cu <= 0
+            if chosen == 0 or sc > best
+                chosen = j + 1
+                best = sc
+        j = j + 1
+    chosen
+
+# ---- compactness accounting (spec section 9): the three
+# numbers, never mixed. Payload: the seated value's own
+# bits (the f32 word). Wire: the seating bytes over the
+# values seated, per table. Carrier: payload — no wider
+# carrier is used anywhere in this slice.
+
+slenof: i64 = (h: i64)
+    if h == 0
+        return 0
+    if slen[h] == nil
+        return 0
+    slen[h]
+
+params: i64 = ()
+    slenof(act(1)) + slenof(act(2)) + slenof(act(3))
+
+wireof: i64 = (role: i64)
+    h = act(role)
+    if h == 0
+        return 0
+    n = slenof(h)
+    if n == 0
+        return 0
+    8 * sflen[h] // n
+
+payload: i64 = ()
+    32
+
+carrier: i64 = ()
+    32
+
+# ---- the learned bundle (spec section 2 and case B11):
+# the seatings, premises, records, calls and pointers of
+# the current generation, as one text; loading it into a
+# fresh generation reproduces every standings answer.
+# Fields are separated by byte 124, values by byte 44,
+# citation entries by byte 44 with kind ":" row ":" digest
+# inside, lines by byte 10. No field carries those bytes.
+
+bun = { out = "" }
+
+bapp: i64 = (s: str)
+    bun.out = bun.out .. s
+    0
+
+nl: str = ()
+    b = 10
+    b:char()
+
+store: str = ()
+    bun.out = ""
+    h = 1
+    while h <= srole:len()
+        if sgen[h] == gen()
+            bapp("S|" .. digits(srole[h]) .. "|" .. sdigest(h) .. "|" .. digits(swd[h]) .. "|" .. digits(slrn[h]) .. "|" .. digits(sflen[h]) .. "|" .. digits(sdim[h] // 100) .. "|" .. digits(sdim[h] % 100) .. "|")
+            j = 1
+            while j <= slen[h]
+                if j > 1
+                    bapp(",")
+                bapp(digits(sval[soff[h] + j]))
+                j = j + 1
+            bapp(nl())
+        h = h + 1
+    i = 1
+    while i <= pkind:len()
+        if pgen[i] == gen()
+            bapp("P|" .. pdigest(i) .. "|" .. digits(pkind[i]) .. "|" .. digits(pwd[i]) .. nl())
+        i = i + 1
+    r = 1
+    while r <= rkind:len()
+        if rgen[r] == gen()
+            bapp("R|" .. digits(rkind[r]) .. "|" .. digits(rstep[r]) .. "|" .. digits(rch[r]) .. "|" .. digits(rscore[r]) .. "|" .. ruleof(r) .. "|" .. outof(r) .. "|" .. resof(r) .. "|")
+            q = 1
+            while q <= cnum[r]
+                if q > 1
+                    bapp(",")
+                bapp(digits(citekind(r, q)) .. ":" .. digits(crow[coff[r] + q]) .. ":" .. citeof(r, q))
+                q = q + 1
+            bapp(nl())
+        r = r + 1
+    ci = 1
+    while ci <= cgen:len()
+        if cgen[ci] == gen()
+            bapp("C|" .. piece(8, clstart[ci], cllen[ci]) .. "|" .. piece(9, crstart[ci], crlen[ci]) .. nl())
+        ci = ci + 1
+    role = 1
+    while role <= 3
+        ad = ""
+        if act(role) > 0
+            ad = sdigest(act(role))
+        cd = ""
+        if cur(role) > 0
+            cd = sdigest(cur(role))
+        bapp("A|" .. digits(role) .. "|" .. ad .. "|" .. cd .. nl())
+        role = role + 1
+    bun.out
+
+split: i64 = (s: str, sep: i64, out: i64)
+    parts = {}
+    last = 1
+    i = 1
+    while i <= s:len()
+        if s:byte(i) == sep
+            if i == last
+                parts[parts:len() + 1] = ""
+            else
+                parts[parts:len() + 1] = s:sub(last, i - 1)
+            last = i + 1
+        i = i + 1
+    if s:len() >= last
+        parts[parts:len() + 1] = s:sub(last, s:len())
+    if out == 0
+        own.f0 = parts
+    if out == 1
+        own.f1 = parts
+    if out == 2
+        own.f2 = parts
+    if out == 3
+        own.f3 = parts
+    parts:len()
+
+atoi: i64 = (s: str)
+    v = 0
+    i = 1
+    while i <= s:len()
+        v = v * 10 + (s:byte(i) - 48)
+        i = i + 1
+    v
+
+slotof: i64 = (t: i64, j: i64)
+    if t == 0
+        if own.f0 == nil
+            return 0
+        if j > own.f0:len()
+            return 0
+        return 1
+    if t == 1
+        if own.f1 == nil
+            return 0
+        if j > own.f1:len()
+            return 0
+        return 1
+    if t == 2
+        if own.f2 == nil
+            return 0
+        if j > own.f2:len()
+            return 0
+        return 1
+    if own.f3 == nil
+        return 0
+    if j > own.f3:len()
+        return 0
+    1
+
+vat: i64 = (t: i64, j: i64)
+    if slotof(t, j) == 0
+        return 0
+    atoi(sat(t, j))
+
+sat: str = (t: i64, j: i64)
+    if t == 0
+        if own.f0 == nil
+            return ""
+        if j > own.f0:len()
+            return ""
+        return own.f0[j]
+    if t == 1
+        if own.f1 == nil
+            return ""
+        if j > own.f1:len()
+            return ""
+        return own.f1[j]
+    if t == 2
+        if own.f2 == nil
+            return ""
+        if j > own.f2:len()
+            return ""
+        return own.f2[j]
+    if own.f3 == nil
+        return ""
+    if j > own.f3:len()
+        return ""
+    own.f3[j]
+
+reset: i64 = ()
+    own.gen = gen() + 1
+    setact(1, 0)
+    setact(2, 0)
+    setact(3, 0)
+    setcur(1, 0)
+    setcur(2, 0)
+    setcur(3, 0)
+    own.q1 = ""
+    own.q2 = ""
+    own.halt = ""
+    own.gen
+
+load: i64 = (text: str)
+    own.gen = gen() + 1
+    setact(1, 0)
+    setact(2, 0)
+    setact(3, 0)
+    setcur(1, 0)
+    setcur(2, 0)
+    setcur(3, 0)
+    own.q1 = ""
+    own.q2 = ""
+    nlines = split(text, 10, 0)
+    li = 1
+    while li <= nlines
+        line = sat(0, li)
+        if line:len() > 0
+            tag = line:sub(1, 1)
+            nf = split(line, 124, 2)
+            if tag == "S"
+                role = atoi(sat(2, 2))
+                d = sat(2, 3)
+                nv = split(sat(2, 9), 44, 1)
+                lf = fileof(vat(1, 1), vat(1, 2), vat(1, 3), vat(1, 4), vat(1, 5), vat(1, 6), nv, atoi(sat(2, 7)), atoi(sat(2, 8)), "choice")
+                if role == 2
+                    lf = fileof(vat(1, 1), vat(1, 2), vat(1, 3), vat(1, 4), vat(1, 5), vat(1, 6), nv, atoi(sat(2, 7)), atoi(sat(2, 8)), "caution")
+                if role == 3
+                    lf = fileof(vat(1, 1), vat(1, 2), vat(1, 3), vat(1, 4), vat(1, 5), vat(1, 6), nv, atoi(sat(2, 7)), atoi(sat(2, 8)), "spare")
+                s = ml.space.seat(lf)
+                if s != 1
+                    return -1
+                dg = ml.space.digest(1)
+                if dg != d
+                    return -9
+                h = regseat(role, d, atoi(sat(2, 4)), atoi(sat(2, 5)), atoi(sat(2, 6)), atoi(sat(2, 7)), atoi(sat(2, 8)))
+                setvals(h, vat(1, 1), vat(1, 2), vat(1, 3), vat(1, 4), vat(1, 5), vat(1, 6), nv)
+            if tag == "P"
+                regprem(sat(2, 2), atoi(sat(2, 3)), atoi(sat(2, 4)))
+            if tag == "R"
+                r = begin(atoi(sat(2, 2)), atoi(sat(2, 3)), atoi(sat(2, 4)), atoi(sat(2, 5)))
+                nc = split(sat(2, 9), 44, 1)
+                q = 1
+                while q <= nc
+                    ne = split(sat(1, q), 58, 3)
+                    citeadd(r, sat(3, 3), atoi(sat(3, 1)), atoi(sat(3, 2)))
+                    q = q + 1
+                setres(r, sat(2, 8))
+                seal(r, sat(2, 6), sat(2, 7))
+            if tag == "C"
+                ci = cgen:len() + 1
+                nm = sat(2, 2)
+                rs = sat(2, 3)
+                clstart[ci] = booklen(8)
+                cllen[ci] = nm:len()
+                puttext(8, nm)
+                crstart[ci] = booklen(9)
+                crlen[ci] = rs:len()
+                puttext(9, rs)
+                cgen[ci] = gen()
+            if tag == "A"
+                role = atoi(sat(2, 2))
+                if sat(2, 3) != ""
+                    h = findseat(sat(2, 3))
+                    if h > 0
+                        setact(role, h)
+                if sat(2, 4) != ""
+                    h = findseat(sat(2, 4))
+                    if h > 0
+                        setcur(role, h)
+        li = li + 1
+    1
+
+M = {}
+M.fileof = fileof
+M.filecsv = filecsv
+M.setcsv = setcsv
+M.seatfile = seatfile
+M.setvals = setvals
+M.sdigest = sdigest
+M.seating = seating
+M.current = current
+M.refusal = refusal
+M.init = init
+M.fact = fact
+M.premise = premise
+M.withdraw = withdraw
+M.observe = observe
+M.contradict = contradict
+M.count = count
+M.step = step
+M.stepv = stepv
+M.result = result
+M.learn = learn
+M.activate = activate
+M.learnedseating = learnedseating
+M.lastrecord = lastrecord
+M.task = task
+M.stands = stands
+M.kindof = kindof
+M.stepof = stepof
+M.choiceof = choiceof
+M.scoreof = scoreof
+M.outof = outof
+M.recid = recid
+M.ruleof = ruleof
+M.ncites = ncites
+M.citeof = citeof
+M.citekind = citekind
+M.resof = resof
+M.nrecords = nrecords
+M.calls = calls
+M.callat = callat
+M.halt = halt
+M.retool = retool
+M.candname = candname
+M.candtool = candtool
+M.params = params
+M.wireof = wireof
+M.payload = payload
+M.carrier = carrier
+M.store = store
+M.load = load
+M.reset = reset
+M.benchstep = benchstep
+M
