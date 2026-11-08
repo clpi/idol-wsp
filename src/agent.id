@@ -57,6 +57,8 @@ sdim = {}
 
 sgen = {}
 
+doff = {}
+
 sval = {}
 
 pdig = {}
@@ -66,6 +68,8 @@ pkind = {}
 pwd = {}
 
 pgen = {}
+
+poff = {}
 
 rkind = {}
 
@@ -86,6 +90,12 @@ rout = {}
 ridbytes = {}
 
 rgen = {}
+
+roff = {}
+
+ooff = {}
+
+sealed = {}
 
 coff = {}
 
@@ -128,6 +138,20 @@ crlen = {}
 crbytes = {}
 
 cgen = {}
+
+actt = {}
+
+curt = {}
+
+f0 = {}
+
+f1 = {}
+
+f2 = {}
+
+f3 = {}
+
+pln = {}
 
 # ---- byte book helpers (the tree's idiom: one growing byte
 # table per book, integer offset tables beside it; the book
@@ -190,7 +214,7 @@ getb: i64 = (book: i64, at: i64)
         return ridbytes[at]
     pdig[at]
 
-puttext: i64 = (book: i64, s: str)
+wtext: i64 = (book: i64, s: str)
     j = 1
     while j <= s:len()
         putb(book, s:byte(j))
@@ -291,7 +315,7 @@ f64of: f64 = (v: i64)
             i = i - 1
     r
 
-wordof: i64 = (v: i64)
+word: i64 = (v: i64)
     fv: f64 = f64of(v)
     if fv == 0.0
         return 0
@@ -319,7 +343,7 @@ wordof: i64 = (v: i64)
         bit = bit / 2.0
     sign * 2147483648 + (e + 127) * 8388608 + fi
 
-fileof: str = (a: i64, b: i64, c: i64, d: i64, e: i64, f: i64, n: i64, d1: i64, d2: i64, name: str)
+file: str = (a: i64, b: i64, c: i64, d: i64, e: i64, f: i64, n: i64, d1: i64, d2: i64, name: str)
     vals = {}
     vals[1] = a
     vals[2] = b
@@ -346,7 +370,7 @@ fileof: str = (a: i64, b: i64, c: i64, d: i64, e: i64, f: i64, n: i64, d1: i64, 
     bpad()
     j = 1
     while j <= n
-        bw32(wordof(vals[j]))
+        bw32(word(vals[j]))
         j = j + 1
     bpack()
 
@@ -371,7 +395,7 @@ filecsv: str = (csv: str, n: i64, d1: i64, d2: i64, name: str)
     bpad()
     j = 1
     while j <= n
-        bw32(wordof(vat(1, j)))
+        bw32(word(vat(1, j)))
         j = j + 1
     bpack()
 
@@ -398,72 +422,22 @@ looks0: i64 = ()
         own.looks = 0
     own.looks
 
-setact1: i64 = (h: i64)
-    own.act1 = h
-    h
-
-setact2: i64 = (h: i64)
-    own.act2 = h
-    h
-
-setact3: i64 = (h: i64)
-    own.act3 = h
-    h
-
-setcur1: i64 = (h: i64)
-    own.cur1 = h
-    h
-
-setcur2: i64 = (h: i64)
-    own.cur2 = h
-    h
-
-setcur3: i64 = (h: i64)
-    own.cur3 = h
-    h
-
 act: i64 = (role: i64)
-    v = 0
-    if role == 1
-        v = own.act1
-    if role == 2
-        v = own.act2
-    if role == 3
-        v = own.act3
+    v = actt[role]
     if v == nil
         return 0
     v
 
 cur: i64 = (role: i64)
-    v = 0
-    if role == 1
-        v = own.cur1
-    if role == 2
-        v = own.cur2
-    if role == 3
-        v = own.cur3
+    v = curt[role]
     if v == nil
         return 0
     v
 
-setact: i64 = (role: i64, h: i64)
-    if role == 1
-        return setact1(h)
-    if role == 2
-        return setact2(h)
-    setact3(h)
-
-setcur: i64 = (role: i64, h: i64)
-    if role == 1
-        return setcur1(h)
-    if role == 2
-        return setcur2(h)
-    setcur3(h)
-
 # ---- seatings
 
 sdigest: str = (h: i64)
-    piece(1, (h - 1) * 64, 64)
+    piece(1, doff[h], 64)
 
 findseat: i64 = (d: str)
     hit = 0
@@ -475,10 +449,20 @@ findseat: i64 = (d: str)
         h = h + 1
     hit
 
+nseatings: i64 = ()
+    n = 0
+    h = 1
+    while h <= srole:len()
+        if sgen[h] == gen()
+            n = n + 1
+        h = h + 1
+    n
+
 regseat: i64 = (role: i64, d: str, wdv: i64, lrn: i64, flen: i64, d1: i64, d2: i64)
-    h = srole:len() + 1
+    h = nseatings() + 1
     srole[h] = role
-    puttext(1, d)
+    doff[h] = blen(1)
+    wtext(1, d)
     swd[h] = wdv
     slrn[h] = lrn
     sflen[h] = flen
@@ -521,8 +505,8 @@ seatfile: i64 = (role: i64, data: str, expected: str, d1: i64, d2: i64)
     if old > 0
         if old != h
             swd[old] = 1
-    setcur(role, h)
-    setact(role, h)
+    curt[role] = h
+    actt[role] = h
     h
 
 refusal: str = ()
@@ -535,9 +519,19 @@ refusal: str = ()
 # statement carrying a zero byte by construction of its
 # inputs being text)
 
+npremises: i64 = ()
+    n = 0
+    i = 1
+    while i <= pkind:len()
+        if pgen[i] == gen()
+            n = n + 1
+        i = i + 1
+    n
+
 regprem: i64 = (d: str, kind: i64, wdv: i64)
-    i = pkind:len() + 1
-    puttext(0, d)
+    i = npremises() + 1
+    poff[i] = blen(0)
+    wtext(0, d)
     pkind[i] = kind
     pwd[i] = wdv
     pgen[i] = gen()
@@ -549,7 +543,7 @@ premise: str = (text: str, kind: i64)
     d
 
 pdigest: str = (i: i64)
-    piece(0, (i - 1) * 64, 64)
+    piece(0, poff[i], 64)
 
 findprem: i64 = (d: str)
     hit = 0
@@ -578,19 +572,11 @@ withdraw: i64 = (d: str)
 ctools = {}
 
 putcand: i64 = (idx: i64, name: str, tool: str)
-    cnstart[idx] = booklen(6)
+    cnstart[idx] = blen(6)
     cnlen[idx] = name:len()
-    puttext(6, name)
+    wtext(6, name)
     ctools[ctools:len() + 1] = tool
     idx
-
-candname: str = (k: i64, j: i64)
-    idx = (k - 1) * 2 + j
-    piece(6, cnstart[idx], cnlen[idx])
-
-candtool: str = (k: i64, j: i64)
-    idx = (k - 1) * 2 + j
-    ctools[idx]
 
 retool: i64 = (k: i64, j: i64, tool: str)
     idx = (k - 1) * 2 + j
@@ -601,6 +587,16 @@ init: i64 = ()
     if own.gen == nil
         own.gen = 1
     own.looks = 0
+    actt[1] = 0
+    actt[2] = 0
+    actt[3] = 0
+    curt[1] = 0
+    curt[2] = 0
+    curt[3] = 0
+    pln[1] = 0
+    pln[2] = 0
+    pln[3] = 0
+    pln[4] = 0
     putcand(1, "read-a", "read")
     putcand(2, "read-b", "read")
     putcand(3, "write-a", "write")
@@ -665,7 +661,7 @@ seating: i64 = (role: i64)
 current: i64 = (role: i64)
     cur(role)
 
-booklen: i64 = (book: i64)
+blen: i64 = (book: i64)
     if book == 1
         return sdig:len()
     if book == 2
@@ -695,7 +691,7 @@ booklen: i64 = (book: i64)
 # citations, the row read
 
 begin: i64 = (kind: i64, stepk: i64, ch: i64, score: i64)
-    r = rkind:len() + 1
+    r = nrecords() + 1
     rkind[r] = kind
     rstep[r] = stepk
     rch[r] = ch
@@ -703,12 +699,13 @@ begin: i64 = (kind: i64, stepk: i64, ch: i64, score: i64)
     coff[r] = cbytes:len() // 64
     cnum[r] = 0
     rgen[r] = gen()
+    sealed[r] = 0
     resstart[r] = 0
     reslen[r] = 0
     r
 
 citeadd: i64 = (r: i64, d: str, ck: i64, row: i64)
-    puttext(3, d)
+    wtext(3, d)
     e = coff[r] + cnum[r] + 1
     ckind[e] = ck
     crow[e] = row
@@ -716,31 +713,34 @@ citeadd: i64 = (r: i64, d: str, ck: i64, row: i64)
     1
 
 seal: i64 = (r: i64, rule: str, outd: str)
-    rstart[r] = booklen(2)
+    rstart[r] = blen(2)
     rrlen[r] = rule:len()
-    puttext(2, rule)
-    puttext(4, outd)
+    wtext(2, rule)
+    ooff[r] = blen(4)
+    wtext(4, outd)
     form = outd .. rule
     i = 1
     while i <= cnum[r]
         form = form .. citeof(r, i)
         i = i + 1
-    puttext(10, compiler.digest.sha256(form))
+    roff[r] = blen(10)
+    wtext(10, compiler.digest.sha256(form))
+    sealed[r] = gen()
     r
 
 recid: str = (r: i64)
-    piece(10, (r - 1) * 64, 64)
+    piece(10, roff[r], 64)
 
 setres: i64 = (r: i64, s: str)
-    resstart[r] = booklen(5)
+    resstart[r] = blen(5)
     reslen[r] = s:len()
-    puttext(5, s)
+    wtext(5, s)
     1
 
-kindof: i64 = (r: i64)
+kind: i64 = (r: i64)
     rkind[r]
 
-stepof: i64 = (r: i64)
+stepk: i64 = (r: i64)
     rstep[r]
 
 choiceof: i64 = (r: i64)
@@ -749,10 +749,10 @@ choiceof: i64 = (r: i64)
 scoreof: i64 = (r: i64)
     rscore[r]
 
-outof: str = (r: i64)
-    piece(4, (r - 1) * 64, 64)
+odig: str = (r: i64)
+    piece(4, ooff[r], 64)
 
-ruleof: str = (r: i64)
+rtext: str = (r: i64)
     piece(2, rstart[r], rrlen[r])
 
 resof: str = (r: i64)
@@ -774,8 +774,9 @@ findrout: i64 = (d: str)
     r = 1
     while r <= rkind:len()
         if rgen[r] == gen()
-            if recid(r) == d
-                hit = r
+            if sealed[r] == gen()
+                if recid(r) == d
+                    hit = r
         r = r + 1
     hit
 
@@ -786,7 +787,7 @@ steprec: i64 = (k: i64, rule: str)
         if rgen[r] == gen()
             if rkind[r] == 1
                 if rstep[r] == k
-                    if ruleof(r) == rule
+                    if rtext(r) == rule
                         hit = r
         r = r + 1
     hit
@@ -811,7 +812,14 @@ nrecords: i64 = ()
         r = r + 1
     n
 
-# ---- standing, read by recomputation over the citations
+# ---- standing, read by recomputation over the citations.
+# Two tiers. A record's own standing (falls) reads its table
+# citations by value: the row it read must still match the
+# current seating's row. A derivation citation propagates
+# only existence falls (cone): a cited record falls its
+# citers when a premise or seating in its cone is withdrawn
+# or gone — a reweight falls exactly its readers (spec B3),
+# a withdrawal retracts its whole cone (spec B5, B10).
 
 falls: i64 = (r: i64, depth: i64)
     if rgen[r] != gen()
@@ -832,7 +840,7 @@ falls: i64 = (r: i64, depth: i64)
             o = findrout(d)
             if o == 0
                 return 1
-            if falls(o, depth + 1) == 1
+            if cone(o, depth + 1) == 1
                 return 1
         if ck == 4
             h = findseat(d)
@@ -865,10 +873,53 @@ falls: i64 = (r: i64, depth: i64)
         i = i + 1
     0
 
+cone: i64 = (r: i64, depth: i64)
+    if rgen[r] != gen()
+        return 1
+    if depth > 10
+        return 0
+    i = 1
+    while i <= cnum[r]
+        d = citeof(r, i)
+        ck = citekind(r, i)
+        if ck == 2
+            pi = findprem(d)
+            if pi == 0
+                return 1
+            if pwd[pi] == 1
+                return 1
+        if ck == 3
+            o = findrout(d)
+            if o == 0
+                return 1
+            if cone(o, depth + 1) == 1
+                return 1
+        if ck == 4
+            h = findseat(d)
+            if h == 0
+                return 1
+            if swd[h] == 1
+                return 1
+        if ck == 1
+            h = findseat(d)
+            if h == 0
+                return 1
+        i = i + 1
+    0
+
 stands: i64 = (r: i64)
     if falls(r, 0) == 1
         return 0
     1
+
+ncalls: i64 = ()
+    n = 0
+    i = 1
+    while i <= cgen:len()
+        if cgen[i] == gen()
+            n = n + 1
+        i = i + 1
+    n
 
 # ---- the fixture tool surface: deterministic execution;
 # an executed call is logged with its result statement
@@ -887,13 +938,13 @@ exec: str = (name: str)
         res = "check c passed"
     if name == "run-b"
         res = "check c passed for the tree"
-    ci = cgen:len() + 1
-    clstart[ci] = booklen(8)
+    ci = ncalls() + 1
+    clstart[ci] = blen(8)
     cllen[ci] = name:len()
-    puttext(8, name)
-    crstart[ci] = booklen(9)
+    wtext(8, name)
+    crstart[ci] = blen(9)
     crlen[ci] = res:len()
-    puttext(9, res)
+    wtext(9, res)
     cgen[ci] = gen()
     res
 
@@ -906,7 +957,7 @@ calls: i64 = ()
         i = i + 1
     n
 
-callat: str = (want: i64)
+call: str = (want: i64)
     n = 0
     i = 1
     while i <= cgen:len()
@@ -980,8 +1031,9 @@ stepv: i64 = (k: i64, rule: str)
         own.halt = "every candidate vetoed"
         seal(r, rule, compiler.digest.sha256("UNKNOWN"))
         return r
-    name = candname(k, chosen)
-    tool = candtool(k, chosen)
+    cix = (k - 1) * 2 + chosen
+    name = piece(6, cnstart[cix], cnlen[cix])
+    tool = ctools[cix]
     if tool != "read" and tool != "write" and tool != "run"
         r = begin(5, k, 0, 0)
         citesfor(r, k)
@@ -1027,7 +1079,8 @@ learn: i64 = ()
         sr = steprec(k, "derive-1")
         if sr == 0
             return -1
-        chs[k] = rch[sr]
+        row = sr
+        chs[k] = rch[row]
         k = k + 1
     nv = {}
     i = 0
@@ -1040,7 +1093,7 @@ learn: i64 = ()
                 v = 9
         nv[i + 1] = v
         i = i + 1
-    lf = fileof(nv[1], nv[2], nv[3], nv[4], nv[5], nv[6], 6, 3, 2, "choice")
+    lf = file(nv[1], nv[2], nv[3], nv[4], nv[5], nv[6], 6, 3, 2, "choice")
     s = ml.space.seat(lf)
     if s != 1
         return -1
@@ -1064,7 +1117,7 @@ learn: i64 = ()
     r
 
 activate: i64 = (h: i64)
-    setact(srole[h], h)
+    actt[srole[h]] = h
     1
 
 learnedseating: i64 = ()
@@ -1077,7 +1130,7 @@ learnedseating: i64 = ()
         h = h + 1
     hit
 
-lastrecord: i64 = ()
+last: i64 = ()
     rkind:len()
 
 task: i64 = ()
@@ -1089,7 +1142,7 @@ task: i64 = ()
     seal(r, "derive-1", compiler.digest.sha256("the task is complete"))
     r
 
-benchstep: i64 = (k: i64)
+derive: i64 = (k: i64)
     ac = act(1)
     au = act(2)
     per = sdim[ac] % 100
@@ -1143,14 +1196,17 @@ carrier: i64 = ()
 # the seatings, premises, records, calls and pointers of
 # the current generation, as one text; loading it into a
 # fresh generation reproduces every standings answer.
+# Indices are generation ordinals and every book entry
+# carries its own recorded offset, so the reloaded
+# instance occupies the same handles as the stored one.
 # Fields are separated by byte 124, values by byte 44,
 # citation entries by byte 44 with kind ":" row ":" digest
 # inside, lines by byte 10. No field carries those bytes.
 
-bun = { out = "" }
+bundle = ""
 
 bapp: i64 = (s: str)
-    bun.out = bun.out .. s
+    bundle = bundle .. s
     0
 
 nl: str = ()
@@ -1158,7 +1214,7 @@ nl: str = ()
     b:char()
 
 store: str = ()
-    bun.out = ""
+    bundle = ""
     h = 1
     while h <= srole:len()
         if sgen[h] == gen()
@@ -1179,7 +1235,7 @@ store: str = ()
     r = 1
     while r <= rkind:len()
         if rgen[r] == gen()
-            bapp("R|" .. digits(rkind[r]) .. "|" .. digits(rstep[r]) .. "|" .. digits(rch[r]) .. "|" .. digits(rscore[r]) .. "|" .. ruleof(r) .. "|" .. outof(r) .. "|" .. resof(r) .. "|")
+            bapp("R|" .. digits(rkind[r]) .. "|" .. digits(rstep[r]) .. "|" .. digits(rch[r]) .. "|" .. digits(rscore[r]) .. "|" .. rtext(r) .. "|" .. odig(r) .. "|" .. resof(r) .. "|")
             q = 1
             while q <= cnum[r]
                 if q > 1
@@ -1203,30 +1259,43 @@ store: str = ()
             cd = sdigest(cur(role))
         bapp("A|" .. digits(role) .. "|" .. ad .. "|" .. cd .. nl())
         role = role + 1
-    bun.out
+    bundle
 
 split: i64 = (s: str, sep: i64, out: i64)
     parts = {}
-    last = 1
+    mark = 1
     i = 1
     while i <= s:len()
         if s:byte(i) == sep
-            if i == last
+            if i == mark
                 parts[parts:len() + 1] = ""
             else
-                parts[parts:len() + 1] = s:sub(last, i - 1)
-            last = i + 1
+                parts[parts:len() + 1] = s:sub(mark, i - 1)
+            mark = i + 1
         i = i + 1
-    if s:len() >= last
-        parts[parts:len() + 1] = s:sub(last, s:len())
+    if s:len() >= mark
+        parts[parts:len() + 1] = s:sub(mark, s:len())
     if out == 0
-        own.f0 = parts
+        j = 1
+        while j <= parts:len()
+            f0[j] = parts[j]
+            j = j + 1
     if out == 1
-        own.f1 = parts
+        j = 1
+        while j <= parts:len()
+            f1[j] = parts[j]
+            j = j + 1
     if out == 2
-        own.f2 = parts
+        j = 1
+        while j <= parts:len()
+            f2[j] = parts[j]
+            j = j + 1
     if out == 3
-        own.f3 = parts
+        j = 1
+        while j <= parts:len()
+            f3[j] = parts[j]
+            j = j + 1
+    pln[out + 1] = parts:len()
     parts:len()
 
 atoi: i64 = (s: str)
@@ -1238,27 +1307,9 @@ atoi: i64 = (s: str)
     v
 
 slotof: i64 = (t: i64, j: i64)
-    if t == 0
-        if own.f0 == nil
-            return 0
-        if j > own.f0:len()
-            return 0
-        return 1
-    if t == 1
-        if own.f1 == nil
-            return 0
-        if j > own.f1:len()
-            return 0
-        return 1
-    if t == 2
-        if own.f2 == nil
-            return 0
-        if j > own.f2:len()
-            return 0
-        return 1
-    if own.f3 == nil
+    if pln[t + 1] == nil
         return 0
-    if j > own.f3:len()
+    if j > pln[t + 1]
         return 0
     1
 
@@ -1268,38 +1319,24 @@ vat: i64 = (t: i64, j: i64)
     atoi(sat(t, j))
 
 sat: str = (t: i64, j: i64)
+    if slotof(t, j) == 0
+        return ""
     if t == 0
-        if own.f0 == nil
-            return ""
-        if j > own.f0:len()
-            return ""
-        return own.f0[j]
+        return f0[j]
     if t == 1
-        if own.f1 == nil
-            return ""
-        if j > own.f1:len()
-            return ""
-        return own.f1[j]
+        return f1[j]
     if t == 2
-        if own.f2 == nil
-            return ""
-        if j > own.f2:len()
-            return ""
-        return own.f2[j]
-    if own.f3 == nil
-        return ""
-    if j > own.f3:len()
-        return ""
-    own.f3[j]
+        return f2[j]
+    f3[j]
 
 reset: i64 = ()
     own.gen = gen() + 1
-    setact(1, 0)
-    setact(2, 0)
-    setact(3, 0)
-    setcur(1, 0)
-    setcur(2, 0)
-    setcur(3, 0)
+    actt[1] = 0
+    actt[2] = 0
+    actt[3] = 0
+    curt[1] = 0
+    curt[2] = 0
+    curt[3] = 0
     own.q1 = ""
     own.q2 = ""
     own.halt = ""
@@ -1307,12 +1344,12 @@ reset: i64 = ()
 
 load: i64 = (text: str)
     own.gen = gen() + 1
-    setact(1, 0)
-    setact(2, 0)
-    setact(3, 0)
-    setcur(1, 0)
-    setcur(2, 0)
-    setcur(3, 0)
+    actt[1] = 0
+    actt[2] = 0
+    actt[3] = 0
+    curt[1] = 0
+    curt[2] = 0
+    curt[3] = 0
     own.q1 = ""
     own.q2 = ""
     nlines = split(text, 10, 0)
@@ -1326,11 +1363,11 @@ load: i64 = (text: str)
                 role = atoi(sat(2, 2))
                 d = sat(2, 3)
                 nv = split(sat(2, 9), 44, 1)
-                lf = fileof(vat(1, 1), vat(1, 2), vat(1, 3), vat(1, 4), vat(1, 5), vat(1, 6), nv, atoi(sat(2, 7)), atoi(sat(2, 8)), "choice")
+                lf = file(vat(1, 1), vat(1, 2), vat(1, 3), vat(1, 4), vat(1, 5), vat(1, 6), nv, atoi(sat(2, 7)), atoi(sat(2, 8)), "choice")
                 if role == 2
-                    lf = fileof(vat(1, 1), vat(1, 2), vat(1, 3), vat(1, 4), vat(1, 5), vat(1, 6), nv, atoi(sat(2, 7)), atoi(sat(2, 8)), "caution")
+                    lf = file(vat(1, 1), vat(1, 2), vat(1, 3), vat(1, 4), vat(1, 5), vat(1, 6), nv, atoi(sat(2, 7)), atoi(sat(2, 8)), "caution")
                 if role == 3
-                    lf = fileof(vat(1, 1), vat(1, 2), vat(1, 3), vat(1, 4), vat(1, 5), vat(1, 6), nv, atoi(sat(2, 7)), atoi(sat(2, 8)), "spare")
+                    lf = file(vat(1, 1), vat(1, 2), vat(1, 3), vat(1, 4), vat(1, 5), vat(1, 6), nv, atoi(sat(2, 7)), atoi(sat(2, 8)), "spare")
                 s = ml.space.seat(lf)
                 if s != 1
                     return -1
@@ -1352,31 +1389,31 @@ load: i64 = (text: str)
                 setres(r, sat(2, 8))
                 seal(r, sat(2, 6), sat(2, 7))
             if tag == "C"
-                ci = cgen:len() + 1
+                ci = ncalls() + 1
                 nm = sat(2, 2)
                 rs = sat(2, 3)
-                clstart[ci] = booklen(8)
+                clstart[ci] = blen(8)
                 cllen[ci] = nm:len()
-                puttext(8, nm)
-                crstart[ci] = booklen(9)
+                wtext(8, nm)
+                crstart[ci] = blen(9)
                 crlen[ci] = rs:len()
-                puttext(9, rs)
+                wtext(9, rs)
                 cgen[ci] = gen()
             if tag == "A"
                 role = atoi(sat(2, 2))
                 if sat(2, 3) != ""
                     h = findseat(sat(2, 3))
                     if h > 0
-                        setact(role, h)
+                        actt[role] = h
                 if sat(2, 4) != ""
                     h = findseat(sat(2, 4))
                     if h > 0
-                        setcur(role, h)
+                        curt[role] = h
         li = li + 1
     1
 
 M = {}
-M.fileof = fileof
+M.file = file
 M.filecsv = filecsv
 M.setcsv = setcsv
 M.seatfile = seatfile
@@ -1398,27 +1435,25 @@ M.result = result
 M.learn = learn
 M.activate = activate
 M.learnedseating = learnedseating
-M.lastrecord = lastrecord
+M.last = last
 M.task = task
 M.stands = stands
-M.kindof = kindof
-M.stepof = stepof
+M.kind = kind
+M.stepk = stepk
 M.choiceof = choiceof
 M.scoreof = scoreof
-M.outof = outof
+M.odig = odig
 M.recid = recid
-M.ruleof = ruleof
+M.rtext = rtext
 M.ncites = ncites
 M.citeof = citeof
 M.citekind = citekind
 M.resof = resof
 M.nrecords = nrecords
 M.calls = calls
-M.callat = callat
+M.call = call
 M.halt = halt
 M.retool = retool
-M.candname = candname
-M.candtool = candtool
 M.params = params
 M.wireof = wireof
 M.payload = payload
@@ -1426,5 +1461,5 @@ M.carrier = carrier
 M.store = store
 M.load = load
 M.reset = reset
-M.benchstep = benchstep
+M.derive = derive
 M

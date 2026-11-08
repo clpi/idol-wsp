@@ -26,7 +26,7 @@ digits: str = (v: i64)
         n = n // 10
     out
 
-baseof: i64 = (kind: i64, j: i64, caution: i64)
+base: i64 = (kind: i64, j: i64, caution: i64)
     if caution == 1
         if kind == 3
             return j % 2
@@ -51,7 +51,7 @@ csvof: str = (caution: i64)
             while j < 20
                 if out != ""
                     out = out .. ","
-                out = out .. digits(baseof(kind, j, caution))
+                out = out .. digits(base(kind, j, caution))
                 j = j + 1
             kind = kind + 1
         rep = rep + 1
@@ -60,13 +60,13 @@ csvof: str = (caution: i64)
 main: i64 = ()
     wsp.agent.init()
     if xsize() == 1
-        fc = wsp.agent.fileof(5, 3, 4, 4, 2, 6, 6, 3, 2, "choice")
+        fc = wsp.agent.file(5, 3, 4, 4, 2, 6, 6, 3, 2, "choice")
         h = wsp.agent.seatfile(1, fc, "", 3, 2)
         wsp.agent.setvals(h, 5, 3, 4, 4, 2, 6, 6)
-        fu = wsp.agent.fileof(0, 0, 0, 0, 0, 1, 6, 3, 2, "caution")
+        fu = wsp.agent.file(0, 0, 0, 0, 0, 1, 6, 3, 2, "caution")
         h = wsp.agent.seatfile(2, fu, "", 3, 2)
         wsp.agent.setvals(h, 0, 0, 0, 0, 0, 1, 6)
-        fs = wsp.agent.fileof(7, 7, 0, 0, 0, 0, 2, 2, 0, "spare")
+        fs = wsp.agent.file(7, 7, 0, 0, 0, 0, 2, 2, 0, "spare")
         h = wsp.agent.seatfile(3, fs, "", 2, 0)
         wsp.agent.setvals(h, 7, 7, 0, 0, 0, 0, 2)
     else
@@ -78,7 +78,7 @@ main: i64 = ()
         fu = wsp.agent.filecsv(cu, 600, 30, 20, "caution")
         h = wsp.agent.seatfile(2, fu, "", 30, 20)
         wsp.agent.setcsv(h, cu, 600)
-        fs = wsp.agent.fileof(7, 7, 0, 0, 0, 0, 2, 2, 0, "spare")
+        fs = wsp.agent.file(7, 7, 0, 0, 0, 0, 2, 2, 0, "spare")
         h = wsp.agent.seatfile(3, fs, "", 2, 0)
         wsp.agent.setvals(h, 7, 7, 0, 0, 0, 0, 2)
     ops = 0
@@ -116,7 +116,7 @@ main: i64 = ()
             ops = ops + 1
     if phase() == 3
         if xsize() == 1
-            vf = wsp.agent.fileof(4, 3, 4, 4, 2, 6, 6, 3, 2, "choice")
+            vf = wsp.agent.file(4, 3, 4, 4, 2, 6, 6, 3, 2, "choice")
             n = 300
             i = 0
             while i < n

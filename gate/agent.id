@@ -116,24 +116,28 @@ digits: str = (v: i64)
     out
 
 flip: str = (s: str, pos: i64, b: i64)
-    if pos == 1
-        return b:char() .. s:sub(2, s:len())
-    if pos == s:len()
-        return s:sub(1, pos - 1) .. b:char()
-    s:sub(1, pos - 1) .. b:char() .. s:sub(pos + 1, s:len())
+    cs = {}
+    i = 1
+    while i <= s:len()
+        v = s:byte(i)
+        if i == pos
+            v = b
+        cs[cs:len() + 1] = v:char()
+        i = i + 1
+    cs:concat()
 
 # The fixture of spec section 4, seated through the
 # slice's builder; a correcting re-seat on every call, so
 # each case starts from the same fixture state.
 
 fixture: i64 = ()
-    fc = wsp.agent.fileof(5, 3, 4, 4, 2, 6, 6, 3, 2, "choice")
+    fc = wsp.agent.file(5, 3, 4, 4, 2, 6, 6, 3, 2, "choice")
     h = wsp.agent.seatfile(1, fc, "", 3, 2)
     wsp.agent.setvals(h, 5, 3, 4, 4, 2, 6, 6)
-    fu = wsp.agent.fileof(0, 0, 0, 0, 0, 1, 6, 3, 2, "caution")
+    fu = wsp.agent.file(0, 0, 0, 0, 0, 1, 6, 3, 2, "caution")
     h = wsp.agent.seatfile(2, fu, "", 3, 2)
     wsp.agent.setvals(h, 0, 0, 0, 0, 0, 1, 6)
-    fs = wsp.agent.fileof(7, 7, 0, 0, 0, 0, 2, 2, 0, "spare")
+    fs = wsp.agent.file(7, 7, 0, 0, 0, 0, 2, 2, 0, "spare")
     h = wsp.agent.seatfile(3, fs, "", 2, 0)
     wsp.agent.setvals(h, 7, 7, 0, 0, 0, 0, 2)
     1
@@ -241,9 +245,9 @@ main: i64 = ()
     # exactly the three calls, and a task-complete record
     # citing O3 closes the run.
     expect(wsp.agent.calls() == 3, "B9: exactly three calls executed")
-    expect(wsp.agent.callat(1) == "read-a", "B9: first call is read-a")
-    expect(wsp.agent.callat(2) == "write-a", "B9: second call is write-a")
-    expect(wsp.agent.callat(3) == "run-a", "B9: third call is run-a")
+    expect(wsp.agent.call(1) == "read-a", "B9: first call is read-a")
+    expect(wsp.agent.call(2) == "write-a", "B9: second call is write-a")
+    expect(wsp.agent.call(3) == "run-a", "B9: third call is run-a")
     tk = wsp.agent.task()
     expect(wsp.agent.ncites(tk) == 1, "B9: the task record cites one premise")
     expect(inset(tk, wsp.agent.recid(o3)) == 1, "B9: the task record cites O3")
@@ -251,7 +255,7 @@ main: i64 = ()
 
     # B3 — a reweight falls its reader, with the exact
     # re-derived choice; readers of untouched rows stand.
-    fc2 = wsp.agent.fileof(1, 3, 4, 4, 2, 6, 6, 3, 2, "choice")
+    fc2 = wsp.agent.file(1, 3, 4, 4, 2, 6, 6, 3, 2, "choice")
     h = wsp.agent.seatfile(1, fc2, "", 3, 2)
     wsp.agent.setvals(h, 1, 3, 4, 4, 2, 6, 6)
     expect(wsp.agent.stands(s1) == 0, "B3: the read-row reweight falls step 1")
@@ -266,7 +270,7 @@ main: i64 = ()
     # B4 — an unread reweight leaves everything standing
     # and republishes nothing.
     n = wsp.agent.nrecords()
-    fs2 = wsp.agent.fileof(1, 2, 0, 0, 0, 0, 2, 2, 0, "spare")
+    fs2 = wsp.agent.file(1, 2, 0, 0, 0, 0, 2, 2, 0, "spare")
     h = wsp.agent.seatfile(3, fs2, "", 2, 0)
     wsp.agent.setvals(h, 1, 2, 0, 0, 0, 0, 2)
     expect(wsp.agent.stands(s1) == 1, "B4: step 1 still stands")
@@ -279,7 +283,7 @@ main: i64 = ()
     # B6 — a shape-only change moves identity and falls
     # every derivation citing the table.
     dbefore = wsp.agent.sdigest(wsp.agent.seating(1))
-    fc3 = wsp.agent.fileof(5, 3, 4, 4, 2, 6, 6, 2, 3, "choice")
+    fc3 = wsp.agent.file(5, 3, 4, 4, 2, 6, 6, 2, 3, "choice")
     h = wsp.agent.seatfile(1, fc3, "", 2, 3)
     wsp.agent.setvals(h, 5, 3, 4, 4, 2, 6, 6)
     expect(wsp.agent.sdigest(wsp.agent.seating(1)) != dbefore, "B6: the reshaped seating's identity differs")
@@ -293,7 +297,7 @@ main: i64 = ()
     # publishes. Byte 194 is the second byte of the first
     # seated value's word in the builder's layout.
     n = wsp.agent.nrecords()
-    good = wsp.agent.fileof(5, 3, 4, 4, 2, 6, 6, 3, 2, "choice")
+    good = wsp.agent.file(5, 3, 4, 4, 2, 6, 6, 3, 2, "choice")
     bad = flip(good, 194, 1)
     expect(bad:len() == good:len(), "B7: the corrupted seating has the same length")
     r = wsp.agent.seatfile(1, bad, wsp.agent.sdigest(wsp.agent.seating(1)), 3, 2)
@@ -321,12 +325,12 @@ main: i64 = ()
     # candidate's tool leaves the surface, the step
     # publishes UNKNOWN and halts by name, no call executes.
     wsp.agent.retool(1, 2, "jump")
-    fc4 = wsp.agent.fileof(1, 9, 4, 4, 2, 6, 6, 3, 2, "choice")
+    fc4 = wsp.agent.file(1, 9, 4, 4, 2, 6, 6, 3, 2, "choice")
     h = wsp.agent.seatfile(1, fc4, "", 3, 2)
     wsp.agent.setvals(h, 1, 9, 4, 4, 2, 6, 6)
     nc = wsp.agent.calls()
     u = wsp.agent.step(1)
-    expect(wsp.agent.kindof(u) == 5, "B14: the step publishes UNKNOWN")
+    expect(wsp.agent.kind(u) == 5, "B14: the step publishes UNKNOWN")
     expect(wsp.agent.halt() == "tool outside the surface", "B14: the halt names the unknown tool")
     expect(wsp.agent.calls() == nc, "B14: no call executes")
     wsp.agent.retool(1, 2, "read")
@@ -405,18 +409,18 @@ main: i64 = ()
     expect(wsp.agent.stands(d3) == 1, "B10: O3 stands")
     nc = wsp.agent.calls()
     u2 = wsp.agent.step(2)
-    expect(wsp.agent.kindof(u2) == 5, "B10: re-deriving step 2 publishes UNKNOWN")
+    expect(wsp.agent.kind(u2) == 5, "B10: re-deriving step 2 publishes UNKNOWN")
     expect(wsp.agent.halt() == "result premise fallen", "B10: the halt names the fallen result premise")
     expect(wsp.agent.calls() == nc, "B10: no write executes on an uncorroborated read")
 
     # B12 — compactness accounting: 14 parameters, wire by
     # the section 9 formula per table, payload <= wire.
     expect(wsp.agent.params() == 14, "B12: the parameter count is exactly 14")
-    fc = wsp.agent.fileof(5, 3, 4, 4, 2, 6, 6, 3, 2, "choice")
+    fc = wsp.agent.file(5, 3, 4, 4, 2, 6, 6, 3, 2, "choice")
     expect(wsp.agent.wireof(1) == 8 * fc:len() // 6, "B12: choice wire bits per weight equal the formula")
-    fu = wsp.agent.fileof(0, 0, 0, 0, 0, 1, 6, 3, 2, "caution")
+    fu = wsp.agent.file(0, 0, 0, 0, 0, 1, 6, 3, 2, "caution")
     expect(wsp.agent.wireof(2) == 8 * fu:len() // 6, "B12: caution wire bits per weight equal the formula")
-    fs = wsp.agent.fileof(7, 7, 0, 0, 0, 0, 2, 2, 0, "spare")
+    fs = wsp.agent.file(7, 7, 0, 0, 0, 0, 2, 2, 0, "spare")
     expect(wsp.agent.wireof(3) == 8 * fs:len() // 2, "B12: spare wire bits per weight equal the formula")
     expect(wsp.agent.payload() == 32, "B12: payload is 32 bits per weight")
     expect(wsp.agent.payload() <= wsp.agent.wireof(1), "B12: payload <= wire")
