@@ -3,7 +3,10 @@
 # tree as lib/wsp beside lib/wsp/agent.id.
 #
 # Spec: spec-numeric-faces.md in clpi/idol-wsp (the repo of
-# record), work order WS-CONF-2. Governing semantics: the
+# record), work order WS-CONF-2; the revision query
+# faces and the completed learn validation are
+# spec-revision-faces.md, work order WS-CONF-4. Governing
+# semantics: the
 # chapter as landed in this repo (Idol-Weights-Semantics.md)
 # sections 3, 4, 5, 7 and 13.
 #
@@ -1525,6 +1528,23 @@ event: i64 = (anchor: i64, delta: i64, premtext: str)
     c = supclose(off, len)
     so = supmerge(su.off, su.len, wsupo[anchor], wsupl[anchor])
     so = supmerge(su.off, su.len, wsupo[delta], wsupl[delta])
+    # chapter section 5.2: the learn validates every
+    # member of the whole support (the declared set, its
+    # closure, the anchor support and the delta support)
+    # against the committing configuration, not the
+    # declared set alone (spec-revision-faces.md
+    # section 2)
+    soff = su.off
+    slen = su.len
+    k = 0
+    while k < slen
+        mm = piece(1, soff + k * 64, 64)
+        ps = wsp.agent.premstate(mm)
+        if ps == -1
+            return fail(-12)
+        if ps == 0
+            return fail(-17)
+        k = k + 1
     h = evanc:len() + 1
     evanc[h] = anchor
     evdel[h] = delta
@@ -1664,6 +1684,84 @@ observe: i64 = (rev: i64)
     a = rvanc[rev]
     cast(wdt[a], wwd[a], t)
 
+# ---- the revision query faces and the revision
+# comparison (chapter sections 5.3 and 7;
+# spec-revision-faces.md, work order WS-CONF-4)
+
+members: i64 = (rev: i64)
+    rvevl[rev]
+
+excluded: i64 = (rev: i64, ev: i64)
+    st.why = 0
+    found = 0
+    j = 1
+    while j <= rvevl[rev]
+        e = evlist[rvevo[rev] + j]
+        if e == ev
+            found = 1
+        j = j + 1
+    if found == 0
+        return fail(-11)
+    barred = 0
+    k = 0
+    while k < evsupl[ev]
+        mm = piece(1, evsupo[ev] + k * 64, 64)
+        ps = wsp.agent.premstate(mm)
+        if ps == -1
+            return fail(-12)
+        if ps == 0
+            barred = 1
+        k = k + 1
+    barred
+
+receipt: str = (rev: i64, ev: i64)
+    st.why = 0
+    found = 0
+    j = 1
+    while j <= rvevl[rev]
+        e = evlist[rvevo[rev] + j]
+        if e == ev
+            found = 1
+        j = j + 1
+    if found == 0
+        st.why = -11
+        return ""
+    first = ""
+    have = 0
+    k = 0
+    while k < evsupl[ev]
+        mm = piece(1, evsupo[ev] + k * 64, 64)
+        ps = wsp.agent.premstate(mm)
+        if ps == -1
+            st.why = -12
+            return ""
+        if ps == 0
+            if have == 0
+                first = mm
+                have = 1
+        k = k + 1
+    first
+
+equivalent: i64 = (ra: i64, rb: i64)
+    if rvanc[ra] != rvanc[rb]
+        return 0
+    if rvevl[ra] != rvevl[rb]
+        return 0
+    j = 1
+    while j <= rvevl[ra]
+        e = evlist[rvevo[ra] + j]
+        found = 0
+        k = 1
+        while k <= rvevl[rb]
+            e2 = evlist[rvevo[rb] + k]
+            if e2 == e
+                found = 1
+            k = k + 1
+        if found == 0
+            return 0
+        j = j + 1
+    1
+
 M = {}
 M.rat = rat
 M.decimal = decimal
@@ -1702,6 +1800,10 @@ M.revision = revision
 M.livecount = livecount
 M.total = total
 M.observe = observe
+M.members = members
+M.excluded = excluded
+M.receipt = receipt
+M.equivalent = equivalent
 M.why = why
 M.refusal = refusal
 M
