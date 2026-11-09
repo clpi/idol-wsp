@@ -1,5 +1,14 @@
 # Weight semantics — the normative chapter
 
+> **Superseded 2026-11-08.** This chapter is a candidate
+> specification. It is superseded by the completed core
+> profile 1 chapter, [Idol-Weights-Semantics.md](Idol-Weights-Semantics.md),
+> landed the same day. This file is retained, not deleted: its
+> text, and the reconciliation and self-correction records it
+> generated, are part of the program's history. Where this
+> text and the completed chapter differ, the completed
+> chapter governs.
+
 Received text, landed 2026-11-08. This is the normative chapter for
 Idol's weight semantics: the core model, typing and evaluation rules,
 learning and exact retraction, differentiation, and the

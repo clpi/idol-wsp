@@ -105,26 +105,30 @@ every assertion passed in the executed run.
 ## What exists today (2026-11-08)
 
 - This repo's founding documents and the slice-one spec.
-- The weight-semantics chapter
-  ([weight-semantics.md](weight-semantics.md)) — a candidate
-  specification, received by relay on 2026-11-08 and landed the
-  same day: the core model, typing and evaluation rules, learning
-  and retraction by reconstruction, differentiation, and the
-  serialization contract the machinery is reconciled against. The
-  author's own correction of 2026-11-08 states that the chapter's
-  strongest guarantee — every learned change premise-tracked and
-  exactly retractable — is an obligation the design states, not
-  yet a consequence the design establishes: dependency
-  completeness is unspecified, and several contracts the author
-  named are not fully specified. The received text carries the
-  governing semantics with examples 1 to 24 in full; the exact
-  transport record forms, examples 25 to 42 in full, and 6 of the
-  16 decision entries were not in the relay and are named as
-  outstanding in the chapter file itself. The author's corrected
-  chapter file, including its adversarial review, has likewise not
-  been received as a file. Every Idol implementation and
-  performance claim in the chapter is UNMEASURED, as the chapter
-  itself states.
+- The completed weight-semantics chapter, core profile 1
+  ([Idol-Weights-Semantics.md](Idol-Weights-Semantics.md)) — the
+  normative specification, received by relay on 2026-11-08 and
+  landed the same day: the core model, identity and support,
+  numeric profiles, typing and evaluation rules, learning,
+  revisions and exact retraction, differentiation by the ideal
+  interpretation, the three comparisons, and the capsule
+  serialization format with its closed record schemas, with 31
+  worked examples (E01–E31) as conformance obligations. It
+  supersedes the earlier relayed chapter
+  ([weight-semantics.md](weight-semantics.md)), which remains in
+  place marked superseded: that text was a candidate
+  specification (the author's own correction of 2026-11-08), its
+  strongest guarantee an obligation rather than a consequence
+  because dependency completeness was unspecified. The completed
+  chapter specifies dependency completeness as complete required
+  derivation (its sections 2.2 and 5.2) and closes the other
+  named contracts as recorded in the fleet-side reconciliation
+  record. The chapter file itself has not been received as a
+  file; the landed copy is the relayed text of record, with one
+  transmission truncation in its section 4 operations table
+  (the Contract row) marked in the file's provenance header.
+  Every Idol implementation and performance claim is
+  UNMEASURED, as the chapter itself states.
 - Slice one, landed in this repo (commit
   61197dfe783f5ae733b2cc280fe278c0d6b8cc68): the agent
   (`src/agent.id`), its battery (`gate/agent.id`, cases B1–B15), and
@@ -152,10 +156,13 @@ every assertion passed in the executed run.
 
 ## What does not exist
 
-- A conformance battery for the chapter's 42 stated-outcome
-  examples: the set is registered as the weight machinery's
-  conformance target, no example has been run in Idol, and building
-  the battery is a recorded work order on the fleet side.
+- A conformance battery for the completed chapter's 31
+  stated-outcome examples (E01–E31): the set is registered as
+  core profile 1's conformance target, no example has been run
+  in Idol, and building the battery is a recorded work order on
+  the fleet side. (The earlier candidate chapter's 42-example
+  set is superseded with it; the cases the staged battery
+  already covers are mapped in the fleet-side record.)
 
 - A timing measurement for slice one: the speed program has been
   compiled and run at the pin but never timed. Speed UNMEASURED; the
