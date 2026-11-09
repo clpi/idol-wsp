@@ -369,6 +369,39 @@ new pin.
   fixture through the byte-table idiom, so B7 measures the intended
   read-back refusal; the defect keeps its own control upstream.
 
+## Numeric and shape faces (WS-CONF-2)
+
+The numeric and shape faces of the weights chapter are landed.
+spec-numeric-faces.md states the executable spec: factored exact
+rationals, the dtype conversion law with exact rounding onto the
+F32 and F64 grids, shape discipline, and the refusal cases by
+name, each bound to the chapter examples it unblocks. The faces
+are implemented in pure Idol in src/numeric.id as the home
+wsp.numeric: construction, exact arithmetic, cast, broadcast,
+contraction, element read and replace, the Same and Numeric
+comparisons, and premise support carried through every value.
+One additive face in the agent home, premstate, reports a
+premise's three-state standing through the same resolution a
+citation uses; the numeric home's support, usability, revision
+total, and observation faces are built on it, so weight values
+retract through the agent home's one retraction path and no
+second machinery exists. The standing battery is gate/numeric.id
+with its control gate/numeric.sh. Measured at this landing, on
+the Mac mini at the reduced contract stated in the lane record
+(same compiler tree, C route): numeric vector 98 ok / 0 FAIL,
+covering E01 to E08 in full, the F32 payload arm of E19, and
+the rank-zero and zero-division arms of E30. The standing
+batteries hold at this pin: agent 126 ok / 0 FAIL, withdrawal
+22 / 0, intent 25 / 0, slice batteries 148 / 0, 159 / 0,
+159 / 0 with bundle control 14 / 0 and basis control 10 / 0;
+the retract battery passes. Two retract companions
+(retract-faces, retract-predicates) do not compile under the
+standing tree binary: a graph lowering refusal in home
+ml.space, reproduced identically at the base pin with the
+base agent home, so it is not a regression of this landing;
+it is the missing application id defect class owned by the
+compiler lane named in the lane record. Speed is UNMEASURED.
+
 ## Host seams
 
 One, named at this landing: slice one's execution route at its pin is
