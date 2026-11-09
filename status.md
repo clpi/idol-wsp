@@ -105,6 +105,17 @@ every assertion passed in the executed run.
 ## What exists today (2026-11-08)
 
 - This repo's founding documents and the slice-one spec.
+- The normative weight-semantics chapter
+  ([weight-semantics.md](weight-semantics.md)), received by relay on
+  2026-11-08 and landed the same day: the core model, typing and
+  evaluation rules, learning and exact retraction, differentiation,
+  and the serialization contract the machinery is reconciled
+  against. The received text carries the governing semantics with
+  examples 1 to 24 in full; the exact transport record forms,
+  examples 25 to 42 in full, and 6 of the 16 decision entries were
+  not in the relay and are named as outstanding in the chapter file
+  itself. Every Idol implementation and performance claim in the
+  chapter is UNMEASURED, as the chapter itself states.
 - Slice one, landed in this repo (commit
   61197dfe783f5ae733b2cc280fe278c0d6b8cc68): the agent
   (`src/agent.id`), its battery (`gate/agent.id`, cases B1–B15), and
@@ -131,6 +142,11 @@ every assertion passed in the executed run.
   upstream gap G-hashrt-c99) beside the C runtime shim.
 
 ## What does not exist
+
+- A conformance battery for the chapter's 42 stated-outcome
+  examples: the set is registered as the weight machinery's
+  conformance target, no example has been run in Idol, and building
+  the battery is a recorded work order on the fleet side.
 
 - A timing measurement for slice one: the speed program has been
   compiled and run at the pin but never timed. Speed UNMEASURED; the
