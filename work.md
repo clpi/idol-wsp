@@ -77,13 +77,15 @@ evidence recorded in [status.md](status.md).
 
 ## W5 — Extract the learned bundle artifact
 
-- **State:** OPEN. Case B11 of the battery ran and passed in the
-  executed green run at the pin; its print is the learned bundle. The
-  artifact file itself is not yet in this repo.
-- **Next action:** extract the bundle from the executed run's B11
-  print and land it as `learned/bundle.txt`, checking the extracted
-  byte count against the print's stated bundle byte count before
-  landing.
-- **Condition:** none beyond access to the executed run's recorded
-  print; if that print cannot be produced, re-run the battery at the
-  pin and extract from the fresh run.
+- **State:** CLOSED. `learned/bundle.txt` is landed in this repo in
+  this commit. The executed green run's print was not preserved as a
+  file, so under this item's condition the battery was re-run at the
+  pin from the landed bytes (the Mac mini, the clean pin compiler,
+  C route; home and gate byte-identical to the landed commit) and
+  the bundle was extracted from the fresh run's B11 print. The fresh
+  run is green: pass 126 / skip 0 / fail 0 / total 126, exit 0,
+  "battery: OK". The print states bundle bytes 11030; the extracted
+  file is 11030 bytes — the bundle itself, ending in its own final
+  newline, with the print's one trailing newline removed.
+- **Next action:** none — closed on this evidence.
+- **Condition:** met (the re-run arm).

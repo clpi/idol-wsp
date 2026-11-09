@@ -115,6 +115,11 @@ every assertion passed in the executed run.
   exit 0, closing line "battery: OK", on bytes identical to the landed
   commit. The measure gate compiles and runs at the pin, exit 0; it
   was run as a compile-and-run check only — no wall times were taken.
+- The learned bundle artifact (`learned/bundle.txt`), extracted from
+  the B11 print of a green re-run of the battery at the pin on bytes
+  identical to the landed commit (the re-run arm of W5 in
+  [work.md](work.md)): the print states bundle bytes 11030, and the
+  landed file is 11030 bytes.
 - Upstream in clpi/idol, landed: the weight-space surface and its green
   battery (PR #1911), the digest face, the premise machinery, the
   substrate admission and resident producers — all as recorded in
@@ -130,10 +135,6 @@ every assertion passed in the executed run.
 - A timing measurement for slice one: the speed program has been
   compiled and run at the pin but never timed. Speed UNMEASURED; the
   bar cell UNMEASURED.
-- The learned bundle artifact (`learned/bundle.txt`): case B11 ran
-  and passed in the executed battery — its print is the bundle — but
-  the artifact has not yet been extracted from that print into this
-  repo. Tracked as W5 in [work.md](work.md).
 - The compiler integration of Idiom (spec-only upstream; see below).
 - A live MCP binding and a live Idol Eyes feed binding for this
   program (slice one specifies a fixture surface and a recorded
