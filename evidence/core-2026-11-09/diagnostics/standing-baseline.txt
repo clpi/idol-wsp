@@ -1,0 +1,6 @@
+lowerBinop refuse op=concat lhs=name:ld rhs_kind=name
+error: C99 realizer: graph-to-DNIR refused (UnsupportedConstruct)
+hint: refused at: binop-not-lowered:concat
+hint: bail site: lowerBinop() at graph/lower.zig:45374
+hint: in relation: record
+hint: application id: 84

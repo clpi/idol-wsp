@@ -1,0 +1,249 @@
+bc = {}
+
+chk: i64 = (label: str, cond: bool)
+    if cond
+        bc.ok = bc.ok + 1
+        print("ok: " .. label)
+        return 1
+    bc.bad = bc.bad + 1
+    print("FAIL: " .. label)
+    0
+
+streq: i64 = (a: str, b: str)
+    if a:len() != b:len()
+        return 0
+    i = 1
+    while i <= a:len()
+        if a:byte(i) != b:byte(i)
+            return 0
+        i = i + 1
+    1
+
+digits: str = (v: i64)
+    if v == 0
+        return "0"
+    out = ""
+    n = v
+    while n > 0
+        out = "0123456789":sub(n % 10 + 1, n % 10 + 1) .. out
+        n = n // 10
+    out
+
+itext: str = (v: i64)
+    if v < 0
+        return "-" .. digits(0 - v)
+    digits(v)
+
+appv: str = (a: str, v: str)
+    a .. v
+
+joined: str = (a: str, b: str)
+    appv(appv(a, ","), b)
+
+events: str = (a: i64, b: i64)
+    joined(itext(a), itext(b))
+
+three: str = (a: i64, b: i64, c: i64)
+    joined(events(a, b), itext(c))
+
+four: str = (a: i64, b: i64, c: i64, d: i64)
+    joined(three(a, b, c), itext(d))
+
+eqrat: i64 = (w: i64, i: i64, n: i64, d: i64)
+    if w < 1
+        return 0
+    r = wsp.numeric.at(w, i)
+    if r < 0
+        return 0
+    q = wsp.numeric.rat(n, d)
+    wsp.numeric.req(r, q)
+
+head: i64 = (revision: i64)
+    total = wsp.numeric.total(revision)
+    if total < 0
+        return total
+    sum = wsp.numeric.read(total, "0")
+    if sum < 0
+        return sum
+    count = wsp.numeric.read(total, "1")
+    if count < 0
+        return count
+    wsp.numeric.div(sum, count)
+
+main: i64 = ()
+    bc.ok = 0
+    bc.bad = 0
+    wsp.agent.init()
+
+    anchor = wsp.numeric.lit(0, 0, "2", "0,0")
+    schema = wsp.numeric.premiseover("additive schema: fixed intercept feature one; rational scalar labels", anchor)
+    rule = wsp.numeric.premiseover("additive rule: unweighted squared loss; exact sum divided by count", anchor)
+    selectors = joined(schema, rule)
+    da = wsp.numeric.lit(0, 0, "2", "1,1")
+    db = wsp.numeric.lit(0, 0, "2", "3,1")
+    dc = wsp.numeric.lit(0, 0, "2", "8,1")
+    pa = wsp.numeric.premiseover("additive independent example a label one", da)
+    pb = wsp.numeric.premiseover("additive independent example b label three", db)
+    pc = wsp.numeric.premiseover("additive independent example c label eight", dc)
+    ea = wsp.numeric.event(anchor, da, joined(selectors, pa))
+    eb = wsp.numeric.event(anchor, db, joined(selectors, pb))
+    ec = wsp.numeric.event(anchor, dc, joined(selectors, pc))
+    chk("additive first event admitted", ea >= 1)
+    chk("additive second event admitted", eb >= 1)
+    chk("additive third event admitted", ec >= 1)
+    chk("additive examples have distinct event identities", ea != eb and eb != ec and ea != ec)
+    revision = wsp.numeric.revision(anchor, three(ea, eb, ec), selectors)
+    chk("additive fixed inventory holds three events", wsp.numeric.members(revision) == 3)
+    chk("additive initial live inventory holds three events", wsp.numeric.livecount(revision) == 3)
+    total = wsp.numeric.total(revision)
+    chk("additive initial exact sum is twelve", eqrat(total, 0, 12, 1) == 1)
+    chk("additive initial exact count is three", eqrat(total, 1, 3, 1) == 1)
+    coefficient = head(revision)
+    chk("additive initial exact coefficient is four", eqrat(coefficient, 0, 4, 1) == 1)
+    chk("additive coefficient is currently usable", wsp.numeric.usable(coefficient) == 1)
+    chk("additive coefficient retains schema", wsp.numeric.supporthas(coefficient, schema) == 1)
+    chk("additive coefficient retains learner rule", wsp.numeric.supporthas(coefficient, rule) == 1)
+    chk("additive coefficient retains first example", wsp.numeric.supporthas(coefficient, pa) == 1)
+    chk("additive coefficient retains second example", wsp.numeric.supporthas(coefficient, pb) == 1)
+    chk("additive coefficient retains third example", wsp.numeric.supporthas(coefficient, pc) == 1)
+    chk("additive coefficient has exactly five premise occurrences", wsp.numeric.supportcount(coefficient) == 5)
+
+    duplicate = wsp.numeric.revision(anchor, four(ea, eb, ec, ea), selectors)
+    chk("additive duplicate reference does not add a member", wsp.numeric.members(duplicate) == 3)
+    chk("additive duplicate reference keeps exact statistics", wsp.numeric.numeric(wsp.numeric.total(duplicate), total) == 1)
+    chk("additive duplicate reference keeps coefficient four", eqrat(head(duplicate), 0, 4, 1) == 1)
+    equaldata = wsp.numeric.lit(0, 0, "2", "1,1")
+    equalpremise = wsp.numeric.premiseover("additive independent example d label one", equaldata)
+    equalevent = wsp.numeric.event(anchor, equaldata, joined(selectors, equalpremise))
+    distinct = wsp.numeric.revision(anchor, four(ea, eb, ec, equalevent), selectors)
+    chk("additive equal example has a distinct event identity", equalevent != ea)
+    chk("additive equal separate example adds a member", wsp.numeric.members(distinct) == 4)
+    chk("additive equal separate example increments exact sum", eqrat(wsp.numeric.total(distinct), 0, 13, 1) == 1)
+    chk("additive equal separate example increments exact count", eqrat(wsp.numeric.total(distinct), 1, 4, 1) == 1)
+    chk("additive equal separate example changes coefficient", eqrat(head(distinct), 0, 13, 4) == 1)
+
+    zero = wsp.numeric.lit(0, 0, "2", "0,1")
+    zeropremise = wsp.numeric.premiseover("additive independent example z label zero", zero)
+    zeroevent = wsp.numeric.event(anchor, zero, joined(selectors, zeropremise))
+    zerorevision = wsp.numeric.revision(anchor, four(ea, eb, ec, zeroevent), selectors)
+    zerototal = wsp.numeric.total(zerorevision)
+    zerocoefficient = head(zerorevision)
+    chk("additive zero label preserves exact sum", eqrat(zerototal, 0, 12, 1) == 1)
+    chk("additive zero label still increments count", eqrat(zerototal, 1, 4, 1) == 1)
+    chk("additive zero label changes coefficient to three", eqrat(zerocoefficient, 0, 3, 1) == 1)
+    chk("additive zero label retains its premise", wsp.numeric.supporthas(zerocoefficient, zeropremise) == 1)
+    chk("additive zero label withdrawal commits", wsp.agent.withdraw(zeropremise) == 1)
+    chk("additive zero label event is excluded", wsp.numeric.excluded(zerorevision, zeroevent) == 1)
+    chk("additive zero label withdrawal reconstructs coefficient four", eqrat(head(zerorevision), 0, 4, 1) == 1)
+    chk("additive historical zero-label coefficient is no longer current", wsp.numeric.usable(zerocoefficient) == 0)
+
+    chk("additive second example withdrawal commits", wsp.agent.withdraw(pb) == 1)
+    chk("additive original inventory retains all event identities", wsp.numeric.members(revision) == 3)
+    chk("additive current inventory contains two survivors", wsp.numeric.livecount(revision) == 2)
+    chk("additive first original event remains live", wsp.numeric.excluded(revision, ea) == 0)
+    chk("additive third original event remains live", wsp.numeric.excluded(revision, ec) == 0)
+    chk("additive second original event is excluded", wsp.numeric.excluded(revision, eb) == 1)
+    chk("additive exclusion receipt identifies deleted example", streq(wsp.numeric.receipt(revision, eb), wsp.agent.premiseid(pb)) == 1)
+    retained = wsp.numeric.total(revision)
+    retainedhead = head(revision)
+    chk("additive retained exact sum is nine", eqrat(retained, 0, 9, 1) == 1)
+    chk("additive retained exact count is two", eqrat(retained, 1, 2, 1) == 1)
+    chk("additive retained exact coefficient is nine halves", eqrat(retainedhead, 0, 9, 2) == 1)
+    chk("additive retained coefficient is currently usable", wsp.numeric.usable(retainedhead) == 1)
+    chk("additive retained coefficient excludes deleted premise", wsp.numeric.supporthas(retainedhead, pb) == 0)
+    chk("additive retained coefficient keeps first premise", wsp.numeric.supporthas(retainedhead, pa) == 1)
+    chk("additive retained coefficient keeps third premise", wsp.numeric.supporthas(retainedhead, pc) == 1)
+    chk("additive retained coefficient keeps schema", wsp.numeric.supporthas(retainedhead, schema) == 1)
+    chk("additive retained coefficient keeps rule", wsp.numeric.supporthas(retainedhead, rule) == 1)
+    chk("additive retained coefficient has exactly four premises", wsp.numeric.supportcount(retainedhead) == 4)
+    chk("additive earlier coefficient remains historically four", eqrat(coefficient, 0, 4, 1) == 1)
+    chk("additive earlier coefficient retains deleted premise", wsp.numeric.supporthas(coefficient, pb) == 1)
+    chk("additive earlier coefficient refuses current consumer validation", wsp.numeric.usable(coefficient) == 0)
+    scalar = wsp.numeric.lit(0, 0, "", "0")
+    unrelated = wsp.numeric.premiseover("additive later independent learning premise", scalar)
+    chk("additive historical coefficient cannot become a fresh current update", wsp.numeric.event(scalar, coefficient, unrelated) == -17)
+    chk("additive retained coefficient remains admissible for learning", wsp.numeric.event(scalar, retainedhead, unrelated) >= 1)
+
+    freshanchor = wsp.numeric.lit(0, 0, "2", "0,0")
+    freshone = wsp.numeric.lit(0, 0, "2", "1,1")
+    fresheight = wsp.numeric.lit(0, 0, "2", "8,1")
+    fresha = wsp.numeric.event(freshanchor, freshone, joined(selectors, pa))
+    freshc = wsp.numeric.event(freshanchor, fresheight, joined(selectors, pc))
+    rebuilt = wsp.numeric.revision(freshanchor, events(fresha, freshc), selectors)
+    rebuiltstats = wsp.numeric.total(rebuilt)
+    rebuilthead = head(rebuilt)
+    chk("additive rebuild creates a fresh first event", fresha != ea)
+    chk("additive rebuild creates a fresh third event", freshc != ec)
+    chk("additive rebuild uses a fresh anchor", wsp.numeric.same(anchor, freshanchor) == 0)
+    chk("additive rebuild retains exactly two examples", wsp.numeric.members(rebuilt) == 2)
+    chk("additive rebuild exact statistics agree", wsp.numeric.numeric(retained, rebuiltstats) == 1)
+    chk("additive rebuild exact coefficient agrees", wsp.numeric.numeric(retainedhead, rebuilthead) == 1)
+    chk("additive rebuild coefficient is currently usable", wsp.numeric.usable(rebuilthead) == 1)
+    chk("additive rebuild excludes deleted premise", wsp.numeric.supporthas(rebuilthead, pb) == 0)
+    chk("additive rebuild keeps first premise", wsp.numeric.supporthas(rebuilthead, pa) == 1)
+    chk("additive rebuild keeps third premise", wsp.numeric.supporthas(rebuilthead, pc) == 1)
+    chk("additive rebuild keeps schema", wsp.numeric.supporthas(rebuilthead, schema) == 1)
+    chk("additive rebuild keeps rule", wsp.numeric.supporthas(rebuilthead, rule) == 1)
+    chk("additive rebuild support matches the four retained premises", wsp.numeric.supportcount(rebuilthead) == 4)
+    feature = wsp.numeric.lit(0, 0, "", "1")
+    prediction = wsp.numeric.mul(rebuilthead, feature)
+    retainedprediction = wsp.numeric.mul(retainedhead, feature)
+    chk("additive fixed-feature prediction is nine halves", eqrat(prediction, 0, 9, 2) == 1)
+    chk("additive retained and rebuilt predictions agree", wsp.numeric.numeric(retainedprediction, prediction) == 1)
+    chk("additive prediction is currently usable", wsp.numeric.usable(prediction) == 1)
+    chk("additive prediction retains all coefficient support", wsp.numeric.supportcount(prediction) == 4)
+    chk("additive prediction keeps first premise", wsp.numeric.supporthas(prediction, pa) == 1)
+    chk("additive prediction keeps third premise", wsp.numeric.supporthas(prediction, pc) == 1)
+    chk("additive prediction keeps schema", wsp.numeric.supporthas(prediction, schema) == 1)
+    chk("additive prediction keeps rule", wsp.numeric.supporthas(prediction, rule) == 1)
+    chk("additive prediction excludes deleted example", wsp.numeric.supporthas(prediction, pb) == 0)
+
+    chk("additive first example withdrawal commits", wsp.agent.withdraw(pa) == 1)
+    chk("additive remaining exact sum is eight", eqrat(wsp.numeric.total(revision), 0, 8, 1) == 1)
+    chk("additive remaining exact count is one", eqrat(wsp.numeric.total(revision), 1, 1, 1) == 1)
+    chk("additive remaining coefficient is eight", eqrat(head(revision), 0, 8, 1) == 1)
+    chk("additive third example withdrawal commits", wsp.agent.withdraw(pc) == 1)
+    chk("additive emptied live inventory has no events", wsp.numeric.livecount(revision) == 0)
+    chk("additive emptied historical inventory still has three events", wsp.numeric.members(revision) == 3)
+    chk("additive empty exact sum is zero", eqrat(wsp.numeric.total(revision), 0, 0, 1) == 1)
+    chk("additive empty exact count is zero", eqrat(wsp.numeric.total(revision), 1, 0, 1) == 1)
+    chk("additive empty retained head refuses zero division", head(revision) == -5)
+    chk("additive empty retained refusal is named zero", streq(wsp.numeric.refusal(), "zero") == 1)
+    chk("additive former prediction fails current consumer validation", wsp.numeric.usable(prediction) == 0)
+    chk("additive independent equal occurrence still survives", wsp.numeric.livecount(distinct) == 1)
+    chk("additive independent equal occurrence still predicts one", eqrat(head(distinct), 0, 1, 1) == 1)
+    chk("additive independent equal example withdraws separately", wsp.agent.withdraw(equalpremise) == 1)
+    chk("additive equal-example inventory now has no live events", wsp.numeric.livecount(distinct) == 0)
+
+    schemaempty = wsp.numeric.revision(anchor, "", schema)
+    ruleempty = wsp.numeric.revision(anchor, "", rule)
+    chk("additive empty schema-selected inventory begins valid", wsp.numeric.livecount(schemaempty) == 0)
+    chk("additive empty rule-selected inventory begins valid", wsp.numeric.livecount(ruleempty) == 0)
+    chk("additive schema withdrawal commits", wsp.agent.withdraw(schema) == 1)
+    chk("additive schema withdrawal blocks original current query", wsp.numeric.total(revision) == -17)
+    chk("additive schema withdrawal blocks empty selected query", wsp.numeric.livecount(schemaempty) == -17)
+    chk("additive schema withdrawal blocks head reconstruction", head(schemaempty) == -17)
+    chk("additive independent rule-selected inventory remains valid", wsp.numeric.livecount(ruleempty) == 0)
+    chk("additive learner rule withdrawal commits", wsp.agent.withdraw(rule) == 1)
+    chk("additive learner rule withdrawal blocks empty selected query", wsp.numeric.livecount(ruleempty) == -17)
+    wsp.agent.reset()
+    chk("additive unavailable selection blocks empty current query", wsp.numeric.livecount(schemaempty) == -12)
+    chk("additive unavailable evidence blocks head reconstruction", head(revision) == -12)
+    chk("additive unavailable inventory is not an exclusion", wsp.numeric.excluded(revision, eb) == -12)
+    missing = wsp.numeric.receipt(revision, eb)
+    chk("additive unavailable evidence supplies no withdrawal receipt", streq(missing, "") == 1)
+    chk("additive unavailable evidence receipt reports unknown", wsp.numeric.why() == -12)
+
+    line = "additive vector: "
+    line = appv(line, itext(bc.ok))
+    line = appv(line, " ok / ")
+    line = appv(line, itext(bc.bad))
+    line = appv(line, " FAIL")
+    print(line)
+    if bc.bad == 0
+        print("PASS")
+        return 0
+    print("FAIL")
+    1
+
+os.exit(main())

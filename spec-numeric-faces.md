@@ -460,14 +460,18 @@ deduplication by payload.
 
 revision: (anchor, events: str, sel: str) -> handle or
 code. events is a comma-separated text of event handles
-(possibly empty — the empty revision of E21). Every
+(possibly empty — the empty revision of E21). Repeated
+references to the same event identity contribute once;
+separately created events remain distinct even when their
+deltas and support are equal. Every
 event must name this exact anchor (Same — handle
 equality), else -13. sel is a comma-separated text of
 premise identities forming the selection support U(R):
 the premises of the computations that selected this
 anchor and membership (chapter section 5.3); it may be
-empty. Unknown selection premises refuse -12, withdrawn
-refuse -17. The revision's own support is the closure of
+empty. Every member of its transitive closure is checked
+at construction: unknown selection premises refuse -12,
+withdrawn refuse -17. The revision's own support is the closure of
 U(R) unioned with anchor's support. Candidate events are
 historical references: their live-premise requirements
 are not imported into the revision's support (chapter
@@ -481,7 +485,12 @@ an unresolved premise, the query blocks: -12 (chapter
 section 5.3: an unresolved required premise blocks the
 query; it is not silently excluded). If the anchor is
 not usable (usable(anchor) is 0), -13; if unresolved,
--12. Withdrawn events are excluded, each justified by
+-12. The selection support U(R) must also remain live at
+every query: an unresolved member refuses -12 and a
+withdrawn member refuses -17, including when the event
+inventory is empty. A stale selection cannot return a
+current payload merely because that payload will later
+fail usable. Withdrawn events are excluded, each justified by
 its withdrawal receipt in the agent home; no receipt is
 re-recorded here (section 13.7: status is derived from
 receipts and support).

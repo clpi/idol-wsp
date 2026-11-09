@@ -1,0 +1,26 @@
+ok: intent: the agent initialises
+ok: A: the learned seating stands on its committed support
+ok: A: the learned-from seating withdraws
+ok: A: the learned seating falls with the support fixed at its creation
+ok: A: a step committed after the withdrawal cannot stand on withdrawn support
+ok: B: a derivation run is recorded
+ok: B: a standing read records nothing and rewrites nothing
+ok: B: repeated reads of one record agree
+ok: C: the record stands before the withdrawal
+ok: C: the cited seating withdraws
+ok: C: the same record now falls, with no edit to the record
+ok: C: the bundle reloads
+ok: C: the reloaded answer is recomputed from the carried receipts
+ok: D: a replacement leaving the read row unchanged leaves its reader standing
+ok: D: the cited seating withdraws explicitly
+ok: D: explicit withdrawal falls the direct reader
+ok: D: explicit withdrawal falls the transitive reader
+ok: D: a reader of the replacement seating stands
+ok: D: the withdrawn seating's reader stays fallen after the replacement
+ok: D: the replacement identity withdraws on its own
+ok: D: withdrawal is scoped to the identity withdrawn
+ok: E: the result record carries citations
+ok: E: the first citation is of a lawful kind
+ok: E: the first citation names an existing identity
+ok: E: later records do not change an earlier record's standing
+intent: OK

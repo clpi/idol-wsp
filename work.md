@@ -106,7 +106,7 @@ evidence recorded in [status.md](status.md).
   executed 22/0 and `gate/agent.id` still 126/0, both at the resident
   run-tree binary (md5 08be8c7325c3aeefaeff7f60f171aefe, C route).
 - **Owner/scope:** WSP slice, `src/agent.id`. The companion regression
-  is `gate/standing.id`; the existing B1–B15 gate stays unchanged. No
+  is `gate/standing.id`; the existing B1–B15 behavior contract is retained. No
   upstream compiler or graph identity changes are part of this
   correction.
 - **Evidence:** status.md (the WS-SEM-10 and withdrawal sections) and
@@ -114,14 +114,14 @@ evidence recorded in [status.md](status.md).
   history. The conformance pack's deep-chain case (its retraction
   battery, case R11) executed green at the same configuration, at
   each of the pack's exports, R3 and R5/R6 stages.
-- **Next action:** execute `gate/standing.id` at a compiler binary
-  that emits its fixture program (at the retained binary its fixture
-  refuses emission against the merged and the pre-merge home alike),
-  and measure the standing cost (UNMEASURED until then).
-- **Condition:** `gate/standing.id` green at a named pin closes the
-  surviving remainder of this work order. The traversal itself is
-  closed: merged, qualified at the fixed pin, and carrying the
-  withdrawal distinction.
+- **Next action:** none for correctness qualification. The current-evidence
+  landing replaces only the fixture's mutable string record field with a
+  byte book and executes `gate/standing.id` **27 / 0**, including depth 128
+  and shared diamonds, through the named hosted C compiler. See
+  [evidence/core-2026-11-09](evidence/core-2026-11-09/README.md).
+  Standing cost remains UNMEASURED.
+- **Condition:** met. The surviving standalone qualification is closed;
+  the previously merged traversal was not replaced.
 
 ## WS-INT-1 — One vocabulary, stated in the chapter
 
@@ -178,3 +178,36 @@ evidence recorded in [status.md](status.md).
   the Wide program) lands in clpi/idol. On that landing this
   item's spec slice is written first, against the landed
   producer's actual faces, before any store code.
+
+## WS-CONF-5 — Occurrence and current-evidence boundaries
+
+- **State:** EXECUTED AND LANDED in the current-evidence landing.
+- **Scope:** exact seating citations/pointers, canonical occurrence
+  spelling, conservative legacy seating resolution, S/P/R/C import validation
+  and withdrawal/history preservation, revision identity-set membership, whole-query
+  selection/inventory validation, and constant-gradient input support.
+  Existing homes own all changes; no second graph or registry was added.
+- **Evidence:** the published `gate/core.sh` completed the eleven-gate
+  cohort with 883 printed successful assertions and the retraction battery
+  PASS. Expanded gates discriminate the baseline by runtime failures.
+  [The evidence record](evidence/core-2026-11-09/README.md) contains exact
+  inputs, compiler identity and outputs. `learned/bundle.txt` is actual
+  producer output, verified by a fresh-process consumer.
+- **Next action:** none for this scoped correction. Full authoritative
+  identity/capsule integration, producer-discovered support and concurrent
+  publication remain separate open obligations; fixture execution does
+  not close them. The slice's unimplemented zero-byte premise-text refusal
+  is recorded in its spec and status, not silently claimed as delivered.
+
+## WS-ADD-1 — Restricted additive learner demonstration
+
+- **State:** EXECUTED, semantics demonstration only.
+- **Scope:** ordinary composition of existing event/revision/numeric faces
+  for a fixed-schema intercept learner; exact sum/count reconstruction and
+  deletion compared with a fresh same-learner retained-data rebuild.
+- **Evidence:** `gate/additive.id` executes 106 / 0 under the declared
+  [example contract](spec-additive-example.md), including support,
+  historical/current, schema withdrawal and empty-data refusal checks.
+- **Next action:** task selection, quality floor and complete lifecycle
+  measurements must precede any product-model or performance claim. W2's
+  matched comparison remains UNMEASURED; this fixture does not close it.

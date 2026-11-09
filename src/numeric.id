@@ -1569,8 +1569,15 @@ revision: i64 = (anchor: i64, evtext: str, seltext: str)
             return fail(-13)
         if evanc[v] != anchor
             return fail(-13)
-        ne = ne + 1
-        evs[ne] = v
+        found = 0
+        k = 1
+        while k <= ne
+            if evs[k] == v
+                found = 1
+            k = k + 1
+        if found == 0
+            ne = ne + 1
+            evs[ne] = v
         j = j + 1
     m = split2(seltext, 44)
     off = blen(1)
@@ -1592,6 +1599,15 @@ revision: i64 = (anchor: i64, evtext: str, seltext: str)
         c = supclose(off, len)
         selo = su.off
         sell = su.len
+    k = 0
+    while k < sell
+        mm = piece(1, selo + k * 64, 64)
+        ps = wsp.agent.premstate(mm)
+        if ps == -1
+            return fail(-12)
+        if ps == 0
+            return fail(-17)
+        k = k + 1
     so = supmerge(selo, sell, wsupo[anchor], wsupl[anchor])
     h = rvanc:len() + 1
     rvanc[h] = anchor
@@ -1622,6 +1638,15 @@ livewalk: i64 = (rev: i64)
             return fail(-13)
         if ps == -1
             return fail(-12)
+        k = k + 1
+    k = 0
+    while k < rvsell[rev]
+        mm = piece(1, rvselo[rev] + k * 64, 64)
+        ps = wsp.agent.premstate(mm)
+        if ps == -1
+            return fail(-12)
+        if ps == 0
+            return fail(-17)
         k = k + 1
     cnt = 0
     j = 1
@@ -1702,6 +1727,9 @@ excluded: i64 = (rev: i64, ev: i64)
         j = j + 1
     if found == 0
         return fail(-11)
+    c = livewalk(rev)
+    if c < 0
+        return c
     barred = 0
     k = 0
     while k < evsupl[ev]
@@ -1725,6 +1753,9 @@ receipt: str = (rev: i64, ev: i64)
         j = j + 1
     if found == 0
         st.why = -11
+        return ""
+    c = livewalk(rev)
+    if c < 0
         return ""
     first = ""
     have = 0

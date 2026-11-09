@@ -4,10 +4,100 @@ The state of Idol WSP, stated plainly. This document is updated in the
 same commit as any landing it describes. Claims here carry their
 evidence or are marked UNMEASURED / UNVERIFIED / OPEN.
 
+## Current-evidence corrections and delivered artifact (2026-11-09)
+
+This landing extends main `e5abd8bc8eb743ae5bca432da0151882a0cecfb9`
+through the existing agent, numeric and differentiation homes. Its executed
+evidence is [the qualification record](evidence/core-2026-11-09/README.md),
+including exact source, binary, executable and output hashes, raw outputs,
+and baseline failures. The current qualified state is:
+
+| Gate | Executed result |
+|---|---:|
+| Agent | 126 / 0 |
+| Withdrawal | 22 / 0 |
+| Identity/admission | 134 / 0 |
+| Intent | 25 / 0 |
+| Numeric | 98 / 0 |
+| Revision | 227 / 0 |
+| Differentiation | 92 / 0 |
+| Additive learner | 106 / 0 |
+| Standing | 27 / 0 |
+| Artifact consumer | 26 / 0 |
+| Existing retraction battery | PASS |
+
+The published `gate/core.sh` compiled and ran all eleven gates, exiting 0:
+**883 printed successful assertions plus the aggregate retraction battery**.
+The route was the actual Idol compiler with
+`--no-cache --backend=c --emit=exe --libc`, followed by execution. Binary
+SHA-256 is `c0c39b04c2368ee919c3fa456766d5f87bb60a761ccd3118e602282fc5a2f6f1`;
+the recovered build receipt names HEAD
+`d2fd7095724556d56a24e81d6c1c3df222a27d6e` and index/dependency tree
+`5795bf3b34b93bc628bf51b02205a22d5af15a14`. This is a recorded recovered
+build, not a claim of a pristine HEAD or latest-main compiler. The hosted C
+runtime remains the named execution seam; native-route qualification is open.
+
+The corrected behavior is:
+
+- Table-row citations and active/current pointers name exact seating
+  occurrences. Identical re-seating cannot revive an old withdrawn reader.
+  Ambiguous legacy seating digests refuse; malformed occurrence spellings
+  cannot alias valid identities.
+- Bundle admission validates seating payloads/digests before changing WSP
+  generation, preserves the current seating/premise identity prefix and
+  derivation/call history, and refuses attempts to clear known permanent
+  withdrawals. Existing CSV faces support extended payloads with exact
+  cardinality checks. Reload cannot truncate or rewrite recorded citation
+  metadata, record bodies, call names or call results.
+- A revision counts each event identity once. Every current query validates
+  the recipe's transitive selection support and the complete fixed inventory;
+  per-event exclusion/receipt faces cannot bypass those obligations.
+- Grad retains the supplied input's support even for a constant function,
+  an F32 input, or an empty input. Historical zero derivatives cannot be
+  learned under a fresh premise after their required input withdraws.
+- The standing fixture now executes its deep-chain/diamond cases through
+  a byte-book fixture representation. No new depth-budget or DFS repair was
+  made; this closes the previously unexecuted standalone qualification.
+
+The initial expanded revision, grad and identity gates also ran against
+baseline modules and failed 28, 10 and 55 assertions respectively (each
+compiled, then exited 1). Those exact gates passed against the first
+candidate. The final identity gate adds record/call-history checks: against
+that prior accepted agent source it compiled, then exited 1 with 105 passed
+and 29 failed assertions. The evidence keeps both phases' source and gate
+hashes separate.
+
+`gate/additive.id` is an executed restricted learner: independent labels
+1, 3 and 8 produce exact statistics [12,3] and coefficient 4; removing
+label 3 reconstructs [9,2] and 9/2. A fresh same-learner rebuild from the
+retained original inputs agrees on statistics, coefficient, prediction
+and support. This is a semantic demonstration, not a task-quality or
+performance comparison.
+
+`learned/bundle.txt` was regenerated from the passing agent's actual output:
+11,030 bytes, SHA-256
+`9af8a01d5f47655eb70cff346c9174ce21e6acf5e928d2a33e36e7b781a370dd`.
+The old artifact correctly refuses ambiguous references. The new artifact
+passes a fresh-process consumer's byte-identical round trip, full standing
+vector, exact pointer, withdrawal and stale replay checks. Its live and
+fallen records remain explicit fixture history.
+
+**Limits remain explicit.** The S/P/R/C admission check preserves WSP state,
+not upstream resident staging. Identities are still
+fixture-generation local; reset is an explicit context replacement, not
+global revocation. Compiler-discovered implicit dependencies, complete native
+capsules, concurrent atomic publication and full E01–E31 conformance are
+OPEN. The original zero-byte premise-text refusal requirement is also not
+implemented by the current premise face; the slice spec now states that
+limit instead of claiming it is delivered. The two optional substrate-face
+gates remain red at this dependency tree because their requested faces are
+absent. Timing, memory comparisons, model quality and privacy remain
+UNMEASURED. Earlier sections below retain the history at their own pins.
+
 ## WS-SEM-10 merged (2026-11-09) — qualification history, stated exactly
 
 Pull request 1 merged the standing-full-cone fix on 2026-11-09 at
-08:59 UTC: main is the merge commit
+08:59 UTC: at that landing main became the merge commit
 ce1b88448f98c7886dfa1e75e69028d4fd7657d6, and the standing traversal
 in `src/agent.id` is an explicit DFS with cycle rejection and
 completed-cone reuse. The depth budget is gone; it is not coming

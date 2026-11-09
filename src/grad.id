@@ -999,6 +999,15 @@ grad: i64 = (e: i64, w: i64)
     r = wsp.numeric.add(g, z)
     if r < 0
         return fail(r)
+    wq = wsp.numeric.cast(0, 0, w)
+    if wq < 0
+        return fail(wq)
+    wz = wsp.numeric.sub(wq, wq)
+    if wz < 0
+        return fail(wz)
+    r = wsp.numeric.add(r, wz)
+    if r < 0
+        return fail(r)
     r
 
 M = {}
