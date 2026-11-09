@@ -1,0 +1,229 @@
+ok: e15 repeated reference constructs
+FAIL: e15 repeated reference has one member
+FAIL: e15 repeated reference has one live member
+FAIL: e15 repeated reference preserves membership equivalence
+FAIL: e15 repeated reference contributes once
+ok: e15 equal payload event is a distinct occurrence
+FAIL: e15 distinct equal events both remain members
+FAIL: e15 distinct equal events both remain live
+FAIL: e15 distinct equal events each contribute once
+FAIL: e15 order preserves membership equivalence
+ok: e15 order preserves observation
+ok: e15 shared premise withdrawal commits
+ok: e15 shared event excluded once
+ok: e15 both equal occurrences excluded
+FAIL: e15 withdrawal preserves the one event inventory
+FAIL: e15 withdrawal preserves the two event inventory
+ok: e15 withdrawn duplicate recipe observes the anchor
+ok: e15 first occurrence exclusion justified
+ok: e15 second occurrence exclusion justified
+ok: e15 withdrawn candidates remain valid historical references
+FAIL: e15 historical inventory keeps distinct occurrences
+ok: e15 retaining withdrawn candidates does not demand their evidence
+ok: e18 premise p live
+ok: e18 premise q live
+ok: e18 event p constructs
+ok: e18 event q constructs
+ok: e18 revision constructs
+ok: e18 observation constructs
+ok: e18 revision observes 11
+ok: e18 revision observes 22
+ok: e18 withdrawal lands
+ok: e18 live set after withdrawal
+ok: e18 observation after withdrawal 10
+ok: e18 observation after withdrawal 22
+ok: e18 corrected premise is a fresh identity
+ok: e18 corrected premise live
+ok: e18 correction does not reactivate the old premise
+ok: e18 relearned event constructs
+ok: e18 mixed revision constructs
+ok: e18 mixed inventory holds all three events
+ok: e18 mixed live set excludes the old event
+ok: e18 mixed revision observes 13
+ok: e18 mixed revision observes 22
+ok: e18 learning under the withdrawn premise refuses
+ok: e18 refusal named withdrawn
+ok: e21 event constructs
+ok: e21 empty revision constructs
+ok: e21 one event revision constructs
+ok: e21 empty inventory
+ok: e21 single inventory
+ok: e21 revisions are not equivalent
+ok: e21 revision equivalent to itself
+ok: e21 rebuilt revision is a distinct handle
+ok: e21 rebuilt revision is equivalent
+ok: e21 empty snapshot constructs
+ok: e21 one event snapshot constructs
+ok: e21 snapshot of empty revision
+ok: e21 snapshot of one event revision
+ok: e21 snapshots numerically equal
+ok: e21 snapshot digests equal
+ok: e21 totals construct
+ok: e21 exact total of empty revision
+ok: e21 exact total of one event revision
+ok: e21 exact totals differ
+ok: e21 second event constructs
+ok: e21 third event constructs
+ok: e21 second events are distinct occurrences
+ok: e21 extended empty revision observes the anchor
+ok: e21 extended one event revision observes two more
+ok: e21 extended snapshots differ
+ok: e22 event p constructs
+ok: e22 event q constructs
+ok: e22 observation constructs
+ok: e22 both live observe 100
+ok: e22 withdrawal lands
+ok: e22 surviving live count
+ok: e22 surviving total constructs
+ok: e22 surviving total is exactly 200
+ok: e22 observe refuses range
+ok: e22 refusal named range
+ok: e23 oversize delta event constructs
+ok: e23 total constructs
+ok: e23 exact total is minus 128
+ok: e23 observation constructs
+ok: e23 observed value is minus 128
+ok: e23 the delta alone refuses range
+ok: e23 refusal named range
+ok: e24 snapshot constructs
+ok: e24 snapshot observes 11
+ok: e24 snapshot observes 22
+ok: e24 snapshot carries both premises
+ok: e24 read constructs
+ok: e24 extracted scalar is 11
+ok: e24 extracted scalar is rank zero
+ok: e24 extracted scalar keeps support
+ok: e24 zero product is zero
+ok: e24 zero product keeps both premises
+ok: e24 zero product support has p
+ok: e24 zero product support has q
+ok: e24 zero product usable
+ok: e24 withdrawal lands
+ok: e24 historical payload still reads zero
+ok: e24 support retained after withdrawal
+ok: e24 zero product no longer usable
+ok: e24 learning from the cancelled scalar refuses
+ok: e24 refusal named withdrawn
+ok: e24 clean zero delta learns
+ok: e25 snapshot constructs
+ok: e25 snapshot observes 11
+ok: e25 snapshot observes 22
+ok: e25 copy is a new handle
+ok: e25 copy is numerically equal
+ok: e25 copy retains both premises
+ok: e25 copy support has p
+ok: e25 copy support has q
+ok: e25 rooted observation constructs
+ok: e25 rooted revision observes 11
+ok: e25 rooted revision observes 22
+ok: e25 withdrawal lands
+ok: e25 observing the copied root refuses anchor
+ok: e25 refusal named anchor
+ok: e25 total of the copied root refuses anchor
+ok: e25 source revision still observes 10
+ok: e25 source revision still observes 22
+ok: e28 inventory fixed at one
+ok: e28 event live before withdrawal
+ok: e28 live event is not excluded
+ok: e28 live event has no receipt
+ok: e28 withdrawal lands
+ok: e28 inventory unchanged by withdrawal
+ok: e28 query live set empty
+ok: e28 event excluded after withdrawal
+ok: e28 receipt names the withdrawn premise
+ok: e28 withdrawal receipt is permanent
+ok: e28 later event constructs
+ok: e28 old inventory unchanged by later event
+ok: e28 old query still empty
+ok: e28 non member refuses contract
+ok: e28 refusal named contract
+ok: e28 new inventory holds both
+ok: e28 new revision sees the later event
+ok: e28 untracked absence is unresolved
+ok: e28 learning from untracked absence refuses
+ok: e28 refusal named unknown
+ok: e29 commit first event constructs
+ok: e29 committed event live
+ok: e29 committed revision observes 4
+ok: e29 retraction lands after commit
+ok: e29 retraction excludes the committed event
+ok: e29 observation after retraction is the anchor alone
+ok: e29 second premise live
+ok: e29 withdrawal commits first
+ok: e29 learning after withdrawal refuses
+ok: e29 refusal named withdrawn
+ok: e29 pinned event constructs
+ok: e29 pinned snapshot constructs
+ok: e29 pinned snapshot carries the third premise
+ok: e29 pinned snapshot support has p3
+ok: e29 computed delta constructs
+ok: e29 computed delta value is 4
+ok: e29 computed delta carries p3
+ok: e29 third premise live at computation
+ok: e29 third withdrawal lands
+ok: e29 commit of the computed delta refuses
+ok: e29 refusal named withdrawn again
+ok: e29 pinned revision has no live dependent event
+ok: e29 first revision still has no live dependent event
+ok: e31 selected recipe constructs
+ok: e31 independent recipe constructs
+ok: e31 empty selected recipe constructs
+ok: e31 selected and independent memberships equivalent
+ok: e31 selected observation is two
+ok: e31 selected observation has selection support
+ok: e31 selected observation has event support
+ok: e31 unconditional observation has no selection support
+ok: e31 unconditional observation retains event support
+ok: e31 transitive selection recipe constructs
+ok: e31 selection withdrawal commits
+FAIL: e31 selected query refuses withdrawn selection
+FAIL: e31 selected query refusal named withdrawn
+FAIL: e31 selected total refuses
+FAIL: e31 selected observation refuses
+FAIL: e31 selected exclusion refuses
+ok: e31 selected receipt is not fabricated
+FAIL: e31 selected receipt reports withdrawn selection
+FAIL: e31 empty recipe still requires selection evidence
+FAIL: e31 transitive selection observes withdrawn ancestor
+ok: e31 live selector assertion cannot hide withdrawn support
+FAIL: e31 construction validates transitive selection support
+ok: e31 current selection cannot use a withdrawn premise
+ok: e31 historical snapshot preserves numeric payload
+ok: e31 historical snapshot retains withdrawn evidence
+ok: e31 historical snapshot is not current
+ok: e31 independent event remains live
+ok: e31 independent event is not excluded
+ok: e31 independent event has no withdrawal receipt
+ok: e31 independent recipe remains usable
+ok: e31 unrelated selection withdrawal permits a fresh independent recipe
+ok: e31 fresh independent recipe retains the surviving event
+ok: e31 historical membership remains inspectable
+ok: e31 membership equivalence does not erase selection
+FAIL: e31 equivalent selected recipe still refuses
+ok: e31 event withdrawal commits independently
+ok: e31 unconditional inventory excludes withdrawn event
+ok: e31 unconditional recipe reconstructs anchor
+ok: e31 unconditional exclusion remains justified
+ok: e31 unconditional receipt identifies event premise
+FAIL: e31 selected recipe cannot use event exclusion to erase control
+ok: query inventory initially resolves both events
+ok: query prefix receiver loads
+ok: query target premise remains resolved
+ok: query other candidate premise is unavailable
+ok: query retained target withdrawal commits
+ok: query retained target is known withdrawn
+ok: query unknown other candidate blocks live set
+FAIL: query unknown other candidate blocks target exclusion
+FAIL: query incomplete inventory cannot publish target receipt
+FAIL: query incomplete inventory receipt reports unknown
+ok: e31 unknown selector fixture begins live
+ok: e31 unresolved selection refuses construction
+ok: e31 unavailable selector becomes unknown
+FAIL: e31 unknown selection blocks empty query
+FAIL: e31 unknown selection blocks total
+FAIL: e31 unknown selection blocks observation
+ok: e31 unknown fixed inventory blocks exclusion
+ok: e31 unknown inventory supplies no withdrawal receipt
+ok: e31 unknown inventory receipt reports unknown
+revision vector: 199 ok / 28 FAIL
+FAIL

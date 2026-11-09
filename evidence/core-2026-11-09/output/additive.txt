@@ -1,0 +1,108 @@
+ok: additive first event admitted
+ok: additive second event admitted
+ok: additive third event admitted
+ok: additive examples have distinct event identities
+ok: additive fixed inventory holds three events
+ok: additive initial live inventory holds three events
+ok: additive initial exact sum is twelve
+ok: additive initial exact count is three
+ok: additive initial exact coefficient is four
+ok: additive coefficient is currently usable
+ok: additive coefficient retains schema
+ok: additive coefficient retains learner rule
+ok: additive coefficient retains first example
+ok: additive coefficient retains second example
+ok: additive coefficient retains third example
+ok: additive coefficient has exactly five premise occurrences
+ok: additive duplicate reference does not add a member
+ok: additive duplicate reference keeps exact statistics
+ok: additive duplicate reference keeps coefficient four
+ok: additive equal example has a distinct event identity
+ok: additive equal separate example adds a member
+ok: additive equal separate example increments exact sum
+ok: additive equal separate example increments exact count
+ok: additive equal separate example changes coefficient
+ok: additive zero label preserves exact sum
+ok: additive zero label still increments count
+ok: additive zero label changes coefficient to three
+ok: additive zero label retains its premise
+ok: additive zero label withdrawal commits
+ok: additive zero label event is excluded
+ok: additive zero label withdrawal reconstructs coefficient four
+ok: additive historical zero-label coefficient is no longer current
+ok: additive second example withdrawal commits
+ok: additive original inventory retains all event identities
+ok: additive current inventory contains two survivors
+ok: additive first original event remains live
+ok: additive third original event remains live
+ok: additive second original event is excluded
+ok: additive exclusion receipt identifies deleted example
+ok: additive retained exact sum is nine
+ok: additive retained exact count is two
+ok: additive retained exact coefficient is nine halves
+ok: additive retained coefficient is currently usable
+ok: additive retained coefficient excludes deleted premise
+ok: additive retained coefficient keeps first premise
+ok: additive retained coefficient keeps third premise
+ok: additive retained coefficient keeps schema
+ok: additive retained coefficient keeps rule
+ok: additive retained coefficient has exactly four premises
+ok: additive earlier coefficient remains historically four
+ok: additive earlier coefficient retains deleted premise
+ok: additive earlier coefficient refuses current consumer validation
+ok: additive historical coefficient cannot become a fresh current update
+ok: additive retained coefficient remains admissible for learning
+ok: additive rebuild creates a fresh first event
+ok: additive rebuild creates a fresh third event
+ok: additive rebuild uses a fresh anchor
+ok: additive rebuild retains exactly two examples
+ok: additive rebuild exact statistics agree
+ok: additive rebuild exact coefficient agrees
+ok: additive rebuild coefficient is currently usable
+ok: additive rebuild excludes deleted premise
+ok: additive rebuild keeps first premise
+ok: additive rebuild keeps third premise
+ok: additive rebuild keeps schema
+ok: additive rebuild keeps rule
+ok: additive rebuild support matches the four retained premises
+ok: additive fixed-feature prediction is nine halves
+ok: additive retained and rebuilt predictions agree
+ok: additive prediction is currently usable
+ok: additive prediction retains all coefficient support
+ok: additive prediction keeps first premise
+ok: additive prediction keeps third premise
+ok: additive prediction keeps schema
+ok: additive prediction keeps rule
+ok: additive prediction excludes deleted example
+ok: additive first example withdrawal commits
+ok: additive remaining exact sum is eight
+ok: additive remaining exact count is one
+ok: additive remaining coefficient is eight
+ok: additive third example withdrawal commits
+ok: additive emptied live inventory has no events
+ok: additive emptied historical inventory still has three events
+ok: additive empty exact sum is zero
+ok: additive empty exact count is zero
+ok: additive empty retained head refuses zero division
+ok: additive empty retained refusal is named zero
+ok: additive former prediction fails current consumer validation
+ok: additive independent equal occurrence still survives
+ok: additive independent equal occurrence still predicts one
+ok: additive independent equal example withdraws separately
+ok: additive equal-example inventory now has no live events
+ok: additive empty schema-selected inventory begins valid
+ok: additive empty rule-selected inventory begins valid
+ok: additive schema withdrawal commits
+ok: additive schema withdrawal blocks original current query
+ok: additive schema withdrawal blocks empty selected query
+ok: additive schema withdrawal blocks head reconstruction
+ok: additive independent rule-selected inventory remains valid
+ok: additive learner rule withdrawal commits
+ok: additive learner rule withdrawal blocks empty selected query
+ok: additive unavailable selection blocks empty current query
+ok: additive unavailable evidence blocks head reconstruction
+ok: additive unavailable inventory is not an exclusion
+ok: additive unavailable evidence supplies no withdrawal receipt
+ok: additive unavailable evidence receipt reports unknown
+additive vector: 106 ok / 0 FAIL
+PASS

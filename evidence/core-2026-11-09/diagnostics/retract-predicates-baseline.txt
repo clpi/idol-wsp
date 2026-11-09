@@ -1,0 +1,6 @@
+error: C99 realizer: graph-to-DNIR refused (GraphFactsInvalid)
+hint: refused at: missing-application-id-unresolved
+hint: bail site: lowerModuleWithGraphObservedMode() at graph/lower.zig:7339
+hint: in relation: seatings
+hint: application id: 86
+hint: in home: ml.space

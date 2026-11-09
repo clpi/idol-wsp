@@ -1,0 +1,301 @@
+{
+  "baseline_local_snapshot": "0366d7968ddcb9e32ca73e11a22363b73004869e",
+  "baseline_upstream_pin": "e5abd8bc8eb743ae5bca432da0151882a0cecfb9",
+  "bundle": {
+    "bytes": 11030,
+    "extraction_receipt_sha256": "fe3eba8d9088985402429815f060fda2f7571814f5adbdcbea7e567e0da83f78",
+    "final_producer_matches_installed_artifact": true,
+    "sha256": "9af8a01d5f47655eb70cff346c9174ce21e6acf5e928d2a33e36e7b781a370dd"
+  },
+  "compiler": {
+    "compiler_path": "/workspace/scratch/cb85f4e75554/wsp-runtime/zig-out/bin/idol",
+    "compiler_recorded_head": "d2fd7095724556d56a24e81d6c1c3df222a27d6e",
+    "compiler_sha256": "c0c39b04c2368ee919c3fa456766d5f87bb60a761ccd3118e602282fc5a2f6f1",
+    "dependency_tree": "5795bf3b34b93bc628bf51b02205a22d5af15a14"
+  },
+  "compiler_provenance_sha256": "b56aab2ae6eccc6838a16dbcbb1564571ab4c0a4f1d06d1d65a4be9cccbffd85",
+  "dependency_manifest_sha256": "c76a08fa9281b57efd80ee4cf1aa67370354ad6fa35d7efc28661390a2173ad9",
+  "diagnostic_correction": "Original direct ml.resident.count source and final quotient cardinality source both passed126 at the same proper WSP source layout; no separate direct-count compiler failure is established.",
+  "final_invocation": {
+    "argv": [
+      "sh",
+      "/workspace/scratch/cb85f4e75554/idol-wsp/gate/core.sh"
+    ],
+    "combined_stdout": "/workspace/scratch/cb85f4e75554/wsp-runtime/execution/core-delivered.stdout",
+    "environment": {
+      "IDOL_LOCK_TIMEOUT": "30",
+      "IDOL_ROOT": "/workspace/scratch/cb85f4e75554/wsp-runtime",
+      "WSP_ARTIFACTS": "/workspace/scratch/cb85f4e75554/wsp-runtime/execution/core"
+    },
+    "exit_code": 0,
+    "harness_sha256": "11d3b54861c38a960355565454f72102c70ea55731d21ae31ad179c0cd8e5c30"
+  },
+  "final_stage": "/workspace/scratch/cb85f4e75554/wsp-runtime/execution/core/wsp-core.drRbPw",
+  "gates": [
+    {
+      "compile_exit_code": 0,
+      "compile_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "compile_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "executable_sha256": "bd52d6a5e048b7ce4d84ecc2f8ff80dc4c8972fe60b827a030d28ba4d466fbec",
+      "gate": "agent",
+      "gate_sha256": "1f1df6f7a62b29f4d5e3b16fef36d9ae4c8196c213ac1e6e5d2bfcc0b9662ba2",
+      "printed_successful_assertions": 126,
+      "reported_result": "battery: OK - the agent derives its choices from its weights, learns by reweighting under premises, and retracts exactly the cone of a corrected premise",
+      "run_exit_code": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "5a258d75636096bd275e5b523f982b62ff3fc0178401943f7b032307d2e05037",
+      "stdout_tail": [
+        "A|3|s000000000000000000000000000000000000000000000000000000000000023|s000000000000000000000000000000000000000000000000000000000000023",
+        "",
+        "battery: OK - the agent derives its choices from its weights, learns by reweighting under premises, and retracts exactly the cone of a corrected premise"
+      ]
+    },
+    {
+      "compile_exit_code": 0,
+      "compile_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "compile_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "executable_sha256": "26df7c4a9052941e04c3d16f168320a744e16ceb18cd58c231fa17f2d2c082d5",
+      "gate": "withdrawal",
+      "gate_sha256": "848a6724b27f2df9bf9b32c0f08903f48cb77fff010bef384f80b9160b1eb784",
+      "printed_successful_assertions": 22,
+      "reported_result": "withdrawal: OK",
+      "run_exit_code": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e585353d90f584d7f430d37d40bfcc410d0f22660c0c291efff27df4728e0107",
+      "stdout_tail": [
+        "ok: E: a seating citation falls on explicit withdrawal",
+        "ok: E: a table-row citation of the same seating falls too",
+        "withdrawal: OK"
+      ]
+    },
+    {
+      "compile_exit_code": 0,
+      "compile_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "compile_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "executable_sha256": "f39a036149ecc1cb36d5ffe67fea83dff03d977d744e5f76a7a8063f39c2fe46",
+      "gate": "identity",
+      "gate_sha256": "db81c6f41dab1528a2fb56cd7e2edc3e6830e6282a9de3de602ca720f49b1537",
+      "printed_successful_assertions": 98,
+      "reported_result": "identity: OK",
+      "run_exit_code": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "527afab0e00bdd1acc16f9bf53f86f3067cfc64ab8dc3109e35a6a260ad02816",
+      "stdout_tail": [
+        "ok: identity: extended reload preserves the complete bundle",
+        "ok: identity: extended reload preserves a live reader",
+        "identity: OK"
+      ]
+    },
+    {
+      "compile_exit_code": 0,
+      "compile_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "compile_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "executable_sha256": "7fcbf03780670c11c22bd914405d074df0d1283a2d973647317ab2c58d45cded",
+      "gate": "intent",
+      "gate_sha256": "8ee4206674f3202d1ff152267593e87fc78be2c35f7de0f4f75e00e37d7960fb",
+      "printed_successful_assertions": 25,
+      "reported_result": "intent: OK",
+      "run_exit_code": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "2cac8202cfd55138ad90896c6d7a76230298cd42f16d5689ce1d462f2eb1cd4b",
+      "stdout_tail": [
+        "ok: E: the first citation names an existing identity",
+        "ok: E: later records do not change an earlier record's standing",
+        "intent: OK"
+      ]
+    },
+    {
+      "compile_exit_code": 0,
+      "compile_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "compile_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "executable_sha256": "d8a13b1018df531fcd0fcd83b800c302427690abffbbd831cc14a8ae8ef9c538",
+      "gate": "numeric",
+      "gate_sha256": "4e04e16f7092d39105ff3aa79f01df390bc3caf3c779db047abc39caac5df308",
+      "printed_successful_assertions": 98,
+      "reported_result": "PASS",
+      "run_exit_code": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "5d61ed9d5d76f5b70f41d12a1c7fd7a73ca64e8aa545e756116314c39641a03e",
+      "stdout_tail": [
+        "ok: e19 observed word after withdrawal",
+        "numeric vector: 98 ok / 0 FAIL",
+        "PASS"
+      ]
+    },
+    {
+      "compile_exit_code": 0,
+      "compile_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "compile_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "executable_sha256": "ad838bf9f463ce112f8a9b1fe793297f0544f7bdf0cdf8fa29b638372f91bc2c",
+      "gate": "revision",
+      "gate_sha256": "b67531dd962283fa28dcb81326e6a2dd4c4d4a0915308ae38507a259e656058a",
+      "printed_successful_assertions": 227,
+      "reported_result": "PASS",
+      "run_exit_code": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "abf50457aabc4e09384290f2b551a83c2c16c153d05777d3827a77e73971cb28",
+      "stdout_tail": [
+        "ok: e31 unknown inventory receipt reports unknown",
+        "revision vector: 227 ok / 0 FAIL",
+        "PASS"
+      ]
+    },
+    {
+      "compile_exit_code": 0,
+      "compile_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "compile_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "executable_sha256": "2fb71eb2dccdd8dc0461492a7cc64e0cceaf26655dc0aeb52a8bf89806082847",
+      "gate": "grad",
+      "gate_sha256": "03f1459902f045a6381b6ac871b9bcf213f010247df9bb3f8250d6ac8752895f",
+      "printed_successful_assertions": 92,
+      "reported_result": "PASS",
+      "run_exit_code": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "a90cb49dd2a32a3e0c00542d4cd0f03427c6942eca5e766983299d884e6d755f",
+      "stdout_tail": [
+        "ok: empty constant gradient is no longer current",
+        "grad vector: 92 ok / 0 FAIL",
+        "PASS"
+      ]
+    },
+    {
+      "compile_exit_code": 0,
+      "compile_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "compile_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "executable_sha256": "55e8c9f06ad29233744cdae8336d94878f6ec8603200813197de09b2bbdb7926",
+      "gate": "retract",
+      "gate_sha256": "4a5f0d1d9b6b7b5c70653163d0da12c09e6cff10734426a12232c82fe12a6ae6",
+      "printed_successful_assertions": null,
+      "reported_result": "retract battery: PASS",
+      "run_exit_code": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "19474b1398a2b16e1f52727da1dfda1b7df4ee107e236c160f3178bc10dee068",
+      "stdout_tail": [
+        "retract battery: PASS"
+      ]
+    },
+    {
+      "compile_exit_code": 0,
+      "compile_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "compile_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "executable_sha256": "d9af636509ceecb81c8ffd79742db70d313e05faeb88942d6cc62476a74ede0e",
+      "gate": "additive",
+      "gate_sha256": "743f221f78ad0dd6f0553408324ab321957b4c553d69f126e889b7806e0a1aa3",
+      "printed_successful_assertions": 106,
+      "reported_result": "PASS",
+      "run_exit_code": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "82f8e68878a177b177a6d96a50d7d24505d2ec763fcc4a9527a41e34d28f7ef6",
+      "stdout_tail": [
+        "ok: additive unavailable evidence receipt reports unknown",
+        "additive vector: 106 ok / 0 FAIL",
+        "PASS"
+      ]
+    },
+    {
+      "compile_exit_code": 0,
+      "compile_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "compile_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "executable_sha256": "52fcab1ce56895529a45c9840a1d82a5f0d56a74444dc41b817525206eb7976d",
+      "gate": "standing",
+      "gate_sha256": "737386cc0e74789781ac9883b95adc7d439ebdab98b6a6ed8f47a748e58147cc",
+      "printed_successful_assertions": 27,
+      "reported_result": "standing: OK",
+      "run_exit_code": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "5fde382da2f6417f6110c77a3624ca6068eb6db094190d3f4f25015231ab3e7d",
+      "stdout_tail": [
+        "ok: absent zero handle does not stand",
+        "ok: out-of-range handle does not stand",
+        "standing: OK"
+      ]
+    },
+    {
+      "compile_exit_code": 0,
+      "compile_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "compile_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "executable_sha256": "6a11156e330fbdef0586543b7315f2669d391751fa03c85e4d6b8039411287fd",
+      "gate": "bundle",
+      "gate_sha256": "ea2fe497bf39aabd7be72c565709199a1f27ee41d823e07a7242cf8cc60529a6",
+      "printed_successful_assertions": 26,
+      "reported_result": "PASS",
+      "run_exit_code": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "bc48bb375bedbcd8227cfbeaab0c7140359252ec64607b4e2147a5549d2d22b4",
+      "stdout_tail": [
+        "ok: bundle withdrawn occurrence remains withdrawn after reload",
+        "bundle vector: 26 ok / 0 FAIL",
+        "PASS"
+      ]
+    }
+  ],
+  "input_hashes": {
+    "learned/bundle.txt": "9af8a01d5f47655eb70cff346c9174ce21e6acf5e928d2a33e36e7b781a370dd",
+    "lib/wsp/agent.id": "46082834d79b3ca348821d3e597f55e8ff44e2e9127523bb055d48b1140932c2",
+    "lib/wsp/grad.id": "49dc3d7d35e3eb904f835ffeb532a66ccc6e2e8d6fadc04ead39b1e5b96c1cde",
+    "lib/wsp/numeric.id": "1f774e3d5227966f9faaee7b5fa3b3fd9f0b5423635fa9cd14be0b41e1683326",
+    "wsp/gate/additive.id": "743f221f78ad0dd6f0553408324ab321957b4c553d69f126e889b7806e0a1aa3",
+    "wsp/gate/agent.id": "1f1df6f7a62b29f4d5e3b16fef36d9ae4c8196c213ac1e6e5d2bfcc0b9662ba2",
+    "wsp/gate/bundle.id": "ea2fe497bf39aabd7be72c565709199a1f27ee41d823e07a7242cf8cc60529a6",
+    "wsp/gate/grad.id": "03f1459902f045a6381b6ac871b9bcf213f010247df9bb3f8250d6ac8752895f",
+    "wsp/gate/identity.id": "db81c6f41dab1528a2fb56cd7e2edc3e6830e6282a9de3de602ca720f49b1537",
+    "wsp/gate/intent.id": "8ee4206674f3202d1ff152267593e87fc78be2c35f7de0f4f75e00e37d7960fb",
+    "wsp/gate/numeric.id": "4e04e16f7092d39105ff3aa79f01df390bc3caf3c779db047abc39caac5df308",
+    "wsp/gate/retract.id": "4a5f0d1d9b6b7b5c70653163d0da12c09e6cff10734426a12232c82fe12a6ae6",
+    "wsp/gate/revision.id": "b67531dd962283fa28dcb81326e6a2dd4c4d4a0915308ae38507a259e656058a",
+    "wsp/gate/standing.id": "737386cc0e74789781ac9883b95adc7d439ebdab98b6a6ed8f47a748e58147cc",
+    "wsp/gate/withdrawal.id": "848a6724b27f2df9bf9b32c0f08903f48cb77fff010bef384f80b9160b1eb784",
+    "wsp/src/agent.id": "46082834d79b3ca348821d3e597f55e8ff44e2e9127523bb055d48b1140932c2",
+    "wsp/src/grad.id": "49dc3d7d35e3eb904f835ffeb532a66ccc6e2e8d6fadc04ead39b1e5b96c1cde",
+    "wsp/src/numeric.id": "1f774e3d5227966f9faaee7b5fa3b3fd9f0b5423635fa9cd14be0b41e1683326",
+    "zig-out/bin/idol": "c0c39b04c2368ee919c3fa456766d5f87bb60a761ccd3118e602282fc5a2f6f1"
+  },
+  "input_manifest_sha256": "39e257ee792e6f4e16cf4594199becd623115cbfe508548c5773b00e9b509f7b",
+  "kind": "actual-hosted-C-execution",
+  "regression_discrimination": [
+    {
+      "baseline_modules": {
+        "lib/wsp/agent.id": "17a0a21eca177022ffbcfcab934d11055a24962213fa28d156330d6bb88ab5e1",
+        "lib/wsp/grad.id": "009fdafb315a3bcf81dd22a95d0c6e16cbd4fbc8d84745dfff08b2915f0b236f",
+        "lib/wsp/numeric.id": "a52ae072d45daa05c98d27029760fd50d68fe2e44fd7022e4a473c0b6c1bb213"
+      },
+      "compile_exit_code": 0,
+      "failed_assertions": 28,
+      "gate": "revision",
+      "passed_assertions": 199,
+      "run_exit_code": 1,
+      "source_sha256": "b67531dd962283fa28dcb81326e6a2dd4c4d4a0915308ae38507a259e656058a",
+      "stdout_sha256": "e16b71e8e5f5411745098cd80c1946c61eb83dad0b2f5f5e6ee7d38f975a3150"
+    },
+    {
+      "baseline_modules": {
+        "lib/wsp/agent.id": "17a0a21eca177022ffbcfcab934d11055a24962213fa28d156330d6bb88ab5e1",
+        "lib/wsp/grad.id": "009fdafb315a3bcf81dd22a95d0c6e16cbd4fbc8d84745dfff08b2915f0b236f",
+        "lib/wsp/numeric.id": "a52ae072d45daa05c98d27029760fd50d68fe2e44fd7022e4a473c0b6c1bb213"
+      },
+      "compile_exit_code": 0,
+      "failed_assertions": 10,
+      "gate": "grad",
+      "passed_assertions": 82,
+      "run_exit_code": 1,
+      "source_sha256": "03f1459902f045a6381b6ac871b9bcf213f010247df9bb3f8250d6ac8752895f",
+      "stdout_sha256": "d591e45f96d1258db87fa1e59ea88b599fe81817216696644ad99ee4121e5d91"
+    },
+    {
+      "baseline_modules": {
+        "lib/wsp/agent.id": "17a0a21eca177022ffbcfcab934d11055a24962213fa28d156330d6bb88ab5e1",
+        "lib/wsp/grad.id": "009fdafb315a3bcf81dd22a95d0c6e16cbd4fbc8d84745dfff08b2915f0b236f",
+        "lib/wsp/numeric.id": "a52ae072d45daa05c98d27029760fd50d68fe2e44fd7022e4a473c0b6c1bb213"
+      },
+      "compile_exit_code": 0,
+      "failed_assertions": 55,
+      "gate": "identity",
+      "passed_assertions": 43,
+      "run_exit_code": 1,
+      "source_sha256": "db81c6f41dab1528a2fb56cd7e2edc3e6830e6282a9de3de602ca720f49b1537",
+      "stdout_sha256": "3223a8066cf2edb2911b747999a1e3c9180c2d5c86ab6e0cb6ded4a7ed493260"
+    }
+  ],
+  "reproduced_scope": "WSP listed fixture/assertion gates; no full core-profile, model-quality, privacy, benchmark or native-route claim",
+  "staging_requirement": "Preserve WSP src/ and gate/ layout together so compiler projectRoot qualifies entry identity correctly; stage src modules in lib/wsp as well."
+}

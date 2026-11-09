@@ -1,0 +1,14 @@
+{
+  "bundle_byte_count": 11030,
+  "bundle_sha256": "9af8a01d5f47655eb70cff346c9174ce21e6acf5e928d2a33e36e7b781a370dd",
+  "installed_artifact": "/workspace/scratch/cb85f4e75554/idol-wsp/learned/bundle.txt",
+  "old_committed_bundle_sha256": "c7e010c7855083d74093af7890953eb5e674faf8b87dd2f66989237a382de99e",
+  "printed_bundle_byte_count": 11030,
+  "producer_inputs_sha256": "34239ecd9c170463fa500e03d93e83d0825ba4d5852f95d4c074373d5a537467",
+  "producer_stage": "/workspace/scratch/cb85f4e75554/wsp-runtime/execution/core/wsp-core.rj5tnr",
+  "producer_stdout": "/workspace/scratch/cb85f4e75554/wsp-runtime/execution/core/wsp-core.rj5tnr/results/agent.stdout",
+  "producer_stdout_sha256": "5a258d75636096bd275e5b523f982b62ff3fc0178401943f7b032307d2e05037",
+  "saved_artifact": "/workspace/scratch/cb85f4e75554/wsp-runtime/execution/learned-bundle.txt",
+  "start_offset_in_stdout": 5320,
+  "transformation": "Exact byte slice of printed length after bundle marker; no content rewriting."
+}

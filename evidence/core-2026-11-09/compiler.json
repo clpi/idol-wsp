@@ -1,0 +1,71 @@
+{
+  "cc": {
+    "exit_code": 0,
+    "stderr": "",
+    "stdout": "cc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0\nCopyright (C) 2023 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
+  },
+  "clang": {
+    "missing": true
+  },
+  "compiler_build_receipt": {
+    "argv": [
+      "/workspace/scratch/09962be4ab84/recovery/toolchain/zig/zig",
+      "build",
+      "-Doptimize=Debug",
+      "--verbose",
+      "-j2",
+      "--summary",
+      "all"
+    ],
+    "build_exit": 0,
+    "build_seconds": 12.237418459000764,
+    "compiler_argv_count": 4,
+    "compiler_path": "/workspace/scratch/09962be4ab84/recovery/final/idol/zig-out/bin/idol",
+    "compiler_sha256": "c0c39b04c2368ee919c3fa456766d5f87bb60a761ccd3118e602282fc5a2f6f1",
+    "elf_machine": 62,
+    "head": "d2fd7095724556d56a24e81d6c1c3df222a27d6e",
+    "index_tree": "5795bf3b34b93bc628bf51b02205a22d5af15a14",
+    "mode": "host",
+    "phases": [
+      {
+        "argv": [
+          "/workspace/scratch/09962be4ab84/recovery/toolchain/zig/zig",
+          "build",
+          "-Doptimize=Debug",
+          "--verbose",
+          "-j2",
+          "--summary",
+          "all"
+        ],
+        "exit": 0,
+        "name": "host-debug",
+        "seconds": 12.237418459000764
+      }
+    ],
+    "repo": "/workspace/scratch/09962be4ab84/recovery/final/idol",
+    "root": "/workspace/scratch/09962be4ab84/recovery/final/idol",
+    "scope": "Supported host Debug build of the complete integrated final source snapshot.",
+    "source_count": 4942,
+    "source_manifest_sha256": "b1951f58d4cfc169fca7c7ff29b076b822cf9de17ad8ba8a77a58fed356aaa3f",
+    "source_proof_sha256": "4842288f82c1470f1be300375dd27e9769400141e511e6393fa5c72d57b22354",
+    "stable_sources": true,
+    "zig_sha256": "718bb64754baeeb18b5c1e46df051136ae95f882b53ec3269d0b88894ac04994"
+  },
+  "compiler_build_receipt_path": "/workspace/scratch/09962be4ab84/recovery/emulation/native-dag-final/final-host-result.json",
+  "compiler_build_receipt_sha256": "9582344a8282b6f1221124e15e88de098e3109fddbc9f08e5eaad9d7713dba09",
+  "gcc": {
+    "exit_code": 0,
+    "stderr": "",
+    "stdout": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0\nCopyright (C) 2023 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
+  },
+  "host": {
+    "uname": [
+      "Linux",
+      "221e20ff0809",
+      "6.18.57",
+      "#1 SMP Tue Oct 20 21:56:04 UTC 2026",
+      "x86_64",
+      "x86_64"
+    ]
+  }
+}

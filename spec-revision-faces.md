@@ -4,8 +4,8 @@ validation, and the relearning and transaction protocols
 Work order WS-CONF-4. Governing semantics: the weights
 chapter as landed in this repo (Idol-Weights-Semantics.md)
 sections 2, 5 and 7. This spec covers the chapter faces
-and protocols that conformance examples E18, E21, E22,
-E23, E24, E25, E28 and E29 bind. It builds on
+and protocols that conformance examples E15, E18, E21, E22,
+E23, E24, E25, E28, E29 and E31 bind. It builds on
 spec-numeric-faces.md (work order WS-CONF-2), whose
 representations, refusal table and faces are unchanged
 except where section 2 of this spec completes one.
@@ -37,6 +37,14 @@ Four faces and one completion:
   recorded whose carried support was already withdrawn
   — dead on arrival at query, but recorded. No standing
   battery exercised that path; E24 and E29 bind it.
+
+The occurrence and selection correction also completes
+revision construction and Query: repeated references to
+one event are a set member once, and every current query
+requires live transitive selection support. An unconditional
+fixed inventory uses empty selection support; the premises
+of its candidate events are checked when those events are
+applied, not added to selection support by mere reference.
 
 Two consumer protocols are specified over the faces, in
 section 5: relearning after correction (E18) and the
@@ -109,7 +117,9 @@ withdrawal receipt justifies exclusion").
 
 members: (rev) -> i64. The size of the revision's
 recorded inventory: the number of candidate event
-identities fixed at construction. It never changes for
+identities fixed at construction, after deduplicating
+references to the same event. Separate equal events each
+count. It never changes for
 a given revision, whatever is learned or withdrawn
 afterwards.
 
@@ -119,7 +129,12 @@ event's standing in one revision's query:
 - ev is not a member of rev's inventory: refuses -11
   (contract). A query cannot justify the exclusion of
   an event it does not hold.
-- Some member of ev's support is unresolved: refuses
+- The anchor is withdrawn: refuses -13 (anchor). An
+  unresolved anchor premise refuses -12 (unknown).
+- The revision's selection support contains a withdrawn
+  premise: refuses -17 (withdrawn). An unresolved selection
+  premise refuses -12 (unknown).
+- Some member of any candidate event's support is unresolved: refuses
   -12 (unknown). As with livecount, an unresolved
   required premise blocks the query; the event is not
   silently excluded (chapter section 5.3).
@@ -130,14 +145,13 @@ event's standing in one revision's query:
 - ev is a member and every member of its support is
   known and unwithdrawn: returns 0.
 
-The scan is over the event's whole support, in book
-order; an unresolved member refuses even when a
-withdrawn member precedes it, matching livewalk's
-discipline. excluded speaks about the event's own
-support only: the revision-level refusals (an unusable
-anchor refuses the whole query, -13; an unresolved
-anchor premise, -12) remain livecount, total and
-observe's, and are not re-decided here.
+After confirming membership, the face validates the same
+whole query as livecount, total and observe. An unresolved
+member of any candidate's support refuses even when the
+requested event has a known withdrawal. Only after that
+validation does it inspect the requested event's whole
+support in book order. A per-event answer cannot bypass an
+invalid recipe or an unresolved fixed inventory.
 
 receipt: (rev, ev) -> str. The identity text of the
 premise whose permanent withdrawal receipt justifies
@@ -146,8 +160,8 @@ ev's support, in support book order, spelled as its
 occurrence identity (the same spelling supporthas
 resolves). Returns the empty text when ev is a member
 and live (no receipt is needed), and the empty text
-with the refusal state set (-11 not a member, -12 an
-unresolved member blocks) in the cases where excluded
+with the refusal state set (-11 not a member, -12 unknown,
+-13 anchor, or -17 withdrawn selection) in the cases where excluded
 refuses. Withdrawal receipts themselves live in the
 agent home and are not re-recorded here (status is
 derived from receipts and support, chapter section
@@ -257,11 +271,12 @@ stages the two commit orders as call orders:
   outcome in which a post-withdrawal commit publishes a
   live P-dependent event.
 
-True parallel execution is not staged: the machinery is
-single-threaded value semantics, and section 5.6's
-atomicity is exactly the property that the two commit
-orders above are the only outcomes a race can produce.
-The battery executes both orders and the invariant.
+True parallel execution is not staged: these faces execute
+in one thread. The battery checks both sequential commit
+orders and the invariant. It does not establish that an
+actual concurrent implementation admits only those orders,
+or that a model and its evidence publish atomically. Those
+remain separate integration obligations of chapter 5.6.
 
 ## 6. The battery contract
 
@@ -276,6 +291,13 @@ failure. Cases run in one process in the order written;
 each example admits its own premises through wsp.agent
 after wsp.agent.init, so no case disturbs another and
 no fixture premise is relied on.
+
+E15: repeated references to one event produce one member
+and one contribution. Two distinct equal events produce
+two members and two contributions. Permuting or repeating
+the same identity set preserves the exact total and
+equivalence. A withdrawn candidate can remain a historical
+member without becoming live.
 
 E18: the section 5.1 protocol, in order. P and Qp live
 at admission; eP and eQ construct; the revision
@@ -374,15 +396,26 @@ P3 revision's live count is 0 at the end, as is the
 first revision's: no live P-dependent event remains in
 either order.
 
+E31: direct and transitive selection support is required
+at construction and at every current query, even for an
+empty inventory. Withdrawing a selector blocks livecount,
+total, observe, excluded and receipt; retained snapshots
+remain inspectable and become unusable. Structural members
+and equivalent remain historical inspections. An independent
+recipe with the same fixed event inventory stays usable,
+and its reconstruction agrees with a fresh recipe. Unknown
+selection and unknown fixed-inventory evidence block query
+instead of supplying an exclusion receipt.
+
 ## 7. What this spec does not settle
 
 Differentiation (E09 to E12, the gradient arm of E30)
 is WS-CONF-3's. The capsule arms of E27 are WS-CAP-1's.
 Confidence values on event records (chapter section
 5.1) remain as spec-numeric-faces.md section 10 leaves
-them. Selection-support standing at query time is
-carried in the totals' support and read through usable,
-as spec-numeric-faces.md section 7 settles it; this
-spec does not add a selection-specific refusal.
+them. Compiler-discovered control dependencies, support-bearing
+ordinary scalar results, complete capsules, and concurrent
+publication are not established by these explicit handle
+and support-text faces.
 Speed is UNMEASURED, here and everywhere in this work
 order.

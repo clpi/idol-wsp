@@ -1,0 +1,28 @@
+ok: depth 12 bundle loads
+ok: depth 12 fixture has thirteen records
+ok: deep live cone stands
+ok: unrelated premise withdraws
+ok: unrelated withdrawal does not retract cone
+ok: deep premise withdraws
+ok: withdrawn leaf falls
+ok: withdrawal reaches depth 12 root
+ok: repeated read cannot reuse stale live marks
+ok: deep withdrawn cone reloads
+ok: reload preserves deep withdrawal
+ok: missing premise fixture loads
+ok: missing deep premise is never certified live
+ok: missing derivation fixture loads
+ok: missing deep derivation is never certified live
+ok: shared diamond loads
+ok: shared deep diamond stands
+ok: left branch remains independent
+ok: withdrawal in second branch reaches root
+ok: diamond restores in fresh generation
+ok: shared deep premise retracts diamond
+ok: depth 128 bundle loads
+ok: depth 128 live cone stands
+ok: depth 128 withdrawal reaches root
+ok: stale generation does not stand
+ok: absent zero handle does not stand
+ok: out-of-range handle does not stand
+standing: OK

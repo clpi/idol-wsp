@@ -1,0 +1,154 @@
+bc = {}
+
+initial = {}
+
+withdrawn = {}
+
+active = {}
+
+current = {}
+
+chk: i64 = (label: str, cond: bool)
+    if cond
+        bc.ok = bc.ok + 1
+        print("ok: " .. label)
+        return 1
+    bc.bad = bc.bad + 1
+    print("FAIL: " .. label)
+    0
+
+streq: i64 = (a: str, b: str)
+    if a:len() != b:len()
+        return 0
+    i = 1
+    while i <= a:len()
+        if a:byte(i) != b:byte(i)
+            return 0
+        i = i + 1
+    1
+
+digits: str = (v: i64)
+    if v == 0
+        return "0"
+    out = ""
+    n = v
+    while n > 0
+        out = "0123456789":sub(n % 10 + 1, n % 10 + 1) .. out
+        n = n // 10
+    out
+
+appv: str = (a: str, v: str)
+    a .. v
+
+main: i64 = ()
+    bc.ok = 0
+    bc.bad = 0
+    wsp.agent.init()
+    wsp.agent.reset()
+    artifact: str = "learned/bundle.txt":read()
+    chk("bundle artifact contains bytes", artifact:len() > 0)
+    admitted = wsp.agent.load(artifact)
+    chk("bundle artifact admits in a fresh instance", admitted == 1)
+    if admitted != 1
+        print("bundle consumer refuses the artifact: " .. wsp.agent.refusal())
+        return 1
+    nr = wsp.agent.nrecords()
+    chk("bundle artifact contains derivation records", nr > 0)
+    seats = 1
+    role = 1
+    while role <= 3
+        active[role] = wsp.agent.seating(role)
+        current[role] = wsp.agent.current(role)
+        if active[role] < 1 or current[role] < 1
+            seats = 0
+        role = role + 1
+    chk("bundle artifact resolves all active and current seatings", seats == 1)
+    chk("bundle artifact contains its learned seating", wsp.agent.learnedseating() > 0)
+    stored = wsp.agent.store()
+    chk("bundle artifact round trip preserves exact bytes", streq(stored, artifact) == 1)
+    live = 0
+    fallen = 0
+    target = 0
+    edge = 0
+    r = 1
+    while r <= nr
+        verdict = wsp.agent.standing(r)
+        initial[r] = verdict
+        if verdict == 0
+            fallen = fallen + 1
+        if verdict == 1
+            live = live + 1
+            if target == 0
+                q = 1
+                while q <= wsp.agent.ncites(r)
+                    kind = wsp.agent.citekind(r, q)
+                    if target == 0
+                        if kind == 1 or kind == 4
+                            target = r
+                            edge = q
+                    q = q + 1
+        r = r + 1
+    chk("bundle artifact retains live derivations", live > 0)
+    chk("bundle artifact retains fallen historical derivations", fallen > 0)
+    chk("bundle artifact exposes a live seating-dependent consumer", target > 0)
+    chk("bundle artifact reload succeeds", wsp.agent.load(stored) == 1)
+    chk("bundle artifact reload preserves record count", wsp.agent.nrecords() == nr)
+    identical = 1
+    r = 1
+    while r <= nr
+        if wsp.agent.standing(r) != initial[r]
+            identical = 0
+        r = r + 1
+    chk("bundle artifact reload preserves every standing verdict", identical == 1)
+    identical = 1
+    role = 1
+    while role <= 3
+        if wsp.agent.seating(role) != active[role] or wsp.agent.current(role) != current[role]
+            identical = 0
+        role = role + 1
+    chk("bundle artifact reload preserves exact active and current occurrences", identical == 1)
+    chk("bundle artifact reload preserves exact serialized bytes", streq(wsp.agent.store(), artifact) == 1)
+    if target == 0
+        return 1
+    identity = wsp.agent.citeof(target, edge)
+    chk("bundle consumer withdraws the cited exact seating occurrence", wsp.agent.withdraw(identity) == 1)
+    chk("bundle consumer falls after its seating withdrawal", wsp.agent.standing(target) == 0)
+    preserved = 1
+    r = 1
+    while r <= nr
+        verdict = wsp.agent.standing(r)
+        withdrawn[r] = verdict
+        if initial[r] != 1 and verdict == 1
+            preserved = 0
+        r = r + 1
+    chk("bundle withdrawal revives no historical or unavailable derivation", preserved == 1)
+    changed = wsp.agent.store()
+    chk("bundle withdrawal changes its serialized evidence", streq(changed, artifact) == 0)
+    chk("bundle stale artifact cannot clear the current withdrawal", wsp.agent.load(artifact) == -10)
+    chk("bundle stale artifact refusal preserves all current bytes", streq(wsp.agent.store(), changed) == 1)
+    chk("bundle stale artifact refusal preserves the fallen consumer", wsp.agent.standing(target) == 0)
+    wsp.agent.reset()
+    chk("bundle withdrawn evidence admits in a fresh receiver", wsp.agent.load(changed) == 1)
+    chk("bundle withdrawn evidence round trip preserves exact bytes", streq(wsp.agent.store(), changed) == 1)
+    chk("bundle withdrawn evidence preserves record count", wsp.agent.nrecords() == nr)
+    identical = 1
+    r = 1
+    while r <= nr
+        if wsp.agent.standing(r) != withdrawn[r]
+            identical = 0
+        r = r + 1
+    chk("bundle withdrawn evidence preserves every standing verdict", identical == 1)
+    chk("bundle withdrawn occurrence remains withdrawn after reload", wsp.agent.standing(target) == 0)
+    line = "bundle vector: "
+    line = appv(line, digits(bc.ok))
+    line = appv(line, " ok / ")
+    line = appv(line, digits(bc.bad))
+    line = appv(line, " FAIL")
+    print(line)
+    if bc.bad == 0
+        print("PASS")
+        return 0
+    print("FAIL")
+    1
+
+os.exit(main())

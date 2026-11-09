@@ -24,21 +24,26 @@ is deterministic. Live surfaces are slice two (work order W3).
 - **Seating.** A weight table admitted into the pool through the
   upstream surface's seat face. There is no mutation face: a changed
   table is a new seating. **Reweighting means re-seating.**
-- **Premise.** A fact a derivation depends on, with an identity. A
-  premise's identity is the sha256 (the upstream digest face) of its
-  canonical statement form. For a repo fact or an observation, the
-  statement form is its statement text; a statement containing a zero
-  byte is refused by name. For a weight table, the identity is the
-  upstream premise digest. For a rule, the identity is its rule version
-  word.
-- **Premise record.** What a derivation publishes: { the digests of the
-  weight tables read, the rule version word, the digests of the other
+- **Premise.** A fact a derivation depends on, with an immutable
+  occurrence identity. In this fixture, premise and seating occurrences
+  use their generation-local registration rows, rendered as fixed-width
+  tagged identities. A content digest describes the statement or table;
+  it does not merge separate occurrences. For a repo fact or observation,
+  the statement form is its text. The original slice requirement to
+  refuse zero-byte statement text is not implemented by the current
+  premise face and is not a delivered guarantee. A rule is named by its rule version word. These are
+  the slice's explicit faces, not a claim that its local row handles
+  implement the chapter's complete authoritative identity contract.
+- **Premise record.** What a derivation publishes: { the identities of the
+  weight seatings read, the rule version word, the identities of the other
   premises cited, the output digest }. The upstream record shape,
   extended by the citation table of section 5 — never a private format.
 - **Derivation.** A published choice together with its premise record.
-  A derivation **stands** when the stands face recomputes every cited
-  digest as unchanged; it **falls** when any cited premise is withdrawn
-  or any cited table's current seating digest differs.
+  A derivation **stands** when the standing face validates its complete
+  recorded support and required table rows. A changed row or shape can
+  invalidate its readers; explicit withdrawal invalidates every reader
+  of that exact occurrence, even after identical content is re-seated.
+  Unresolved citations block current use.
 - **Result premise.** The outcome of an executed tool call. Its premise
   set contains the output digest of the derivation that chose the call,
   plus the identities of any observation rows the citation table names
@@ -190,8 +195,9 @@ measured defect — cost a high power of object count under a text-rescan
 mechanism — is this program's standing warning, and is designed out
 here, not measured later):
 
-- Tables, premises, and records are held in tables keyed by identity
-  digest. Premise sets are identity sets. No operation in the loop
+- Tables, premises, and records are held in tables keyed by identity.
+  Content digests are separate from occurrence references. Premise sets
+  are identity sets. No operation in the loop
   rescans a text representation to answer a membership, standing, or
   cone question.
 - The slice exposes a **lookup counter**: one count for each
@@ -203,6 +209,45 @@ here, not measured later):
   step 3 = 2×2 + 1 = 5; learning = 6 + 3 = 9. The battery asserts these
   counts exactly (case B13). Wall-clock time is never asserted in the
   battery; it is measured under section 10.
+
+### 8.1 Occurrences across the bundle boundary
+
+New table-row citations and the bundle's active/current `A` pointers
+use exact seating occurrence identities. A fresh seating of identical
+bytes does not revive readers of an explicitly withdrawn occurrence.
+Withdrawing the old occurrence again leaves the new one unchanged.
+Both premise and seating occurrence spellings must be canonical;
+a numeric prefix followed by malformed text is not an identity alias.
+
+Legacy content-digest seating references remain readable only when
+exactly one seating in that bundle resolves the digest. A repeated
+digest is ambiguous: validation reports unknown, withdrawal refuses
+to choose a target, and bundle admission refuses referenced ambiguity
+with code -10. The loader does not rewrite old record identities to
+retarget their citations.
+
+Before changing the WSP generation, load validates seating admission
+and digests, resolves active/current pointers to the declared role,
+and checks the incoming seating/premise occurrence inventory against
+the current one. Known occurrences must retain identical immutable
+content and every current seating/premise must remain in the ordinal
+prefix. A currently known permanent withdrawal cannot become live in
+an incoming bundle. Violations refuse before WSP books and pointers
+change. A corrupt seating keeps the existing admission or digest
+refusal code. The existing CSV faces handle seatings with more than six
+values, and the parsed count must equal the admitted shape's cardinality;
+extra trailing values cannot hide behind a digest of a shorter tensor.
+
+An explicitly reset fixture may import a different inventory. Reset
+is a fixture-generation boundary; it is not a privacy deletion, a
+global authority operation, or a way to satisfy permanent revocation
+across authorities. The import preflight itself uses `ml.space.seat`
+for substrate validation and can change that substrate's staging
+state. The preserved-state claim covers WSP books and current/active
+pointers on refusal; it does not establish atomic adoption across
+the substrate, complete numeric capsules, record-history preservation,
+or arbitrary concurrent publication. `gate/identity.id` binds these
+specific guarantees and limits.
 
 ## 9. Compactness accounting
 

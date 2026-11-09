@@ -1,0 +1,23 @@
+ok: withdrawal: the agent initialises
+ok: A: the learned seating stands before any reseat
+ok: A: a replacement that leaves row one unchanged leaves its reader standing
+ok: A: a replacement that leaves row two unchanged leaves its reader standing
+ok: A: a replacement that changes row three falls its reader
+ok: A: a seating citation of the displaced seating falls
+ok: B: step one stands before the withdrawal
+ok: B: the first result stands before the withdrawal
+ok: B: step two stands before the withdrawal
+ok: B: the current choice seating withdraws
+ok: B: a direct table-row citation falls on explicit withdrawal
+ok: B: a transitive citation one hop out falls on explicit withdrawal
+ok: B: a transitive citation two hops out falls on explicit withdrawal
+ok: C: the bundle stores
+ok: C: the bundle loads into a fresh instance
+ok: C: the withdrawn seating still falls after the reload
+ok: D: a step over the replacement seating stands
+ok: D: the withdrawn seating's reader stays fallen after a replacement
+ok: E: the learned seating stands before the withdrawal
+ok: E: the learned-from seating withdraws
+ok: E: a seating citation falls on explicit withdrawal
+ok: E: a table-row citation of the same seating falls too
+withdrawal: OK

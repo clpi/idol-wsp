@@ -1,0 +1,94 @@
+ok: e09 primal constructs
+ok: e09 primal is scalar
+ok: e09 primal is 13
+ok: e09 gradient constructs
+ok: e09 gradient dtype is q
+ok: e09 gradient rank
+ok: e09 gradient extent
+ok: e09 gradient cell 0 is 4
+ok: e09 gradient cell 1 is 3
+ok: e09 delta cell 0
+ok: e09 delta cell 1
+ok: e09 event constructs
+ok: e09 observed cell 0
+ok: e09 observed cell 1
+ok: e09 support model constructs
+ok: e09 model carries the premise
+ok: e09 gradient at the model constructs
+ok: e09 gradient carries the model premise
+ok: e09 zero gradient cell 0
+ok: e09 zero gradient cell 1
+ok: e09 zero gradient keeps the support
+ok: e09 learned event live
+ok: e09 withdraw lands
+ok: e09 event falls with the model
+ok: e10 integer gradient refuses
+ok: e10 refusal named integer
+ok: e10 integer ideal refuses
+ok: e10 branch refuses away from zero
+ok: e10 refusal named branch
+ok: e10 draw refuses
+ok: e10 refusal named effect
+ok: e10 nested draw refuses
+ok: e11 primal constructs
+ok: e11 primal is zero
+ok: e11 primal word is zero
+ok: e11 ideal is one
+ok: e11 gradient dtype is q
+ok: e11 gradient is one
+ok: e11 f64 primal is one
+ok: e11 f64 gradient is one
+ok: e12 primal zero denominator refuses
+ok: e12 refusal named zero
+ok: e12 gradient refuses primal direction
+ok: e12 second primal is minus one
+ok: e12 gradient refuses ideal direction
+ok: e12 refusal named zero again
+ok: e30 primal is five
+ok: e30 gradient constructs
+ok: e30 gradient dtype is q
+ok: e30 gradient rank
+ok: e30 gradient extent zero
+ok: e30 gradient extent three
+ok: e30 gradient is empty
+ok: spot div gradient cell 0
+ok: spot div gradient cell 1
+ok: spot replace gradient cell 0
+ok: spot replace gradient cell 1
+ok: spot contract gradient cell 0
+ok: spot contract gradient cell 1
+ok: spot contract gradient cell 2
+ok: spot contract gradient cell 3
+ok: spot broadcast gradient cell 0
+ok: spot broadcast gradient cell 1
+ok: spot scale primal is twelve
+ok: spot scale gradient is four
+ok: spot nonscalar gradient refuses
+ok: spot refusal named scalar
+ok: constant gradient constructs
+ok: constant gradient first coordinate is zero
+ok: constant gradient second coordinate is zero
+FAIL: constant gradient retains supplied input support
+FAIL: constant gradient has exactly the supplied support
+ok: constant gradient of floating input remains rational
+FAIL: constant floating gradient retains supplied input support
+ok: captured constant gradient is zero
+FAIL: captured constant gradient retains input support
+ok: captured constant gradient retains captured support
+FAIL: captured constant gradient has both supports
+ok: constant gradient can learn while support is live
+ok: constant gradient learned event begins live
+ok: constant supplied input withdrawal commits
+ok: constant gradient retains historical numeric zero
+FAIL: constant gradient is no longer current
+FAIL: constant gradient learned event retracts with input
+FAIL: constant gradient cannot launder withdrawn input into learning
+ok: constant independent zero still learns
+ok: empty constant gradient constructs
+ok: empty constant gradient preserves rank
+ok: empty constant gradient preserves empty shape
+FAIL: empty constant gradient retains input support
+ok: empty input withdrawal commits
+FAIL: empty constant gradient is no longer current
+grad vector: 82 ok / 10 FAIL
+FAIL

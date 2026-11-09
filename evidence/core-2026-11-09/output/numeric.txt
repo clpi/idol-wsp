@@ -1,0 +1,100 @@
+ok: e01 literals construct
+ok: e01 literal canonical form
+ok: e01 sum constructs
+ok: e01 0.1 + 0.2 is exactly 3/10
+ok: e01 factored parts
+ok: e01 factored denominator
+ok: e01 factored shift
+ok: e01 sum equals the 0.3 literal
+ok: e02 cast constructs
+ok: e02 rounded value exact
+ok: e02 word pattern
+ok: e02 cast differs from the rational
+ok: e02 literal lands on the same grid point
+ok: e02 digest is a function of the value
+ok: e02 f64 grid point exact
+ok: e03 mismatched add refuses shape
+ok: e03 refusal named
+ok: e04 broadcast constructs
+ok: e04 broadcast rank
+ok: e04 broadcast extent
+ok: e04 broadcast extent two
+ok: e04 broadcast add constructs
+ok: e04 cell 0
+ok: e04 cell 1
+ok: e04 cell 2
+ok: e04 cell 3
+ok: e04 cell 4
+ok: e04 cell 5
+ok: e04 no implicit broadcast
+ok: e05 contraction constructs
+ok: e05 result rank
+ok: e05 result extent
+ok: e05 cell 0
+ok: e05 cell 1
+ok: e05 matmul rank
+ok: e05 matmul cell 0
+ok: e05 matmul cell 1
+ok: e05 matmul cell 2
+ok: e05 matmul cell 3
+ok: e06 empty literals construct
+ok: e06 empty contraction constructs
+ok: e06 result rank
+ok: e06 result extent
+ok: e06 result extent two
+ok: e06 result cardinality
+ok: e06 cells are zero
+ok: e06 last cell zero
+ok: e06 zero extent mismatch refuses
+ok: e07 read constructs
+ok: e07 read is rank zero
+ok: e07 read value
+ok: e07 replace constructs
+ok: e07 replaced cell
+ok: e07 untouched cell
+ok: e07 original unchanged
+ok: e07 same is handle identity
+ok: e07 same reflexive
+ok: e07 replaced differs numerically
+ok: e07 support count kept
+ok: e08 mixed dtype refuses
+ok: e08 refusal named dtype
+ok: e08 fractional to integral refuses
+ok: e08 refusal named integral
+ok: e08 overflow refuses range
+ok: e08 refusal named range
+ok: e08 integral arithmetic in range
+ok: e08 dtype kept
+ok: e08 width kept
+ok: e30 scalar constructs
+ok: e30 scalar rank
+ok: e30 scalar cardinality
+ok: e30 scalar value
+ok: e30 scalar needs one value
+ok: e30 refusal named count
+ok: e30 division by zero refuses
+ok: e30 refusal named zero
+ok: e30 exact division
+ok: e19 premises admitted live
+ok: e19 events construct
+ok: e19 revision constructs
+ok: e19 both events live
+ok: e19 exact total kept
+ok: e19 observe constructs
+ok: e19 observed rounds ties to even
+ok: e19 observed word
+ok: support total carries both premises
+ok: support total has p
+ok: support total has q
+ok: support total usable
+ok: support kept through zero product
+ok: premstate unknown is unresolved
+ok: withdraw lands
+ok: premstate withdrawn
+ok: e19 one event survives
+ok: support retained after withdrawal
+ok: usable falls with its premise
+ok: e19 observed after withdrawal exact
+ok: e19 observed word after withdrawal
+numeric vector: 98 ok / 0 FAIL
+PASS

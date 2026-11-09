@@ -1,0 +1,28 @@
+ok: bundle artifact contains bytes
+ok: bundle artifact admits in a fresh instance
+ok: bundle artifact contains derivation records
+ok: bundle artifact resolves all active and current seatings
+ok: bundle artifact contains its learned seating
+ok: bundle artifact round trip preserves exact bytes
+ok: bundle artifact retains live derivations
+ok: bundle artifact retains fallen historical derivations
+ok: bundle artifact exposes a live seating-dependent consumer
+ok: bundle artifact reload succeeds
+ok: bundle artifact reload preserves record count
+ok: bundle artifact reload preserves every standing verdict
+ok: bundle artifact reload preserves exact active and current occurrences
+ok: bundle artifact reload preserves exact serialized bytes
+ok: bundle consumer withdraws the cited exact seating occurrence
+ok: bundle consumer falls after its seating withdrawal
+ok: bundle withdrawal revives no historical or unavailable derivation
+ok: bundle withdrawal changes its serialized evidence
+ok: bundle stale artifact cannot clear the current withdrawal
+ok: bundle stale artifact refusal preserves all current bytes
+ok: bundle stale artifact refusal preserves the fallen consumer
+ok: bundle withdrawn evidence admits in a fresh receiver
+ok: bundle withdrawn evidence round trip preserves exact bytes
+ok: bundle withdrawn evidence preserves record count
+ok: bundle withdrawn evidence preserves every standing verdict
+ok: bundle withdrawn occurrence remains withdrawn after reload
+bundle vector: 26 ok / 0 FAIL
+PASS

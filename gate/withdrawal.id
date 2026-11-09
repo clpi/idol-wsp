@@ -1,6 +1,6 @@
 # Withdrawal versus replacement: the two fates of a seating.
 # An explicit withdrawal (the public withdraw face applied to
-# a seating digest) is permanent: every citation of that
+# a seating identity) is permanent: every citation of that
 # seating falls, table-row citations and seating citations
 # alike, direct and transitive, even while the withdrawn
 # seating is still the role's current seating. A replacement
@@ -64,7 +64,7 @@ main: i64 = ()
     expect(wsp.agent.stands(s1) == 1, "B: step one stands before the withdrawal")
     expect(wsp.agent.stands(o1) == 1, "B: the first result stands before the withdrawal")
     expect(wsp.agent.stands(s2) == 1, "B: step two stands before the withdrawal")
-    d = wsp.agent.sdigest(wsp.agent.seating(1))
+    d = wsp.agent.seatid(wsp.agent.seating(1))
     expect(wsp.agent.withdraw(d) == 1, "B: the current choice seating withdraws")
     expect(wsp.agent.stands(s1) == 0, "B: a direct table-row citation falls on explicit withdrawal")
     expect(wsp.agent.stands(o1) == 0, "B: a transitive citation one hop out falls on explicit withdrawal")
@@ -78,12 +78,9 @@ main: i64 = ()
 
     # D — a later replacement does not resurrect the
     # withdrawn seating's readers, and its own readers stand.
-    # The replacement carries different bytes: a reseat of the
-    # identical bytes would be the same seating by identity,
-    # since a seating's identity is its digest.
-    fc3 = wsp.agent.file(5, 3, 4, 4, 9, 9, 6, 3, 2, "choice")
+    fc3 = wsp.agent.file(5, 3, 4, 4, 2, 6, 6, 3, 2, "choice")
     h = wsp.agent.seatfile(1, fc3, "", 3, 2)
-    wsp.agent.setvals(h, 5, 3, 4, 4, 9, 9, 6)
+    wsp.agent.setvals(h, 5, 3, 4, 4, 2, 6, 6)
     s1n = wsp.agent.step(1)
     expect(wsp.agent.stands(s1n) == 1, "D: a step over the replacement seating stands")
     expect(wsp.agent.stands(s1) == 0, "D: the withdrawn seating's reader stays fallen after a replacement")
@@ -97,7 +94,7 @@ main: i64 = ()
     r3 = wsp.agent.result(3)
     ln2 = wsp.agent.learn()
     expect(wsp.agent.stands(ln2) == 1, "E: the learned seating stands before the withdrawal")
-    d = wsp.agent.sdigest(wsp.agent.current(1))
+    d = wsp.agent.seatid(wsp.agent.current(1))
     expect(wsp.agent.withdraw(d) == 1, "E: the learned-from seating withdraws")
     expect(wsp.agent.stands(ln2) == 0, "E: a seating citation falls on explicit withdrawal")
     expect(wsp.agent.stands(t1) == 0, "E: a table-row citation of the same seating falls too")

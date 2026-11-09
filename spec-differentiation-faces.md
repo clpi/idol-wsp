@@ -280,7 +280,10 @@ order (every parent before its children, by section
    contribution. The gradient is the sum of the
    adjoints of all input nodes; an expression that
    never mentions its input has the zero gradient of
-   the input's shape.
+   the input's shape. That zero still carries the
+   supplied input's support, even for an empty input.
+   The input is demanded by Grad's contract independently
+   of whether an expression input node is reached.
  - constant: nothing. Captured values are not
    differentiated; their support still flows
    (section 6).
