@@ -83,11 +83,11 @@ rch = {}
 
 rscore = {}
 
-rstart = {}
+rrstart = {}
 
 rrlen = {}
 
-rbytes = {}
+rrbytes = {}
 
 rout = {}
 
@@ -172,8 +172,8 @@ putb: i64 = (book: i64, b: i64)
         sdig[sdig:len() + 1] = b
         return sdig:len()
     if book == 2
-        rbytes[rbytes:len() + 1] = b
-        return rbytes:len()
+        rrbytes[rrbytes:len() + 1] = b
+        return rrbytes:len()
     if book == 3
         cbytes[cbytes:len() + 1] = b
         return cbytes:len()
@@ -205,7 +205,7 @@ getb: i64 = (book: i64, at: i64)
     if book == 1
         return sdig[at]
     if book == 2
-        return rbytes[at]
+        return rrbytes[at]
     if book == 3
         return cbytes[at]
     if book == 4
@@ -676,7 +676,7 @@ blen: i64 = (book: i64)
     if book == 1
         return sdig:len()
     if book == 2
-        return rbytes:len()
+        return rrbytes:len()
     if book == 3
         return cbytes:len()
     if book == 4
@@ -724,7 +724,7 @@ citeadd: i64 = (r: i64, d: str, ck: i64, row: i64)
     1
 
 seal: i64 = (r: i64, rule: str, outd: str)
-    rstart[r] = blen(2)
+    rrstart[r] = blen(2)
     rrlen[r] = rule:len()
     wtext(2, rule)
     ooff[r] = blen(4)
@@ -764,7 +764,7 @@ odig: str = (r: i64)
     piece(4, ooff[r], 64)
 
 rtext: str = (r: i64)
-    piece(2, rstart[r], rrlen[r])
+    piece(2, rrstart[r], rrlen[r])
 
 resof: str = (r: i64)
     if reslen[r] == 0
