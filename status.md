@@ -402,6 +402,40 @@ base agent home, so it is not a regression of this landing;
 it is the missing application id defect class owned by the
 compiler lane named in the lane record. Speed is UNMEASURED.
 
+## Revision query faces and the consumer protocols (WS-CONF-4)
+
+The revision query faces of the weights chapter are landed,
+with the learn face's whole-support validation completed.
+spec-revision-faces.md states the executable spec: the fixed
+inventory of a revision and its per-event exclusion evidence,
+the Equivalent revision comparison, the validation of every
+member of an event's whole support at commit, and the two
+consumer protocols (relearning after correction; the
+learn/withdraw transaction discipline). The faces are in
+src/numeric.id as part of the home wsp.numeric: members reads
+a revision's fixed inventory; excluded and receipt answer one
+event's standing in one revision's query and name the premise
+whose permanent withdrawal receipt justifies an exclusion;
+equivalent is the chapter's revision membership comparison.
+The event face now validates the anchor's and the delta's
+carried support at commit as well as the declared premise
+set, as chapter section 5.2 requires: learning from a value
+whose retained support has been withdrawn refuses -17
+instead of recording a dead event. The standing battery is
+gate/revision.id with its control gate/revision.sh. Measured
+at this landing, on the Mac mini at the reduced contract
+stated in the lane record (same compiler tree, C route):
+revision vector 145 ok / 0 FAIL, covering E18, E21, E22,
+E23, E24, E25, E28 and E29 in full. The standing batteries
+hold at this pin: numeric 98 ok / 0 FAIL, agent 126 / 0,
+withdrawal 22 / 0, intent 25 / 0, slice batteries 148 / 0,
+159 / 0, 159 / 0 with bundle control 14 / 0 and basis
+control 10 / 0; the retract battery passes. The two retract
+companions still refuse identically at this pin (the missing
+application id defect class, pre-existing at the base pin,
+owned by the compiler lane named in the lane record). Speed
+is UNMEASURED.
+
 ## Host seams
 
 One, named at this landing: slice one's execution route at its pin is
