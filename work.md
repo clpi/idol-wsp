@@ -92,20 +92,33 @@ evidence recorded in [status.md](status.md).
 
 ## WS-SEM-10 — Complete standing traversal
 
-- **State:** IMPLEMENTED ON REVIEW BRANCH; EXECUTION BLOCKED. No closure
-  or merge is claimed. The source replaces the depth-10 false-live exit
-  with an explicit DFS path and per-read visiting/completed marks.
-- **Owner/scope:** WSP slice, `src/agent.id`. The companion regression is
-  `gate/standing.id`; the existing B1–B15 gate stays unchanged. No upstream
-  compiler or graph identity changes are part of this correction.
-- **Evidence:** [evidence/standing.md](evidence/standing.md). Type checking
-  succeeds on the retained historical bootstrap; code emission fails for
-  the unchanged baseline and candidate. External model checks are not a
-  replacement for either Idol execution gate.
-- **Next action:** stage the candidate home at `lib/wsp/agent.id` in a
-  verified compiler tree, then execute `gate/agent.id` and
-  `gate/standing.id`. Preserve the exact compiler/source/input/output
-  receipt and measure the standing cost before closing this work order.
-- **Condition:** both execution gates pass at the named supported pin;
-  independent review is resolved; the checked bytes are the proposed
-  merge bytes. Until then the branch remains draft.
+- **State:** MERGED AND QUALIFIED AT THE FIXED PIN. Pull request 1
+  merged at ce1b88448f98c7886dfa1e75e69028d4fd7657d6 (2026-11-09
+  08:59 UTC); the source replaces the depth-10 false-live exit with an
+  explicit DFS path and per-read visiting/completed marks. The merged
+  bytes themselves have no green execution (QUALIFICATION OPEN at
+  ce1b8844: emission refused at the retained compiler binary). The
+  file-scope emission fix landed as
+  1c0d179f4c2ccebed6eab90e3a9c93e016fb35d1 with `gate/agent.id`
+  executed 126/0 there; the withdrawal-versus-replacement distinction
+  that the same audit round opened landed as
+  262b2fb6c7d7a2ee263d11d0b492de0f222d4fb9 with `gate/withdrawal.id`
+  executed 22/0 and `gate/agent.id` still 126/0, both at the resident
+  run-tree binary (md5 08be8c7325c3aeefaeff7f60f171aefe, C route).
+- **Owner/scope:** WSP slice, `src/agent.id`. The companion regression
+  is `gate/standing.id`; the existing B1–B15 gate stays unchanged. No
+  upstream compiler or graph identity changes are part of this
+  correction.
+- **Evidence:** status.md (the WS-SEM-10 and withdrawal sections) and
+  [evidence/standing.md](evidence/standing.md) for the pre-merge
+  history. The conformance pack's deep-chain case (its retraction
+  battery, case R11) executed green at the same configuration, at
+  each of the pack's exports, R3 and R5/R6 stages.
+- **Next action:** execute `gate/standing.id` at a compiler binary
+  that emits its fixture program (at the retained binary its fixture
+  refuses emission against the merged and the pre-merge home alike),
+  and measure the standing cost (UNMEASURED until then).
+- **Condition:** `gate/standing.id` green at a named pin closes the
+  surviving remainder of this work order. The traversal itself is
+  closed: merged, qualified at the fixed pin, and carrying the
+  withdrawal distinction.

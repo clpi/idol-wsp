@@ -4,34 +4,96 @@ The state of Idol WSP, stated plainly. This document is updated in the
 same commit as any landing it describes. Claims here carry their
 evidence or are marked UNMEASURED / UNVERIFIED / OPEN.
 
-## WS-SEM-10 review candidate (2026-11-09) — execution blocked
+## WS-SEM-10 merged (2026-11-09) — qualification history, stated exactly
 
-The standing traversal in this review candidate uses an explicit path
-instead of a depth-10 success cutoff. It checks the whole reachable cone,
-rejects a cycle, shares fully checked branches within one read, and
-rebuilds its marks on every read. The two-tier contract remains: the
-queried record checks its own table rows by value; cited derivations
-propagate existence falls.
+Pull request 1 merged the standing-full-cone fix on 2026-11-09 at
+08:59 UTC: main is the merge commit
+ce1b88448f98c7886dfa1e75e69028d4fd7657d6, and the standing traversal
+in `src/agent.id` is an explicit DFS with cycle rejection and
+completed-cone reuse. The depth budget is gone; it is not coming
+back. (An earlier version of this section described the fix as an
+unmerged, execution-blocked review candidate. That prose was stale
+the moment the merge landed and is superseded by this section.)
 
-`gate/standing.id` adds deep live and withdrawn chains, missing premises
-and derivations, a shared diamond with a second-branch withdrawal,
-repeated reads, reload and stale-generation checks. It uses the existing
-public bundle surface. The original `gate/agent.id` remains unchanged.
+The merged bytes at ce1b8844 have **no green execution**:
+QUALIFICATION OPEN at the merged bytes. At the resident compiler
+binary (the run-tree binary, md5 08be8c7325c3aeefaeff7f60f171aefe;
+the C route), emission of the merged home refuses with
+hash-key-not-str in the C realizer. Isolation on the qualifying
+lane's own firing found the refused construct: the merged
+traversal's function-local scratch tables, assigned by integer
+key — the pre-merge home emits at the same binary, and the merged
+home with only those tables moved to file scope emits. The move
+landed as its own commit, 1c0d179f4c2ccebed6eab90e3a9c93e016fb35d1,
+with its own executed battery, so qualification covers the fixed
+source at its new pin, not ce1b8844 as merged:
 
-**This candidate has not passed either execution gate. Do not merge it
-until both gates execute successfully at a named, supported compiler pin.**
-The historical bootstrap available for this check type-checks both gates,
-but cannot emit either the unchanged baseline battery or the candidate
-battery. Details and exact source hashes are in
-[evidence/standing.md](evidence/standing.md). These are compiler emission
-failures, not passing executions. External development-model checks are
-not Idol conformance evidence. Timing, native behavior and performance of
-this correction remain UNMEASURED.
+- At 1c0d179f (home sha256 dc1335a39c1ecf3c4e0004d6a9c13ad9bb0d442ddfcb5f1dbd12065c839a3227):
+  `gate/agent.id` executed green — pass 126 / skip 0 / fail 0,
+  exit 0, "battery: OK" — on the build VM in a private copy of
+  the resident run tree (binary above; the tree's own
+  `lib/ml/space.id`, and again with the conformance pack's
+  pinned substrate copy, clpi/idol
+  2ca8921667440fc055dba610ef5c35c75d50666d).
+- `gate/standing.id` has still **not executed**: its own fixture
+  program refuses emission at this binary against the merged
+  home and against the pre-merge home alike (first refusal: a
+  name-to-name concatenation in its record builder; spelling
+  variants reach a record-result-region refusal in its chain
+  builder). The depth regression therefore stands NOT EXECUTED
+  at this binary in its own gate; the conformance pack's
+  retraction battery carries the same depth obligation as its
+  case R11 (a twelve-deep citation chain over one premise;
+  withdrawing the root retracts the twelfth record), and that
+  case executed green at the qualification configuration at
+  each of the pack's exports, R3 and R5/R6 stages (recorded in
+  the fleet-side record, research/wsp-rank1-rebase-2026-11-09.md
+  in the workspace).
+  Standing cost and timing remain UNMEASURED.
 
-All green execution claims below refer to their original named source
-revision and pin, not these changed bytes. No new host runtime or foreign
-product code is introduced by this correction; the existing C route seam
-below remains the route requiring qualification.
+## Withdrawal versus replacement (2026-11-09) — resolved, landed, executed
+
+An external audit's control-flow reading at ce1b8844 found that
+explicit withdrawal and ordinary replacement shared one mark:
+the standing walk read that mark only for seating citations, so
+a table-row citation of an explicitly withdrawn seating that was
+still current answered standing, and transitive citers inherited
+the answer. The prediction was then proven by execution (the new
+battery below fails those cases on the merged traversal), and
+the distinction is landed in commit
+262b2fb6c7d7a2ee263d11d0b492de0f222d4fb9 (home sha256
+6bb07137b22ca7f7fcbb329f0d22bc4aad5c58d98fa024d6d4e2a46c2fbfba61):
+displacement by a correcting seating marks 1 and keeps the row
+rule (a reader of an unchanged row stands); the withdraw face
+marks 2, and every citation of a mark-2 seating falls —
+table-row and seating citations, direct and transitive — with
+the mark carried through the bundle form, so a withdrawal
+survives a store and load round trip. The acceptance battery is
+`gate/withdrawal.id` (22 cases: the displacement row rule, a
+seating citation of a displaced seating, direct and transitive
+withdrawal falls, bundle persistence, no resurrection by a
+later replacement, and a seating citation under explicit
+withdrawal). At the configuration above it executes green —
+22 ok / 0 FAIL, exit 0, "withdrawal: OK" — and `gate/agent.id`
+remains 126 / 0 at the same pin. The 126-case battery and the
+36 substrate checks recorded below at pin 7ad63393 are
+REPOSITORY-REPORTED at that earlier configuration; they do not
+by themselves qualify any later bytes, and E01–E31 remain
+NOT EXECUTED as a complete battery. The conformance pack's
+retraction cluster (examples 14–24, with its faces and
+predicates arms) is the executed subset, at the qualification
+configuration: the faces and predicates arms execute green at
+their stages, and the retraction battery's single red is one
+assertion of example 16's substrate arm, red for a
+compiler-side reason (a rule-name lookup that fails in a
+mixed graph once any agent record is sealed earlier in the
+process; the same faces are green in the pack's substrate
+battery at the same configuration) — recorded fleet-side in
+the same record. The pack's own landing into this repo is
+staged, not landed: it waits on that red and on a second
+compiler-side red in the slice battery's bundle round trip
+at the R5/R6 stage (a seating digest that is not a pure
+function of the seated file at this binary).
 
 ## The three proofs, tracked separately
 
