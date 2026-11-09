@@ -89,3 +89,23 @@ evidence recorded in [status.md](status.md).
   newline, with the print's one trailing newline removed.
 - **Next action:** none — closed on this evidence.
 - **Condition:** met (the re-run arm).
+
+## WS-SEM-10 — Complete standing traversal
+
+- **State:** IMPLEMENTED ON REVIEW BRANCH; EXECUTION BLOCKED. No closure
+  or merge is claimed. The source replaces the depth-10 false-live exit
+  with an explicit DFS path and per-read visiting/completed marks.
+- **Owner/scope:** WSP slice, `src/agent.id`. The companion regression is
+  `gate/standing.id`; the existing B1–B15 gate stays unchanged. No upstream
+  compiler or graph identity changes are part of this correction.
+- **Evidence:** [evidence/standing.md](evidence/standing.md). Type checking
+  succeeds on the retained historical bootstrap; code emission fails for
+  the unchanged baseline and candidate. External model checks are not a
+  replacement for either Idol execution gate.
+- **Next action:** stage the candidate home at `lib/wsp/agent.id` in a
+  verified compiler tree, then execute `gate/agent.id` and
+  `gate/standing.id`. Preserve the exact compiler/source/input/output
+  receipt and measure the standing cost before closing this work order.
+- **Condition:** both execution gates pass at the named supported pin;
+  independent review is resolved; the checked bytes are the proposed
+  merge bytes. Until then the branch remains draft.
