@@ -4,6 +4,35 @@ The state of Idol WSP, stated plainly. This document is updated in the
 same commit as any landing it describes. Claims here carry their
 evidence or are marked UNMEASURED / UNVERIFIED / OPEN.
 
+## WS-SEM-10 review candidate (2026-11-09) — execution blocked
+
+The standing traversal in this review candidate uses an explicit path
+instead of a depth-10 success cutoff. It checks the whole reachable cone,
+rejects a cycle, shares fully checked branches within one read, and
+rebuilds its marks on every read. The two-tier contract remains: the
+queried record checks its own table rows by value; cited derivations
+propagate existence falls.
+
+`gate/standing.id` adds deep live and withdrawn chains, missing premises
+and derivations, a shared diamond with a second-branch withdrawal,
+repeated reads, reload and stale-generation checks. It uses the existing
+public bundle surface. The original `gate/agent.id` remains unchanged.
+
+**This candidate has not passed either execution gate. Do not merge it
+until both gates execute successfully at a named, supported compiler pin.**
+The historical bootstrap available for this check type-checks both gates,
+but cannot emit either the unchanged baseline battery or the candidate
+battery. Details and exact source hashes are in
+[evidence/standing.md](evidence/standing.md). These are compiler emission
+failures, not passing executions. External development-model checks are
+not Idol conformance evidence. Timing, native behavior and performance of
+this correction remain UNMEASURED.
+
+All green execution claims below refer to their original named source
+revision and pin, not these changed bytes. No new host runtime or foreign
+product code is introduced by this correction; the existing C route seam
+below remains the route requiring qualification.
+
 ## The three proofs, tracked separately
 
 ### 1. The language — slice-one battery green at the pin

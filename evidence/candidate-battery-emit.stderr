@@ -1,0 +1,6 @@
+  > compile (gate/agent.id) …
+error: C99 realizer: graph-to-DNIR refused (GraphFactsInvalid)
+hint: refused at: missing-application-id
+hint: bail site: lowerModuleWithGraphObserved() at graph/lower.zig:3623
+hint: in relation: concat
+hint: application id: 122

@@ -1,0 +1,38 @@
+{
+  "at": "2026-11-09T08:48:13.063955+00:00",
+  "compiler_sha256": "19066e68e0c25989c0b61c2a6e327036d4bbbe475c873955458f0e3781370efa",
+  "compiler_revision": "884dbafcae6a2e2aee34f21f118952f8e43db506",
+  "qualification": "historical bootstrap only, not the WSP execution pin",
+  "checks": [
+    {
+      "label": "base-battery",
+      "exit": 1,
+      "source_sha256": "745d426d9d462eb0d6a9fe71950b97bd626f363765a2a0166c45827fc83f641c",
+      "gate_sha256": "9b737669400af6065f9164465d67b4e25dfe46dd3f413f05b0946ce2f5c84270"
+    },
+    {
+      "label": "candidate-battery-check",
+      "exit": 0,
+      "source_sha256": "42a596314e46db94c8ae2f658d690b41506eaa8f7d4451d6757ca5e7a798fde9",
+      "gate_sha256": "9b737669400af6065f9164465d67b4e25dfe46dd3f413f05b0946ce2f5c84270"
+    },
+    {
+      "label": "candidate-standing-check",
+      "exit": 0,
+      "source_sha256": "42a596314e46db94c8ae2f658d690b41506eaa8f7d4451d6757ca5e7a798fde9",
+      "gate_sha256": "d6b07abbebbe0a55461adce6c01e1284cae1786b8e2f4807f4e01f9774b6c9b9"
+    },
+    {
+      "label": "candidate-standing-emit",
+      "exit": 1,
+      "source_sha256": "42a596314e46db94c8ae2f658d690b41506eaa8f7d4451d6757ca5e7a798fde9",
+      "gate_sha256": "d6b07abbebbe0a55461adce6c01e1284cae1786b8e2f4807f4e01f9774b6c9b9"
+    },
+    {
+      "label": "candidate-battery-emit",
+      "exit": 1,
+      "source_sha256": "42a596314e46db94c8ae2f658d690b41506eaa8f7d4451d6757ca5e7a798fde9",
+      "gate_sha256": "9b737669400af6065f9164465d67b4e25dfe46dd3f413f05b0946ce2f5c84270"
+    }
+  ]
+}

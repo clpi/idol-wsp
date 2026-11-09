@@ -1,0 +1,96 @@
+# WS-SEM-10: full-cone standing through the public bundle surface.
+# Stage src/agent.id as lib/wsp/agent.id in the compiler tree, just
+# as for gate/agent.id. Run both gates: this one adds deep cones;
+# the original battery keeps the two-tier row/existence contract.
+# No new product face is exported for these fixtures.
+
+state = { fails = 0, last = "" }
+
+expect: i64 = (ok: bool, label: str)
+    if ok
+        print("ok: " .. label)
+    else
+        print("FAIL: " .. label)
+        state.fails = state.fails + 1
+    0
+
+nl: str = ()
+    b = 10
+    b:char()
+
+record: str = (cites: str, inputs: str, output: str)
+    state.last = compiler.digest.sha256(output .. "standing-1" .. inputs)
+    "R|4|0|0|0|standing-1|" .. output .. "||" .. cites .. nl()
+
+# One leaf plus n derivation edges. At n = 12 the old implementation
+# skips the leaf. Every digest is built by the actual record law.
+chain: str = (n: i64, kind: str, premise: str)
+    output = compiler.digest.sha256("standing chain")
+    bundle = record(kind .. ":0:" .. premise, premise, output)
+    i = 0
+    while i < n
+        d = state.last
+        bundle = bundle .. record("3:0:" .. d, d, output)
+        i = i + 1
+    bundle
+
+main: i64 = ()
+    wsp.agent.init()
+    p = compiler.digest.sha256("deep supporting premise")
+    q = compiler.digest.sha256("unrelated premise")
+    facts = "P|" .. p .. "|1|0" .. nl() .. "P|" .. q .. "|1|0" .. nl()
+    cone = chain(12, "2", p)
+    expect(wsp.agent.load(facts .. cone) == 1, "depth 12 bundle loads")
+    expect(wsp.agent.nrecords() == 13, "depth 12 fixture has thirteen records")
+    expect(wsp.agent.stands(13) == 1, "deep live cone stands")
+    expect(wsp.agent.withdraw(q) == 1, "unrelated premise withdraws")
+    expect(wsp.agent.stands(13) == 1, "unrelated withdrawal does not retract cone")
+    expect(wsp.agent.withdraw(p) == 1, "deep premise withdraws")
+    expect(wsp.agent.stands(1) == 0, "withdrawn leaf falls")
+    expect(wsp.agent.stands(13) == 0, "withdrawal reaches depth 12 root")
+    expect(wsp.agent.stands(13) == 0, "repeated read cannot reuse stale live marks")
+    saved = wsp.agent.store()
+    expect(wsp.agent.load(saved) == 1, "deep withdrawn cone reloads")
+    expect(wsp.agent.stands(13) == 0, "reload preserves deep withdrawal")
+
+    expect(wsp.agent.load(cone) == 1, "missing premise fixture loads")
+    expect(wsp.agent.stands(13) == 0, "missing deep premise is never certified live")
+    missing = chain(12, "3", p)
+    expect(wsp.agent.load(missing) == 1, "missing derivation fixture loads")
+    expect(wsp.agent.stands(13) == 0, "missing deep derivation is never certified live")
+
+    # Both branches share one completed cone. A completed node is not
+    # a cycle, and finishing the first branch must not skip the second.
+    cone = chain(12, "2", p)
+    shared = state.last
+    left = record("3:0:" .. shared, shared, compiler.digest.sha256("left"))
+    ld = state.last
+    right = record("3:0:" .. shared .. ",2:0:" .. q, shared .. q, compiler.digest.sha256("right"))
+    rd = state.last
+    root = record("3:0:" .. ld .. ",3:0:" .. rd, ld .. rd, compiler.digest.sha256("diamond"))
+    expect(wsp.agent.load(facts .. cone .. left .. right .. root) == 1, "shared diamond loads")
+    expect(wsp.agent.stands(16) == 1, "shared deep diamond stands")
+    wsp.agent.withdraw(q)
+    expect(wsp.agent.stands(14) == 1, "left branch remains independent")
+    expect(wsp.agent.stands(16) == 0, "withdrawal in second branch reaches root")
+    expect(wsp.agent.load(facts .. cone .. left .. right .. root) == 1, "diamond restores in fresh generation")
+    wsp.agent.withdraw(p)
+    expect(wsp.agent.stands(16) == 0, "shared deep premise retracts diamond")
+
+    cone = chain(128, "2", p)
+    expect(wsp.agent.load(facts .. cone) == 1, "depth 128 bundle loads")
+    expect(wsp.agent.stands(129) == 1, "depth 128 live cone stands")
+    wsp.agent.withdraw(p)
+    expect(wsp.agent.stands(129) == 0, "depth 128 withdrawal reaches root")
+    wsp.agent.reset()
+    expect(wsp.agent.stands(129) == 0, "stale generation does not stand")
+    expect(wsp.agent.stands(0) == 0, "absent zero handle does not stand")
+    expect(wsp.agent.stands(10000) == 0, "out-of-range handle does not stand")
+
+    if state.fails > 0
+        print("standing: FAIL")
+        return 1
+    print("standing: OK")
+    0
+
+os.exit(main())
