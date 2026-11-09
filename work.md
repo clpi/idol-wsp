@@ -122,3 +122,59 @@ evidence recorded in [status.md](status.md).
   surviving remainder of this work order. The traversal itself is
   closed: merged, qualified at the fixed pin, and carrying the
   withdrawal distinction.
+
+## WS-INT-1 — One vocabulary, stated in the chapter
+
+- **State:** LANDED AND EXECUTED. The chapter
+  (`Idol-Weights-Semantics.md`) now carries the intent-space
+  correspondence as its section 13 expression discipline, naming
+  the 2026-11-09 design directive addendum as its source; no
+  capability claim changed state by the writing. The derived
+  battery `gate/intent.id` executed 25 / 0 at the resident
+  run-tree binary (md5 08be8c7325c3aeefaeff7f60f171aefe, C
+  route), with `gate/agent.id` 126 / 0 and `gate/withdrawal.id`
+  22 / 0 at the same configuration. Evidence: status.md, the
+  expression discipline section.
+- **Next action:** none — closed on this evidence.
+
+## WS-INT-2 — Representative-graph census
+
+- **State:** OPEN, not started. This repo carries the readiness
+  statement; the owner is the conformance successor lane,
+  sequenced with rank 1 of the premise-weights audit's revised
+  execution order (the dependency-completeness step).
+- **Scope:** a mechanical census over the graph facts the agent
+  machinery emits (its bundle form): every emitted edge is one
+  of the lawful kinds the chapter's section 13.7 names, every
+  event entry carries the lawful fields, and no entry carries a
+  refused form. The census reports violations by kind at a
+  named pin; a clean run is evidence about emitted facts only.
+- **Readiness:** the instrument can be built now — the emitted
+  bundle grammar is fixed by the landed machinery, the lawful
+  and refused forms are now stated in the chapter itself
+  (section 13.7), and a compiler configuration that emits the
+  agent home exists (the resident run-tree binary above). What
+  it still needs before firing: the dependency-completeness
+  oracle specification on paper from the amendment lane
+  (source-demanded support against emitted graph facts), which
+  the census runs against and must not re-file as a second
+  oracle.
+- **Trigger:** the oracle specification filed, at a pin where
+  the agent home emits. Fires as the conformance successor
+  lane's next slice after rank 1's remaining pack legs.
+
+## WS-INT-3 — The shared store consequence for Wide
+
+- **State:** OPEN, gated on its trigger; no work is lawful
+  before it. Until the trigger, Wide's books and this repo's
+  store stay separate session state, and no surface presents
+  them as joined.
+- **Scope:** when the machinery declaration producer lands,
+  intents declare into the same store that weight events learn
+  into — one store, one graph, two books reading it. No
+  Wide-side translation layer is built in the meantime.
+- **Owner:** Wide and the derivation machinery program jointly.
+- **Trigger:** the declaration producer (gap WIDE-GAP-INTENT in
+  the Wide program) lands in clpi/idol. On that landing this
+  item's spec slice is written first, against the landed
+  producer's actual faces, before any store code.

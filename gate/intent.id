@@ -1,0 +1,139 @@
+# WS-INT-1 derived battery: the chapter's expression
+# discipline (chapter section 13, weight space as intent
+# space) exercised against the agent machinery through its
+# public faces. The five rules under test: commit before
+# selection, evaluation as a recorded run, recomputed
+# standing, permanent identity-scoped withdrawal (distinct
+# from replacement), and backwards-only citation. Staged as
+# lib/wsp/agent.id's battery companion in the compiler tree,
+# like gate/agent.id and gate/withdrawal.id. This battery
+# claims no new capability: it exercises the discipline the
+# chapter states over faces that already exist.
+
+state = { fails = 0 }
+
+expect: i64 = (ok: bool, label: str)
+    if ok
+        print("ok: " .. label)
+    else
+        print("FAIL: " .. label)
+        state.fails = state.fails + 1
+    0
+
+fixture: i64 = ()
+    fc = wsp.agent.file(5, 3, 4, 4, 2, 6, 6, 3, 2, "choice")
+    h = wsp.agent.seatfile(1, fc, "", 3, 2)
+    wsp.agent.setvals(h, 5, 3, 4, 4, 2, 6, 6)
+    fu = wsp.agent.file(0, 0, 0, 0, 0, 1, 6, 3, 2, "caution")
+    h = wsp.agent.seatfile(2, fu, "", 3, 2)
+    wsp.agent.setvals(h, 0, 0, 0, 0, 0, 1, 6)
+    fs = wsp.agent.file(7, 7, 0, 0, 0, 0, 2, 2, 0, "spare")
+    h = wsp.agent.seatfile(3, fs, "", 2, 0)
+    wsp.agent.setvals(h, 7, 7, 0, 0, 0, 0, 2)
+    1
+
+main: i64 = ()
+    expect(wsp.agent.init() == 1, "intent: the agent initialises")
+    fixture()
+
+    # A — commit before selection. The learned seating is
+    # published by the learning rule citing the outcomes it
+    # was learned from, its support fixed at creation: while
+    # those outcomes stand it stands, and when the seating
+    # they stand on is withdrawn it falls — nothing attached
+    # later is consulted.
+    s1 = wsp.agent.step(1)
+    o1 = wsp.agent.result(1)
+    s2 = wsp.agent.step(2)
+    o2 = wsp.agent.result(2)
+    s3 = wsp.agent.step(3)
+    o3 = wsp.agent.result(3)
+    ln = wsp.agent.learn()
+    expect(wsp.agent.stands(ln) == 1, "A: the learned seating stands on its committed support")
+    d = wsp.agent.sdigest(wsp.agent.current(1))
+    expect(wsp.agent.withdraw(d) == 1, "A: the learned-from seating withdraws")
+    expect(wsp.agent.stands(ln) == 0, "A: the learned seating falls with the support fixed at its creation")
+    s9 = wsp.agent.step(1)
+    expect(wsp.agent.stands(s9) == 0, "A: a step committed after the withdrawal cannot stand on withdrawn support")
+
+    # B — evaluation is a recorded run, not a mutation.
+    # A derivation appends its record; a standing read
+    # appends nothing and changes no answer by being read.
+    fixture()
+    n0 = wsp.agent.nrecords()
+    t1 = wsp.agent.step(1)
+    expect(wsp.agent.nrecords() > n0, "B: a derivation run is recorded")
+    n1 = wsp.agent.nrecords()
+    a1 = wsp.agent.stands(t1)
+    a2 = wsp.agent.stands(t1)
+    expect(wsp.agent.nrecords() == n1, "B: a standing read records nothing and rewrites nothing")
+    expect(a1 == 1 and a2 == 1, "B: repeated reads of one record agree")
+
+    # C — standing is recomputed, never cached. The same
+    # record answers standing, then fallen after a
+    # withdrawal that edits no record, then still fallen
+    # after a store and load round trip: the answer is
+    # recomputed from citations and receipts every time.
+    expect(wsp.agent.stands(t1) == 1, "C: the record stands before the withdrawal")
+    d = wsp.agent.sdigest(wsp.agent.seating(1))
+    expect(wsp.agent.withdraw(d) == 1, "C: the cited seating withdraws")
+    expect(wsp.agent.stands(t1) == 0, "C: the same record now falls, with no edit to the record")
+    bundle = wsp.agent.store()
+    expect(wsp.agent.load(bundle) == 1, "C: the bundle reloads")
+    expect(wsp.agent.stands(t1) == 0, "C: the reloaded answer is recomputed from the carried receipts")
+
+    # D — withdrawal is permanent and identity-scoped, and
+    # is not replacement. A replacement that leaves a row
+    # unchanged leaves its reader standing; an explicit
+    # withdrawal of the current seating falls its readers
+    # direct and transitive; a later replacement does not
+    # resurrect them; the replacement's own readers stand
+    # until that distinct identity is itself withdrawn.
+    fixture()
+    u1 = wsp.agent.step(1)
+    v1 = wsp.agent.result(1)
+    dorig = wsp.agent.sdigest(wsp.agent.seating(1))
+    fc2 = wsp.agent.file(5, 3, 4, 4, 9, 9, 6, 3, 2, "choice")
+    h = wsp.agent.seatfile(1, fc2, "", 3, 2)
+    wsp.agent.setvals(h, 5, 3, 4, 4, 9, 9, 6)
+    expect(wsp.agent.stands(u1) == 1, "D: a replacement leaving the read row unchanged leaves its reader standing")
+    expect(wsp.agent.withdraw(dorig) == 1, "D: the cited seating withdraws explicitly")
+    expect(wsp.agent.stands(u1) == 0, "D: explicit withdrawal falls the direct reader")
+    expect(wsp.agent.stands(v1) == 0, "D: explicit withdrawal falls the transitive reader")
+    fc3 = wsp.agent.file(5, 3, 4, 4, 9, 8, 6, 3, 2, "choice")
+    h = wsp.agent.seatfile(1, fc3, "", 3, 2)
+    wsp.agent.setvals(h, 5, 3, 4, 4, 9, 8, 6)
+    u2 = wsp.agent.step(1)
+    expect(wsp.agent.stands(u2) == 1, "D: a reader of the replacement seating stands")
+    expect(wsp.agent.stands(u1) == 0, "D: the withdrawn seating's reader stays fallen after the replacement")
+    d2 = wsp.agent.sdigest(wsp.agent.current(1))
+    expect(wsp.agent.withdraw(d2) == 1, "D: the replacement identity withdraws on its own")
+    expect(wsp.agent.stands(u2) == 0, "D: withdrawal is scoped to the identity withdrawn")
+
+    # E — records cite what they stand on, backwards only.
+    # A result record carries citations to records and
+    # seatings that already exist; its standing is the
+    # standing of what it cites (section C and D falls are
+    # transitive for this reason); and a record's standing
+    # is untouched by records created after it, which it
+    # cannot cite.
+    fixture()
+    w1 = wsp.agent.step(1)
+    x1 = wsp.agent.result(1)
+    expect(wsp.agent.ncites(x1) >= 1, "E: the result record carries citations")
+    k = wsp.agent.citekind(x1, 1)
+    expect(k >= 1 and k <= 4, "E: the first citation is of a lawful kind")
+    expect(wsp.agent.citeof(x1, 1):len() > 0, "E: the first citation names an existing identity")
+    before = wsp.agent.stands(w1)
+    w2 = wsp.agent.step(2)
+    x2 = wsp.agent.result(2)
+    ln2 = wsp.agent.learn()
+    expect(wsp.agent.stands(w1) == before, "E: later records do not change an earlier record's standing")
+
+    if state.fails > 0
+        print("intent: FAIL")
+        return 1
+    print("intent: OK")
+    0
+
+os.exit(main())

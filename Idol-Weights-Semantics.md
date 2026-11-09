@@ -566,3 +566,57 @@ The chapter’s weight-specific rules are new normative decisions made here. The
 • FTCFTW, pass 2.29: preserve realization freedom, compact identity, demand-driven materialization, and the distinction between architectural potential and measured performance.
 
 The current request’s name, Idol, controls this chapter. Historical project names and syntax in the supplied passes do not establish additional syntax requirements here.
+
+13. Expression discipline — weight space as intent space
+
+This section entered the chapter at its landing of 2026-11-09, under work order WS-INT-1. Its source is the design directive addendum "weight space as intent space", filed 2026-11-09 in the completed chapter record (the fleet research record weights-chapter-completed-2026-11-08.md). Until this landing, that addendum was the statement of record; this section is now the chapter's own statement of the discipline. This section states expression discipline only. It changes no capability claim in this chapter: no claim above changes state by this writing, and implementation, speed, and size for every form named here stay UNMEASURED exactly as the rest of the chapter states.
+
+A weight-space program is expressible the way an intent is, and the correspondence is exact, not analogical. In the intent space, an intent is declared — name, rule word, and premise citations fixed — before its derivation exists; a derive face records the run; standing is recomputed at every call; withdrawing a premise falls exactly the intents citing it; withdrawing an intent retracts exactly its cone; and test results are records citing the intent they stand on. In the weight space, a learned event is committed with its anchor, its exact rational delta, its explicit nonempty support, and its creation receipt, before any revision selects it; a revision is an anchor plus a finite set of candidate event identities, a reconstruction recipe and not a snapshot; a snapshot is a revision evaluated in a configuration, with an observation receipt; an event is live when all its required premises remain admitted and unwithdrawn; and retraction permanently withdraws a premise identity and excludes precisely the events whose support contains it. The five rules below are one discipline for both spaces.
+
+13.1 Commit before selection
+
+A learned event is published with its full support fixed at creation, exactly as an intent is published with its citations fixed at derivation. Nothing enters either book half-stated and completed later. A face that would attach support after selection is refused, as the intent book refuses a citation against a derived intent.
+
+13.2 Evaluation is a recorded run
+
+Deriving an intent records that the derivation ran. Evaluating a revision produces a snapshot with an observation receipt naming the revision, the included events, and the retained support. Neither act rewrites the book it reads: evaluation is a record, never a mutation of the records evaluated.
+
+13.3 Standing is recomputed, never cached
+
+An intent stands if and only if it is derived, not withdrawn, and no cited premise is withdrawn. An event is live if and only if all its required premises remain admitted and unwithdrawn. In both spaces standing is recomputed from the citations and the withdrawal state at every read. A cached standing answer, in a surface or in a store, is a display; the recomputation is the definition. An index of standing is a projection that must agree with the recomputation, and a disagreement is the index's defect, never the graph's.
+
+13.4 Withdrawal is permanent, identity-scoped, and cone-exact
+
+Retracting a premise excludes precisely the events whose support contains it, including dependencies acquired through earlier learning — the same fall set the intent book's cone face renders for an intent. There is no unwithdraw in either space; correction is a new identity, never an edit of the old one. Withdrawal and replacement are distinct carried facts with distinct fates, and no single flag, receipt kind, or edge kind may carry both meanings. Withdrawal: a premise identity dies permanently, its events fall, and correction arrives under a new identity. Replacement: a new seating takes a role, and readers of unchanged rows are preserved by the value tier of standing. A representation in which one mark carries both is not lawful under this chapter.
+
+13.5 Records cite what they stand on, backwards only
+
+A test record cites its intent; a snapshot cites its revision and its included events; a derivation record cites its premises. A citation never points forwards, and a record's standing is the standing of what it cites, recomputed under rule 13.3.
+
+13.6 Ordinarily in Idol
+
+Contractually expressible ordinarily in Idol means, concretely: anchors, deltas, and snapshots are ordinary weight values (a table plus a shape descriptor); a delta is an additive change represented using ordinary weight values, never a special numeric domain; premises, events, revisions, and receipts are ordinary values under contracts, carried by the same record forms — declare, cite, seal — that carry any derivation. No weight-space construct requires a second language, a side file format, or a privileged store to state.
+
+13.7 The minimum lawful representative graph
+
+Minimum lawful means: the graph carries everything the contracts demand as edges, nothing they do not demand, and nothing whose presence would let a reader conclude more than the contracts allow. Exactness is relative to the specified dependencies, as section 2.2 already states; this section does not promise the mathematically smallest sufficient evidence set for arbitrary programs. A programmer requiring independently retractable pieces produces independently supported events; an event is atomic at its declared delta granularity.
+
+The graph MUST carry:
+
+- Event entries: occurrence identity, anchor identity, the exact delta, the explicit nonempty premise set, required input and rule dependencies, confidence, and the creation receipt. Support is the closure: premise-assertion dependencies and dependencies through values, both.
+- Revision entries: identity, one exact anchor identity, the finite set of candidate event identities for that anchor, and the selection support — the required premises of the computations that selected the anchor and the membership.
+- Premise entries: identity, and admission and withdrawal state as receipts. A withdrawal receipt is what justifies an exclusion; status is derived from receipts and support, never held as a second independently mutable truth flag.
+- Snapshot entries: the weight result, the revision identity, the observation receipt, the included event identities, and the retained required support.
+- Edges, and only these edge kinds: an event to each premise in its support closure; an event to its anchor; a revision to each candidate event (a historical edge — it does not revive the event and does not import the event's live-premise requirements into the revision's own standing); a revision to its selection support; a snapshot to its revision, its included events, and its retained support; a derivation record to the premises and records it cites.
+
+The graph MUST refuse to carry:
+
+- An edge for co-location: a premise is not support merely because it belongs to the same store or configuration. Unrelated premises are never added.
+- A second identity registry, or any identity that does not resolve exactly and reversibly into the existing authoritative identity system of section 2.1. Hashes may accelerate lookup; they are not identity.
+- A cached standing verdict as a carried fact (rule 13.3).
+- A rounded-snapshot delta: no edge or entry records a change against an already rounded snapshot. Deltas live only as exact rationals against anchors; retraction never subtracts from a rounded value.
+- Payload equality as sameness: equal payloads do not establish equal event identities, equal anchor identities, or shared support. Two learning occurrences with identical deltas are two events until identity — not payload — says otherwise.
+- Absence as a premise: a carried claim that no matching event exists anywhere in a changing store, without separately specified membership and absence evidence. The fixed inventory of a query is essential; the graph does not carry open-world absence.
+- Alternative provenance in the core: assumption-based or semiring or-provenance is a semantic extension with its own costs, never a core edge kind. The core is conjunctive.
+- Unknown evidence as withdrawal: an unresolved required premise blocks the query that demands it. The graph carries it as unresolved, never as excluded.
+- A withdrawal that means two things (rule 13.4).

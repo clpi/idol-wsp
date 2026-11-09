@@ -95,6 +95,40 @@ compiler-side red in the slice battery's bundle round trip
 at the R5/R6 stage (a seating digest that is not a pure
 function of the seated file at this binary).
 
+## Expression discipline in the chapter (WS-INT-1, 2026-11-09) — landed, battery executed
+
+The design directive "weight space as intent space" (filed as an
+addendum to the completed-chapter record on 2026-11-09) is now
+stated in the chapter itself: `Idol-Weights-Semantics.md` carries
+a new section 13, "Expression discipline — weight space as intent
+space", as its expression discipline — commit before selection,
+evaluation as a recorded run, recomputed standing, permanent
+identity-scoped withdrawal (with withdrawal and replacement as
+distinct carried facts), and backwards-only citation — together
+with the exact intent/weight correspondence, the "ordinarily in
+Idol" definition, and the minimum lawful representative graph
+(what it must carry, and the forms it must refuse). The section
+names the addendum as its source. Per the work order's
+acceptance, the writing itself changes no capability claim in
+the chapter; speed and size remain UNMEASURED.
+
+The discipline the section states is exercised against the
+agent machinery by a new derived battery, `gate/intent.id`
+(25 cases in five groups, one per rule), executed at the
+standing qualification configuration (the resident run-tree
+binary, md5 08be8c7325c3aeefaeff7f60f171aefe, C route, this
+build VM, the tree's own space substrate): **25 ok / 0 FAIL,
+exit 0, "intent: OK"**, with `gate/agent.id` still 126 / 0 and
+`gate/withdrawal.id` still 22 / 0 at the same configuration.
+The battery claims no new capability — it runs over faces that
+already exist. Its first firing convicted one over-strong
+expectation in the battery itself, not in the machinery:
+withdrawing a replacement seating does not fall a reader of
+the displaced seating it replaced, because that reader's
+support contains the displaced identity, not the replacement;
+the battery now withdraws the cited identity, which is the
+fall the discipline specifies.
+
 ## The three proofs, tracked separately
 
 ### 1. The language — slice-one battery green at the pin
