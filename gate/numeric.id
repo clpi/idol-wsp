@@ -1,0 +1,244 @@
+# The WS-CONF-2 battery: the weights chapter's numeric and
+# shape faces against conformance examples E01-E08, the
+# F32 payload arm of E19, and the rank-zero and
+# zero-division arms of E30 (spec-numeric-faces.md section
+# 9). Every check prints one line; the closing vector is
+# the verdict. Run by gate/numeric.sh.
+
+bc = {}
+
+chk: i64 = (label: str, cond: bool)
+    if cond
+        bc.ok = bc.ok + 1
+        print("ok: " .. label)
+        return 1
+    bc.bad = bc.bad + 1
+    print("FAIL: " .. label)
+    0
+
+streq: i64 = (a: str, b: str)
+    if a:len() != b:len()
+        return 0
+    i = 1
+    while i <= a:len()
+        if a:byte(i) != b:byte(i)
+            return 0
+        i = i + 1
+    1
+
+digits: str = (v: i64)
+    if v == 0
+        return "0"
+    out = ""
+    n = v
+    while n > 0
+        out = "0123456789":sub(n % 10 + 1, n % 10 + 1) .. out
+        n = n // 10
+    out
+
+itext: str = (v: i64)
+    if v < 0
+        return "-" .. digits(0 - v)
+    digits(v)
+
+appv: str = (a: str, v: str)
+    a .. v
+
+eqrat: i64 = (w: i64, i: i64, n: i64, d: i64)
+    r = wsp.numeric.at(w, i)
+    if r < 0
+        return 0
+    q = wsp.numeric.rat(n, d)
+    wsp.numeric.req(r, q)
+
+main: i64 = ()
+    bc.ok = 0
+    bc.bad = 0
+    wsp.agent.init()
+
+    # E01: exact rational arithmetic (chapter 3.1, 3.3)
+    a = wsp.numeric.lit(0, 0, "1", "0.1")
+    b = wsp.numeric.lit(0, 0, "1", "0.2")
+    chk("e01 literals construct", a >= 1)
+    chk("e01 literal canonical form", eqrat(a, 0, 1, 10) == 1)
+    c = wsp.numeric.add(a, b)
+    chk("e01 sum constructs", c >= 1)
+    chk("e01 0.1 + 0.2 is exactly 3/10", eqrat(c, 0, 3, 10) == 1)
+    r = wsp.numeric.at(c, 0)
+    chk("e01 factored parts", wsp.numeric.rnumof(r) == 3)
+    chk("e01 factored denominator", wsp.numeric.rdenof(r) == 5)
+    chk("e01 factored shift", wsp.numeric.rshiftof(r) == -1)
+    chk("e01 sum equals the 0.3 literal", wsp.numeric.numeric(c, wsp.numeric.lit(0, 0, "1", "0.3")) == 1)
+
+    # E02: F32 conversion rounds once (chapter 3.2, 4.2)
+    x = wsp.numeric.lit(0, 0, "1", "0.1")
+    f = wsp.numeric.cast(3, 0, x)
+    chk("e02 cast constructs", f >= 1)
+    chk("e02 rounded value exact", eqrat(f, 0, 13421773, 134217728) == 1)
+    chk("e02 word pattern", wsp.numeric.wordof(f, 0) == 1036831949)
+    chk("e02 cast differs from the rational", wsp.numeric.numeric(f, x) == 0)
+    y = wsp.numeric.lit(3, 0, "1", "13421773/134217728")
+    chk("e02 literal lands on the same grid point", wsp.numeric.numeric(f, y) == 1)
+    chk("e02 digest is a function of the value", streq(wsp.numeric.digestof(f), wsp.numeric.digestof(y)) == 1)
+    g = wsp.numeric.cast(4, 0, x)
+    chk("e02 f64 grid point exact", eqrat(g, 0, 3602879701896397, 36028797018963968) == 1)
+
+    # E03: shape mismatch refuses (chapter 4.1)
+    a = wsp.numeric.lit(0, 0, "2", "1,2")
+    b = wsp.numeric.lit(0, 0, "1,2", "3,4")
+    chk("e03 mismatched add refuses shape", wsp.numeric.add(a, b) == -1)
+    chk("e03 refusal named", streq(wsp.numeric.refusal(), "shape") == 1)
+
+    # E04: broadcast only by request (chapter 4.3)
+    a = wsp.numeric.lit(0, 0, "3", "10,20,30")
+    bcw = wsp.numeric.broadcast(a, "2,3", "1")
+    chk("e04 broadcast constructs", bcw >= 1)
+    chk("e04 broadcast rank", wsp.numeric.rankof(bcw) == 2)
+    chk("e04 broadcast extent", wsp.numeric.dimof(bcw, 0) == 2)
+    chk("e04 broadcast extent two", wsp.numeric.dimof(bcw, 1) == 3)
+    b2 = wsp.numeric.lit(0, 0, "2,3", "1,2,3,4,5,6")
+    s = wsp.numeric.add(bcw, b2)
+    chk("e04 broadcast add constructs", s >= 1)
+    chk("e04 cell 0", eqrat(s, 0, 11, 1) == 1)
+    chk("e04 cell 1", eqrat(s, 1, 22, 1) == 1)
+    chk("e04 cell 2", eqrat(s, 2, 33, 1) == 1)
+    chk("e04 cell 3", eqrat(s, 3, 14, 1) == 1)
+    chk("e04 cell 4", eqrat(s, 4, 25, 1) == 1)
+    chk("e04 cell 5", eqrat(s, 5, 36, 1) == 1)
+    big = wsp.numeric.lit(0, 0, "2,3", "1,1,1,1,1,1")
+    chk("e04 no implicit broadcast", wsp.numeric.add(big, a) == -1)
+
+    # E05: contraction (chapter 4.4)
+    a = wsp.numeric.lit(0, 0, "2,2", "1,2,3,4")
+    bv = wsp.numeric.lit(0, 0, "2", "5,6")
+    c = wsp.numeric.contract(a, bv, "1", "0")
+    chk("e05 contraction constructs", c >= 1)
+    chk("e05 result rank", wsp.numeric.rankof(c) == 1)
+    chk("e05 result extent", wsp.numeric.dimof(c, 0) == 2)
+    chk("e05 cell 0", eqrat(c, 0, 17, 1) == 1)
+    chk("e05 cell 1", eqrat(c, 1, 39, 1) == 1)
+    a23 = wsp.numeric.lit(0, 0, "2,3", "1,2,3,4,5,6")
+    bm = wsp.numeric.lit(0, 0, "3,2", "7,8,9,10,11,12")
+    mm = wsp.numeric.contract(a23, bm, "1", "0")
+    chk("e05 matmul rank", wsp.numeric.rankof(mm) == 2)
+    chk("e05 matmul cell 0", eqrat(mm, 0, 58, 1) == 1)
+    chk("e05 matmul cell 1", eqrat(mm, 1, 64, 1) == 1)
+    chk("e05 matmul cell 2", eqrat(mm, 2, 139, 1) == 1)
+    chk("e05 matmul cell 3", eqrat(mm, 3, 154, 1) == 1)
+
+    # E06: zero extents (chapter 4.1)
+    za = wsp.numeric.lit(0, 0, "2,0", "")
+    zb = wsp.numeric.lit(0, 0, "0,3", "")
+    chk("e06 empty literals construct", za >= 1)
+    zc = wsp.numeric.contract(za, zb, "1", "0")
+    chk("e06 empty contraction constructs", zc >= 1)
+    chk("e06 result rank", wsp.numeric.rankof(zc) == 2)
+    chk("e06 result extent", wsp.numeric.dimof(zc, 0) == 2)
+    chk("e06 result extent two", wsp.numeric.dimof(zc, 1) == 3)
+    chk("e06 result cardinality", wsp.numeric.cardof(zc) == 6)
+    chk("e06 cells are zero", eqrat(zc, 0, 0, 1) == 1)
+    chk("e06 last cell zero", eqrat(zc, 5, 0, 1) == 1)
+    z3 = wsp.numeric.lit(0, 0, "0,3", "")
+    z4 = wsp.numeric.lit(0, 0, "0,4", "")
+    chk("e06 zero extent mismatch refuses", wsp.numeric.add(z3, z4) == -1)
+
+    # E07: read and replace (chapter 4.5)
+    a = wsp.numeric.lit(0, 0, "2", "1,2")
+    rd = wsp.numeric.read(a, "0")
+    chk("e07 read constructs", rd >= 1)
+    chk("e07 read is rank zero", wsp.numeric.rankof(rd) == 0)
+    chk("e07 read value", eqrat(rd, 0, 1, 1) == 1)
+    nine = wsp.numeric.lit(0, 0, "", "9")
+    rp = wsp.numeric.replace(a, "0", nine)
+    chk("e07 replace constructs", rp >= 1)
+    chk("e07 replaced cell", eqrat(rp, 0, 9, 1) == 1)
+    chk("e07 untouched cell", eqrat(rp, 1, 2, 1) == 1)
+    chk("e07 original unchanged", eqrat(a, 0, 1, 1) == 1)
+    chk("e07 same is handle identity", wsp.numeric.same(a, rp) == 0)
+    chk("e07 same reflexive", wsp.numeric.same(a, a) == 1)
+    chk("e07 replaced differs numerically", wsp.numeric.numeric(a, rp) == 0)
+    chk("e07 support count kept", wsp.numeric.supportcount(rp) == wsp.numeric.supportcount(a))
+
+    # E08: dtype discipline (chapter 3.2, 4.2)
+    q = wsp.numeric.lit(0, 0, "1", "0.5")
+    fw = wsp.numeric.lit(3, 0, "1", "0.5")
+    chk("e08 mixed dtype refuses", wsp.numeric.add(q, fw) == -2)
+    chk("e08 refusal named dtype", streq(wsp.numeric.refusal(), "dtype") == 1)
+    chk("e08 fractional to integral refuses", wsp.numeric.cast(1, 8, q) == -4)
+    chk("e08 refusal named integral", streq(wsp.numeric.refusal(), "integral") == 1)
+    big = wsp.numeric.lit(1, 8, "1", "127")
+    one = wsp.numeric.lit(1, 8, "1", "1")
+    chk("e08 overflow refuses range", wsp.numeric.add(big, one) == -3)
+    chk("e08 refusal named range", streq(wsp.numeric.refusal(), "range") == 1)
+    s42 = wsp.numeric.add(wsp.numeric.lit(1, 8, "1", "40"), wsp.numeric.lit(1, 8, "1", "2"))
+    chk("e08 integral arithmetic in range", eqrat(s42, 0, 42, 1) == 1)
+    chk("e08 dtype kept", wsp.numeric.dtypeof(s42) == 1)
+    chk("e08 width kept", wsp.numeric.widthof(s42) == 8)
+
+    # E30 arms: rank zero and division by zero
+    sc = wsp.numeric.lit(0, 0, "", "5")
+    chk("e30 scalar constructs", sc >= 1)
+    chk("e30 scalar rank", wsp.numeric.rankof(sc) == 0)
+    chk("e30 scalar cardinality", wsp.numeric.cardof(sc) == 1)
+    chk("e30 scalar value", eqrat(sc, 0, 5, 1) == 1)
+    chk("e30 scalar needs one value", wsp.numeric.lit(0, 0, "", "") == -6)
+    chk("e30 refusal named count", streq(wsp.numeric.refusal(), "count") == 1)
+    o = wsp.numeric.lit(0, 0, "1", "1")
+    zw = wsp.numeric.lit(0, 0, "1", "0")
+    chk("e30 division by zero refuses", wsp.numeric.div(o, zw) == -5)
+    chk("e30 refusal named zero", streq(wsp.numeric.refusal(), "zero") == 1)
+    two = wsp.numeric.lit(0, 0, "1", "2")
+    half = wsp.numeric.div(o, two)
+    chk("e30 exact division", eqrat(half, 0, 1, 2) == 1)
+
+    # E19 F32 payload arm + support discipline (chapter 5)
+    anc = wsp.numeric.lit(3, 0, "1", "0")
+    dpw = wsp.numeric.lit(0, 0, "1", "16777216")
+    dqw = wsp.numeric.lit(0, 0, "1", "1")
+    dp = wsp.numeric.premiseover("wsconf2 e19 premise p", dpw)
+    dq = wsp.numeric.premiseover("wsconf2 e19 premise q", dqw)
+    chk("e19 premises admitted live", wsp.agent.premstate(dp) == 1)
+    e1 = wsp.numeric.event(anc, dpw, dp)
+    e2 = wsp.numeric.event(anc, dqw, dq)
+    chk("e19 events construct", e1 >= 1)
+    evtext = appv(appv(itext(e1), ","), itext(e2))
+    seltext = appv(appv(dp, ","), dq)
+    rev = wsp.numeric.revision(anc, evtext, seltext)
+    chk("e19 revision constructs", rev >= 1)
+    chk("e19 both events live", wsp.numeric.livecount(rev) == 2)
+    tw = wsp.numeric.total(rev)
+    chk("e19 exact total kept", eqrat(tw, 0, 16777217, 1) == 1)
+    ob = wsp.numeric.observe(rev)
+    chk("e19 observe constructs", ob >= 1)
+    chk("e19 observed rounds ties to even", eqrat(ob, 0, 16777216, 1) == 1)
+    chk("e19 observed word", wsp.numeric.wordof(ob, 0) == 1266679808)
+    chk("support total carries both premises", wsp.numeric.supportcount(tw) == 2)
+    chk("support total has p", wsp.numeric.supporthas(tw, dp) == 1)
+    chk("support total has q", wsp.numeric.supporthas(tw, dq) == 1)
+    chk("support total usable", wsp.numeric.usable(tw) == 1)
+    mz = wsp.numeric.mul(tw, wsp.numeric.lit(0, 0, "1", "0"))
+    chk("support kept through zero product", wsp.numeric.supportcount(mz) == 2)
+    ghost = compiler.digest.sha256("wsconf2 never admitted")
+    chk("premstate unknown is unresolved", wsp.agent.premstate(ghost) == -1)
+    chk("withdraw lands", wsp.agent.withdraw(dp) == 1)
+    chk("premstate withdrawn", wsp.agent.premstate(dp) == 0)
+    chk("e19 one event survives", wsp.numeric.livecount(rev) == 1)
+    chk("support retained after withdrawal", wsp.numeric.supporthas(tw, dp) == 1)
+    chk("usable falls with its premise", wsp.numeric.usable(tw) == 0)
+    ob2 = wsp.numeric.observe(rev)
+    chk("e19 observed after withdrawal exact", eqrat(ob2, 0, 1, 1) == 1)
+    chk("e19 observed word after withdrawal", wsp.numeric.wordof(ob2, 0) == 1065353216)
+
+    line = "numeric vector: "
+    line = appv(line, itext(bc.ok))
+    line = appv(line, " ok / ")
+    line = appv(line, itext(bc.bad))
+    line = appv(line, " FAIL")
+    print(line)
+    if bc.bad == 0
+        print("PASS")
+        return 0
+    print("FAIL")
+    1
+
+os.exit(main())
