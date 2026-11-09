@@ -529,10 +529,14 @@ refusal: str = ()
         return ""
     own.why
 
-# ---- premises: facts and observations, identity = the
-# sha256 of the statement text (the digest face refuses a
-# statement carrying a zero byte by construction of its
-# inputs being text)
+# ---- premises: facts and observations. Identity is the
+# registration occurrence, not the statement digest: the
+# digest is the index that finds a statement's occurrences,
+# and a statement face names the current occurrence through
+# it. (The machinery ruling, recorded in
+# research/weight-semantics-conformance-2026-11-08.md: a
+# digest is an index over canonically compared content,
+# never the identity; identity is provenance identity.)
 
 npremises: i64 = ()
     n = 0
@@ -570,12 +574,94 @@ findprem: i64 = (d: str)
         i = i + 1
     hit
 
-withdraw: i64 = (d: str)
+# ---- occurrence identities: a premise's identity is its
+# registration row in this generation; a seating's identity
+# is its seat row. Rendered as a fixed-width occurrence
+# string (a tag letter — never a hex digit, so an identity
+# can never be mistaken for a digest — then the row number,
+# zero-padded to the citation width), so citations carry
+# identities in the same books and bundles carry them
+# verbatim; load re-registers occurrences in bundle order,
+# so the identities resolve identically after a load.
+
+numtext: str = (v: i64)
+    if v == 0
+        return "0"
+    s = ""
+    n = v
+    while n > 0
+        d = n % 10
+        s = "0123456789":sub(d + 1, d + 1) .. s
+        n = n / 10
+    s
+
+idtext: str = (tag: str, n: i64)
+    s = numtext(n)
+    pad = ""
+    while 1 + pad:len() + s:len() < 64
+        pad = pad .. "0"
+    tag .. pad .. s
+
+idnum: i64 = (s: str)
+    n = 0
+    i = 2
+    while i <= s:len()
+        b = s:byte(i)
+        if b < 48
+            return n
+        if b > 57
+            return n
+        n = n * 10 + (b - 48)
+        i = i + 1
+    n
+
+# Resolve a citation or a face argument to a premise row:
+# an occurrence identity names its row; anything else is a
+# statement digest, resolved through the index to the
+# statement's current occurrence (the findprem face).
+premrow: i64 = (x: str)
+    if x:len() == 64
+        if x:byte(1) == 112
+            k = idnum(x)
+            if k >= 1
+                if k <= pkind:len()
+                    if pgen[k] == gen()
+                        return k
+            return 0
+    findprem(x)
+
+# The same resolution for seatings.
+seatrow: i64 = (x: str)
+    if x:len() == 64
+        if x:byte(1) == 115
+            k = idnum(x)
+            if k >= 1
+                if k <= srole:len()
+                    if sgen[k] == gen()
+                        return k
+            return 0
+    findseat(x)
+
+# The identity of a statement's current occurrence (""
+# when the statement is not registered in this generation).
+premiseid: str = (d: str)
     pi = findprem(d)
+    if pi == 0
+        return ""
+    idtext("p", pi)
+
+# The identity of a seating occurrence.
+seatid: str = (h: i64)
+    if h == 0
+        return ""
+    idtext("s", h)
+
+withdraw: i64 = (d: str)
+    pi = premrow(d)
     if pi > 0
         pwd[pi] = 1
         return 1
-    h = findseat(d)
+    h = seatrow(d)
     if h > 0
         swd[h] = 2
         return 1
@@ -625,18 +711,18 @@ init: i64 = ()
 
 fact: str = (w: i64)
     if w == 1
-        return own.p1
+        return premiseid(own.p1)
     if w == 2
-        return own.p2
+        return premiseid(own.p2)
     if w == 3
-        return own.p3
+        return premiseid(own.p3)
     if w == 4
         if own.q1 == nil
             return ""
-        return own.q1
+        return premiseid(own.q1)
     if own.q2 == nil
         return ""
-    own.q2
+    premiseid(own.q2)
 
 observe: str = ()
     if own.q1 == nil
@@ -648,7 +734,7 @@ observe: str = ()
 contradict: i64 = ()
     own.q2 = premise("the read of f returned a different digest", 2)
     if own.q1 != nil
-        withdraw(own.q1)
+        withdraw(premiseid(own.q1))
     1
 
 # ---- counted reads: the lookup counter of spec section 8
@@ -901,7 +987,7 @@ vfalls: i64 = (root: i64)
             d = citeof(r, i)
             ck = citekind(r, i)
             if ck == 2
-                pi = findprem(d)
+                pi = premrow(d)
                 if pi == 0
                     vacc[top] = -1
                 if pi > 0
@@ -926,7 +1012,7 @@ vfalls: i64 = (root: i64)
                         vacc[top] = 1
                         vmark[o] = 1
             if ck == 4
-                h = findseat(d)
+                h = seatrow(d)
                 if h == 0
                     vacc[top] = -1
                 if h > 0
@@ -968,6 +1054,45 @@ falls: i64 = (r: i64)
 # The three-state face: 1 stands, 0 falls, -1 unavailable.
 standing: i64 = (r: i64)
     vfalls(r)
+
+# The chapter's named comparisons over seatings (completed
+# chapter, core profile 1, section 7 — named comparisons,
+# no default): same is Same, provenance identity — the same
+# seat occurrence. content compares the shape descriptor
+# and every coefficient exactly as seated; numeric is
+# Numeric, canonical numeric equality. On this slice's
+# integer payloads the two coincide; under the finite
+# profiles they coincide on every representable value,
+# there being a single canonical zero. Re-pinned
+# 2026-11-08: the candidate chapter's same-as-default
+# ruling is superseded and struck.
+
+same: i64 = (a: i64, b: i64)
+    if a == 0
+        return 0
+    if a == b
+        return 1
+    0
+
+content: i64 = (a: i64, b: i64)
+    if a == 0
+        return 0
+    if b == 0
+        return 0
+    if sdim[a] != sdim[b]
+        return 0
+    if slen[a] != slen[b]
+        return 0
+    j = 0
+    while j < slen[a]
+        if sval[soff[a] + j + 1] != sval[soff[b] + j + 1]
+            return 0
+        j = j + 1
+    1
+
+numeric: i64 = (a: i64, b: i64)
+    content(a, b)
+
 
 stands: i64 = (r: i64)
     if falls(r) == 1
@@ -1044,16 +1169,16 @@ citesfor: i64 = (r: i64, k: i64)
     citeadd(r, sdigest(au), 1, k - 1)
     if k == 1
         cite(own.p1)
-        citeadd(r, own.p1, 2, 0)
+        citeadd(r, premiseid(own.p1), 2, 0)
     if k == 2
         cite(own.p1)
-        citeadd(r, own.p1, 2, 0)
+        citeadd(r, premiseid(own.p1), 2, 0)
         o1 = resrec(1)
         cite(recid(o1))
         citeadd(r, recid(o1), 3, 0)
     if k == 3
         cite(own.p2)
-        citeadd(r, own.p2, 2, 0)
+        citeadd(r, premiseid(own.p2), 2, 0)
     1
 
 stepv: i64 = (k: i64, rule: str)
@@ -1121,7 +1246,7 @@ result: i64 = (k: i64)
     r = begin(2, k, 0, 0)
     citeadd(r, recid(sr), 3, 0)
     if k == 1
-        citeadd(r, own.q1, 2, 0)
+        citeadd(r, premiseid(own.q1), 2, 0)
     seal(r, "derive-1", compiler.digest.sha256(resof(sr)))
     r
 
@@ -1171,7 +1296,7 @@ learn: i64 = ()
     cite(o2)
     cite(o3)
     r = begin(3, 0, 0, 0)
-    citeadd(r, sdigest(ac), 4, 0)
+    citeadd(r, seatid(ac), 4, 0)
     citeadd(r, o1, 3, 0)
     citeadd(r, o2, 3, 0)
     citeadd(r, o3, 3, 0)
@@ -1501,6 +1626,11 @@ M.last = last
 M.task = task
 M.stands = stands
 M.standing = standing
+M.seatid = seatid
+M.premiseid = premiseid
+M.same = same
+M.content = content
+M.numeric = numeric
 M.kind = kind
 M.stepk = stepk
 M.choiceof = choiceof
