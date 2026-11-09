@@ -97,6 +97,12 @@ ooff = {}
 
 sealed = {}
 
+vmark = {}
+
+vpath = {}
+
+vedge = {}
+
 coff = {}
 
 cnum = {}
@@ -832,25 +838,22 @@ falls: i64 = (root: i64)
         return 1
     if sealed[root] != gen()
         return 1
-    mark = {}
-    path = {}
-    edge = {}
     r = 1
     while r <= rkind:len()
-        mark[r] = 0
+        vmark[r] = 0
         r = r + 1
     top = 1
-    path[top] = root
-    edge[top] = 1
-    mark[root] = 1
+    vpath[top] = root
+    vedge[top] = 1
+    vmark[root] = 1
     while top > 0
-        r = path[top]
-        i = edge[top]
+        r = vpath[top]
+        i = vedge[top]
         if i > cnum[r]
-            mark[r] = 2
+            vmark[r] = 2
             top = top - 1
         else
-            edge[top] = i + 1
+            vedge[top] = i + 1
             d = citeof(r, i)
             ck = citekind(r, i)
             if ck == 2
@@ -863,13 +866,13 @@ falls: i64 = (root: i64)
                 o = findrout(d)
                 if o == 0
                     return 1
-                if mark[o] == 1
+                if vmark[o] == 1
                     return 1
-                if mark[o] == 0
+                if vmark[o] == 0
                     top = top + 1
-                    path[top] = o
-                    edge[top] = 1
-                    mark[o] = 1
+                    vpath[top] = o
+                    vedge[top] = 1
+                    vmark[o] = 1
             if ck == 4
                 h = findseat(d)
                 if h == 0
