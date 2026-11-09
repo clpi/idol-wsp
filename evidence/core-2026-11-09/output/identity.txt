@@ -96,4 +96,40 @@ ok: identity: extended reload preserves the complete digest
 ok: identity: extended reload retains all eight choice values
 ok: identity: extended reload preserves the complete bundle
 ok: identity: extended reload preserves a live reader
+ok: identity: a stale bundle cannot drop a newer derivation
+ok: identity: a missing derivation names the history refusal
+ok: identity: a truncated record history preserves the complete state
+ok: identity: record truncation preserves record and call counts
+ok: identity: record truncation preserves the newer result
+ok: identity: a stale bundle cannot drop a newer record and call
+ok: identity: stale execution history names the refusal
+ok: identity: stale execution history preserves the complete state
+ok: identity: stale execution history preserves both inventories
+ok: identity: stale execution history preserves both pointers
+ok: identity: stale execution history preserves live evidence
+ok: identity: retained records cannot hide a truncated call history
+ok: identity: missing calls name the history refusal
+ok: identity: missing calls preserve the complete state
+ok: identity: missing calls preserve both inventories
+ok: identity: a changed record score cannot rewrite known history
+ok: identity: changed record fields name the conflict
+ok: identity: a conflicting record body preserves the complete state
+ok: identity: a conflicting record body preserves its score and standing
+ok: identity: a changed citation row cannot rewrite known history
+ok: identity: changed citation metadata names the conflict
+ok: identity: a conflicting citation preserves the complete state
+ok: identity: a conflicting citation preserves live evidence
+ok: identity: a changed call name cannot rewrite execution history
+ok: identity: a changed call name identifies the history conflict
+ok: identity: a conflicting call name preserves the complete state
+ok: identity: a conflicting call name preserves the executed sequence
+ok: identity: a changed call result cannot rewrite execution history
+ok: identity: a changed call result identifies the history conflict
+ok: identity: a conflicting call result preserves the complete state
+ok: identity: a conflicting call result preserves recorded evidence
+ok: identity: the complete current record and call prefix reloads
+ok: identity: the complete history round trip preserves all bytes
+ok: identity: the complete history round trip preserves both inventories
+ok: identity: the complete history round trip preserves both pointers
+ok: identity: the complete history round trip preserves live evidence
 identity: OK

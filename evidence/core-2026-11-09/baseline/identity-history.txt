@@ -1,0 +1,135 @@
+ok: identity: the agent initialises
+ok: identity: a row citation names its seating occurrence
+ok: identity: the original transitive reader stands
+ok: identity: the original occurrence withdraws
+ok: identity: withdrawal falls the direct reader
+ok: identity: withdrawal falls the result
+ok: identity: withdrawal falls the transitive reader
+ok: identity: a saved active seating cannot clear withdrawal
+ok: identity: stale seating admission names the conflict
+ok: identity: stale seating refusal preserves the complete generation
+ok: identity: stale seating refusal preserves both pointers
+ok: identity: stale seating admission cannot revive the cone
+ok: identity: the replacement has identical content
+ok: identity: identical content receives a fresh occurrence
+ok: identity: the new reader cites the fresh occurrence
+ok: identity: the fresh occurrence supports its reader
+ok: identity: the fresh occurrence supports its result
+ok: identity: identical bytes cannot revive the withdrawn reader
+ok: identity: identical bytes cannot revive the withdrawn result
+ok: identity: identical bytes cannot revive the transitive reader
+ok: identity: an ambiguous content digest cannot choose an occurrence
+ok: identity: repeated withdrawal still names the old occurrence
+ok: identity: withdrawing the old occurrence leaves the new one live
+ok: identity: the equal-content bundle reloads
+ok: identity: reload preserves the exact active occurrence
+ok: identity: reload preserves the distinct current occurrence
+ok: identity: reload preserves direct withdrawal
+ok: identity: reload preserves transitive withdrawal
+ok: identity: reload preserves the independent reader
+ok: identity: reload preserves the independent result
+ok: identity: ambiguous legacy active pointers refuse admission
+ok: identity: refused pointers preserve the active occurrence
+ok: identity: refused pointers preserve the current occurrence
+ok: identity: refused pointers preserve current evidence
+ok: identity: missing active occurrences refuse admission
+ok: identity: missing pointers preserve current state
+ok: identity: the fresh occurrence withdraws independently
+ok: identity: the fresh reader falls on its own withdrawal
+ok: identity: the original withdrawal remains permanent
+ok: identity: an unambiguous legacy bundle remains readable
+ok: identity: an unambiguous legacy pointer resolves its occurrence
+ok: identity: legacy record hashes preserve transitive references
+ok: identity: an unambiguous legacy digest can withdraw
+ok: identity: a legacy withdrawal reaches the transitive reader
+ok: identity: a legacy digest made ambiguous blocks validation
+ok: identity: ambiguous legacy evidence never resurrects
+ok: identity: an occurrence citation survives legacy ambiguity
+ok: identity: ambiguous legacy row citations refuse admission
+ok: identity: refused legacy citations preserve records
+ok: identity: refused legacy citations preserve current identity
+ok: identity: refused legacy citations preserve live readers
+ok: identity: the premise occurrence withdraws
+ok: identity: a saved active premise cannot clear withdrawal
+ok: identity: stale premise admission names the conflict
+ok: identity: stale premise refusal preserves the complete generation
+ok: identity: stale premise refusal preserves both pointers
+ok: identity: stale premise admission preserves withdrawal and its cone
+ok: identity: stale premise refusal preserves independent evidence
+ok: identity: the last premise occurrence withdraws
+ok: identity: dropping a withdrawn occurrence refuses admission
+ok: identity: dropped occurrence admission names the missing inventory
+ok: identity: a dropped occurrence cannot clear the current generation
+ok: identity: a dropped occurrence cannot erase permanent withdrawal
+ok: identity: truncated admission preserves both pointers
+ok: identity: truncated admission preserves independent evidence
+ok: identity: changing a known premise occurrence body refuses
+ok: identity: conflicting premise admission names the conflict
+ok: identity: conflicting premise admission preserves the complete generation
+ok: identity: conflicting premise admission preserves both evidence states
+ok: identity: changing a known seating occurrence body refuses
+ok: identity: conflicting seating admission names the conflict
+ok: identity: conflicting seating admission preserves the complete generation
+ok: identity: conflicting seating admission preserves both pointers
+ok: identity: conflicting seating admission preserves live evidence
+ok: identity: a later seating payload with a false digest refuses
+ok: identity: corrupted seating admission names the digest failure
+ok: identity: failed payload validation preserves the complete generation
+ok: identity: failed payload validation preserves both pointers
+ok: identity: failed payload validation preserves live and withdrawn evidence
+ok: identity: malformed seating admission refuses before commit
+ok: identity: failed seating admission preserves the complete generation
+ok: identity: failed seating admission preserves both pointers
+ok: identity: failed seating admission preserves live evidence
+ok: identity: excess CSV values refuse admission
+ok: identity: excess values cannot hide behind a shorter resident span
+ok: identity: excess value refusal preserves the complete generation
+ok: identity: excess value refusal preserves both pointers
+ok: identity: excess value refusal preserves live evidence
+ok: identity: a malformed premise suffix is unresolved
+ok: identity: a malformed premise alias cannot withdraw
+ok: identity: rejecting a malformed alias preserves the legitimate premise
+ok: identity: rejecting a malformed alias preserves its reader
+ok: identity: an eight-value seating bundle reloads
+ok: identity: extended reload preserves both occurrence pointers
+ok: identity: extended reload preserves the complete digest
+ok: identity: extended reload retains all eight choice values
+ok: identity: extended reload preserves the complete bundle
+ok: identity: extended reload preserves a live reader
+FAIL: identity: a stale bundle cannot drop a newer derivation
+FAIL: identity: a missing derivation names the history refusal
+FAIL: identity: a truncated record history preserves the complete state
+FAIL: identity: record truncation preserves record and call counts
+FAIL: identity: record truncation preserves the newer result
+FAIL: identity: a stale bundle cannot drop a newer record and call
+FAIL: identity: stale execution history names the refusal
+FAIL: identity: stale execution history preserves the complete state
+FAIL: identity: stale execution history preserves both inventories
+ok: identity: stale execution history preserves both pointers
+FAIL: identity: stale execution history preserves live evidence
+FAIL: identity: retained records cannot hide a truncated call history
+FAIL: identity: missing calls name the history refusal
+FAIL: identity: missing calls preserve the complete state
+FAIL: identity: missing calls preserve both inventories
+FAIL: identity: a changed record score cannot rewrite known history
+FAIL: identity: changed record fields name the conflict
+FAIL: identity: a conflicting record body preserves the complete state
+FAIL: identity: a conflicting record body preserves its score and standing
+FAIL: identity: a changed citation row cannot rewrite known history
+FAIL: identity: changed citation metadata names the conflict
+FAIL: identity: a conflicting citation preserves the complete state
+ok: identity: a conflicting citation preserves live evidence
+FAIL: identity: a changed call name cannot rewrite execution history
+FAIL: identity: a changed call name identifies the history conflict
+FAIL: identity: a conflicting call name preserves the complete state
+FAIL: identity: a conflicting call name preserves the executed sequence
+FAIL: identity: a changed call result cannot rewrite execution history
+FAIL: identity: a changed call result identifies the history conflict
+FAIL: identity: a conflicting call result preserves the complete state
+ok: identity: a conflicting call result preserves recorded evidence
+ok: identity: the complete current record and call prefix reloads
+ok: identity: the complete history round trip preserves all bytes
+FAIL: identity: the complete history round trip preserves both inventories
+ok: identity: the complete history round trip preserves both pointers
+ok: identity: the complete history round trip preserves live evidence
+identity: FAIL

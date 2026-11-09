@@ -12,7 +12,7 @@ full core-profile, native-route, privacy, model-quality, or speed claim.
 |---|---:|---|
 | Agent | 126 | [agent](output/agent.txt) |
 | Withdrawal | 22 | [withdrawal](output/withdrawal.txt) |
-| Occurrence identity and admission | 98 | [identity](output/identity.txt) |
+| Occurrence identity and admission | 134 | [identity](output/identity.txt) |
 | Intent | 25 | [intent](output/intent.txt) |
 | Numeric | 98 | [numeric](output/numeric.txt) |
 | Revision | 227 | [revision](output/revision.txt) |
@@ -22,13 +22,13 @@ full core-profile, native-route, privacy, model-quality, or speed claim.
 | Serialized artifact consumer | 26 | [bundle](output/bundle.txt) |
 | Existing retraction battery | Aggregate PASS | [retract](output/retract.txt) |
 
-Total: **847 explicitly printed successful assertions**, plus the existing
+Total: **883 explicitly printed successful assertions**, plus the existing
 retraction battery. No failure was printed in the final cohort. The manifest
 records each source, executable and output hash, and both process exit codes.
 
 ## Baseline discrimination
 
-The expanded gates were also executed against WSP main
+The initial expanded gates were also executed against WSP main
 `e5abd8bc8eb743ae5bca432da0151882a0cecfb9`. All three compiled successfully
 and exited 1 because assertions failed:
 
@@ -36,11 +36,22 @@ and exited 1 because assertions failed:
 |---|---:|---:|---|
 | Revision | 199 | 28 | [revision](baseline/revision.txt) |
 | Differentiation | 82 | 10 | [grad](baseline/grad.txt) |
-| Identity | 43 | 55 | [identity](baseline/identity.txt) |
+| Identity, initial 98-case gate | 43 | 55 | [identity](baseline/identity.txt) |
 
-These are failing assertions, not counts of independent defects. The same
-gate hashes pass against the delivered modules. Baseline module hashes are
-recorded in the manifest; no cache is used as the correctness reference.
+These are failing assertions, not counts of independent defects. Those exact
+gate hashes passed against the first delivered candidate. The final revision
+and differentiation gate hashes are unchanged; the identity gate was then
+extended to cover a record/call-history gap identified during review.
+
+The final 134-case identity gate was executed against the prior accepted
+agent source, local commit `6c94879c8dbfcc0e03e1f8b8f2e512bbd5a90fc2`
+(the same tree as remote PR head `9252c858fe2d8a782a3c4d69f54bc1cbb1d6c6e9`).
+It compiled successfully, then exited 1 with **105 passed / 29 failed**
+assertions. [The review discriminator](baseline/identity-history.txt) records
+stale history truncation, conflicting derivation/citation fields, and changed
+call names/results. The manifest retains separate source and gate hashes for
+both phases; it does not attribute the earlier 98-case run to the final gate.
+No cache is used as the correctness reference.
 
 ## Compiler and route
 
@@ -95,12 +106,13 @@ numeric event/revision capsule.
 
 ## Boundaries and separately red controls
 
-The new bundle preflight preserves WSP seating/premise books and pointers on
+The new bundle preflight preserves WSP seating/premise books, derivation/call
+histories and pointers on
 the exercised refusals. It still calls `ml.space.seat` during validation, so
 it does not prove atomic adoption across upstream resident staging. Local
 occurrence IDs remain generation-scoped; explicit reset replaces the fixture
-authority context. The seating/premise prefix check does not cover arbitrary
-record/call-history replacement or global authority resolution.
+authority context. Prefix validation does not establish global authority
+resolution or complete capsule admission.
 
 The exact additive example is an intercept-only sum/count learner with an
 independent fixed schema. Its retained-data rebuild check is not an arbitrary

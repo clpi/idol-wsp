@@ -63,6 +63,10 @@ records input hashes, and compiles each gate with
 lock. It retains compiler output, executable output and the generated
 executables in the printed artifact directory.
 
+The caller owns artifact retention. After preserving the evidence needed
+for a run, remove or archive its completed stage directory. Repeated runs
+create independent directories; the runner does not prune earlier evidence.
+
 This is the hosted C qualification route. Its regression results do
 not assert native dependency-free execution or full core-profile
 conformance. The dated execution record in [status.md](status.md)

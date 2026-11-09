@@ -228,12 +228,15 @@ retarget their citations.
 
 Before changing the WSP generation, load validates seating admission
 and digests, resolves active/current pointers to the declared role,
-and checks the incoming seating/premise occurrence inventory against
-the current one. Known occurrences must retain identical immutable
-content and every current seating/premise must remain in the ordinal
-prefix. A currently known permanent withdrawal cannot become live in
-an incoming bundle. Violations refuse before WSP books and pointers
-change. A corrupt seating keeps the existing admission or digest
+and checks the incoming seating, premise, derivation and call inventories
+against the current ones. Known occurrences and histories must retain
+identical immutable content in their ordinal prefixes, including ordered
+citation kind, row and identity, and call name and result. No current
+inventory may be truncated. A currently known permanent withdrawal cannot
+become live in an incoming bundle. Known unsealed derivations refuse
+reload because the wire format cannot preserve their incomplete status.
+Violations refuse before WSP books and pointers change. A corrupt seating
+keeps the existing admission or digest
 refusal code. The existing CSV faces handle seatings with more than six
 values, and the parsed count must equal the admitted shape's cardinality;
 extra trailing values cannot hide behind a digest of a shorter tensor.
@@ -245,7 +248,7 @@ across authorities. The import preflight itself uses `ml.space.seat`
 for substrate validation and can change that substrate's staging
 state. The preserved-state claim covers WSP books and current/active
 pointers on refusal; it does not establish atomic adoption across
-the substrate, complete numeric capsules, record-history preservation,
+the substrate, complete numeric capsules, global authority resolution,
 or arbitrary concurrent publication. `gate/identity.id` binds these
 specific guarantees and limits.
 

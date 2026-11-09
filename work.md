@@ -183,12 +183,12 @@ evidence recorded in [status.md](status.md).
 
 - **State:** EXECUTED AND LANDED in the current-evidence landing.
 - **Scope:** exact seating citations/pointers, canonical occurrence
-  spelling, conservative legacy seating resolution, S/P import validation
-  and withdrawal preservation, revision identity-set membership, whole-query
+  spelling, conservative legacy seating resolution, S/P/R/C import validation
+  and withdrawal/history preservation, revision identity-set membership, whole-query
   selection/inventory validation, and constant-gradient input support.
   Existing homes own all changes; no second graph or registry was added.
 - **Evidence:** the published `gate/core.sh` completed the eleven-gate
-  cohort with 847 printed successful assertions and the retraction battery
+  cohort with 883 printed successful assertions and the retraction battery
   PASS. Expanded gates discriminate the baseline by runtime failures.
   [The evidence record](evidence/core-2026-11-09/README.md) contains exact
   inputs, compiler identity and outputs. `learned/bundle.txt` is actual

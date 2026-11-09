@@ -1607,6 +1607,8 @@ loadrefs: i64 = (nlines: i64)
 loadcheck: i64 = (nlines: i64)
     ns = 0
     np = 0
+    nr = 0
+    nc = 0
     li = 1
     while li <= nlines
         line = sat(0, li)
@@ -1676,9 +1678,40 @@ loadcheck: i64 = (nlines: i64)
                         if pwd[np] == 1 and wd != 1
                             own.why = "premise withdrawal conflict"
                             return -10
+            if tag == "R"
+                nr = nr + 1
+                if nr <= rkind:len()
+                    if rgen[nr] == gen()
+                        if sealed[nr] != gen()
+                            own.why = "record not sealed"
+                            return -10
+                        if rkind[nr] != atoi(sat(2, 2)) or rstep[nr] != atoi(sat(2, 3)) or rch[nr] != atoi(sat(2, 4)) or rscore[nr] != atoi(sat(2, 5)) or rtext(nr) != sat(2, 6) or odig(nr) != sat(2, 7) or resof(nr) != sat(2, 8)
+                            own.why = "record history conflict"
+                            return -10
+                        ne = split(sat(2, 9), 44, 1)
+                        if ne != cnum[nr]
+                            own.why = "record history conflict"
+                            return -10
+                        q = 1
+                        while q <= ne
+                            split(sat(1, q), 58, 3)
+                            if citekind(nr, q) != atoi(sat(3, 1)) or crow[coff[nr] + q] != atoi(sat(3, 2)) or citeof(nr, q) != sat(3, 3)
+                                own.why = "record history conflict"
+                                return -10
+                            q = q + 1
+            if tag == "C"
+                nc = nc + 1
+                if nc <= cgen:len()
+                    if cgen[nc] == gen()
+                        if piece(8, clstart[nc], cllen[nc]) != sat(2, 2) or piece(9, crstart[nc], crlen[nc]) != sat(2, 3)
+                            own.why = "call history conflict"
+                            return -10
         li = li + 1
     if ns < nseatings() or np < npremises()
         own.why = "identity inventory truncated"
+        return -10
+    if nr < nrecords() or nc < ncalls()
+        own.why = "history inventory truncated"
         return -10
     1
 

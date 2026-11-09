@@ -16,7 +16,7 @@ and baseline failures. The current qualified state is:
 |---|---:|
 | Agent | 126 / 0 |
 | Withdrawal | 22 / 0 |
-| Identity/admission | 98 / 0 |
+| Identity/admission | 134 / 0 |
 | Intent | 25 / 0 |
 | Numeric | 98 / 0 |
 | Revision | 227 / 0 |
@@ -27,7 +27,7 @@ and baseline failures. The current qualified state is:
 | Existing retraction battery | PASS |
 
 The published `gate/core.sh` compiled and ran all eleven gates, exiting 0:
-**847 printed successful assertions plus the aggregate retraction battery**.
+**883 printed successful assertions plus the aggregate retraction battery**.
 The route was the actual Idol compiler with
 `--no-cache --backend=c --emit=exe --libc`, followed by execution. Binary
 SHA-256 is `c0c39b04c2368ee919c3fa456766d5f87bb60a761ccd3118e602282fc5a2f6f1`;
@@ -44,9 +44,11 @@ The corrected behavior is:
   Ambiguous legacy seating digests refuse; malformed occurrence spellings
   cannot alias valid identities.
 - Bundle admission validates seating payloads/digests before changing WSP
-  generation, preserves the current seating/premise identity prefix, and
-  refuses attempts to clear known permanent withdrawals. Existing CSV
-  faces support extended payloads with exact cardinality checks.
+  generation, preserves the current seating/premise identity prefix and
+  derivation/call history, and refuses attempts to clear known permanent
+  withdrawals. Existing CSV faces support extended payloads with exact
+  cardinality checks. Reload cannot truncate or rewrite recorded citation
+  metadata, record bodies, call names or call results.
 - A revision counts each event identity once. Every current query validates
   the recipe's transitive selection support and the complete fixed inventory;
   per-event exclusion/receipt faces cannot bypass those obligations.
@@ -57,9 +59,13 @@ The corrected behavior is:
   a byte-book fixture representation. No new depth-budget or DFS repair was
   made; this closes the previously unexecuted standalone qualification.
 
-The expanded revision, grad and identity gates also ran against baseline
-modules and failed 28, 10 and 55 assertions respectively (each compiled,
-then exited 1). They pass against the delivered modules.
+The initial expanded revision, grad and identity gates also ran against
+baseline modules and failed 28, 10 and 55 assertions respectively (each
+compiled, then exited 1). Those exact gates passed against the first
+candidate. The final identity gate adds record/call-history checks: against
+that prior accepted agent source it compiled, then exited 1 with 105 passed
+and 29 failed assertions. The evidence keeps both phases' source and gate
+hashes separate.
 
 `gate/additive.id` is an executed restricted learner: independent labels
 1, 3 and 8 produce exact statistics [12,3] and coefficient 4; removing
@@ -76,8 +82,8 @@ passes a fresh-process consumer's byte-identical round trip, full standing
 vector, exact pointer, withdrawal and stale replay checks. Its live and
 fallen records remain explicit fixture history.
 
-**Limits remain explicit.** The S/P admission check preserves WSP state,
-not upstream resident staging or arbitrary R/C history. Identities are still
+**Limits remain explicit.** The S/P/R/C admission check preserves WSP state,
+not upstream resident staging. Identities are still
 fixture-generation local; reset is an explicit context replacement, not
 global revocation. Compiler-discovered implicit dependencies, complete native
 capsules, concurrent atomic publication and full E01–E31 conformance are
