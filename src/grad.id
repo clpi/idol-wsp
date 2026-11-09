@@ -1,0 +1,1023 @@
+# The weights chapter's differentiation faces, core
+# profile 1. Home wsp.grad, staged into the compiler
+# tree as lib/wsp beside lib/wsp/agent.id and
+# lib/wsp/numeric.id.
+#
+# Spec: spec-differentiation-faces.md in clpi/idol-wsp
+# (the repo of record), work order WS-CONF-3. Governing
+# semantics: the chapter as landed in this repo
+# (Idol-Weights-Semantics.md) section 6, with section
+# 4's evaluation rules and section 7's support
+# discipline.
+#
+# A presented function is an immutable expression DAG:
+# node rows in file-scope books, children always older
+# than their parents, so handle order is a topological
+# order and evaluation is two ascending walks. All
+# arithmetic is the numeric home's faces; premise state
+# is read through the agent home exactly as the numeric
+# home reads it. No second machinery: the gradient is
+# an ordinary Q weight, and learning it is the numeric
+# home's event face.
+#
+# Representation discipline, as in the numeric home:
+# file-scope tables keyed by integer handles, one byte
+# book for node texts, no string-keyed tables, no
+# strings in records. Every string comparison goes
+# through a face whose operands are both parameters,
+# and concatenation goes through appv, because this
+# realizer's lowering of a string operation flips on
+# the construct form that produced the operands
+# (defect class D-FORM, filed in the fleet record
+# wsp-remainder-successor-2026-11-09.md section 6).
+# Coordinate scratch lives in file-scope tables (de,
+# dr, dc, er and the g tables) written with upward
+# counter keys, the forms the lowering seats correctly.
+
+st = {}
+
+# node books: kind, first child, second child, the
+# captured weight of a constant node, and two text
+# windows (offset and length) in the byte book
+kind = {}
+
+ca = {}
+
+cb = {}
+
+ccw = {}
+
+t1o = {}
+
+t1l = {}
+
+t2o = {}
+
+t2l = {}
+
+tb = {}
+
+# per-call evaluation state: the generation mark of the
+# reached nodes, their primal values, their ideal
+# values, and their adjoints (numeric weight handles)
+gm = {}
+
+pv = {}
+
+iv = {}
+
+adj = {}
+
+# text parse scratch (the numeric home's split idiom)
+tok = {}
+
+# coordinate scratch: extents staged in de, the
+# decomposition passes through er and dr into dc
+de = {}
+
+er = {}
+
+dr = {}
+
+dc = {}
+
+# parsed axis and map tables, and coordinate copies
+gka = {}
+
+gkb = {}
+
+gac = {}
+
+gbc = {}
+
+gmp = {}
+
+# ---- refusal state: every face sets st.why on entry;
+# a refusal leaves its code there and in the return
+# value where the return type carries it
+
+why: i64 = ()
+    if st.why == nil
+        return 0
+    st.why
+
+refusal: str = ()
+    c = why()
+    if c == -1
+        return "shape"
+    if c == -2
+        return "dtype"
+    if c == -3
+        return "range"
+    if c == -4
+        return "integral"
+    if c == -5
+        return "zero"
+    if c == -6
+        return "count"
+    if c == -7
+        return "extent"
+    if c == -8
+        return "coordinate"
+    if c == -9
+        return "axis"
+    if c == -10
+        return "broadcast"
+    if c == -11
+        return "contract"
+    if c == -12
+        return "unknown"
+    if c == -13
+        return "anchor"
+    if c == -14
+        return "resource"
+    if c == -15
+        return "text"
+    if c == -16
+        return "premises"
+    if c == -17
+        return "withdrawn"
+    if c == -18
+        return "integer"
+    if c == -19
+        return "branch"
+    if c == -20
+        return "effect"
+    if c == -21
+        return "scalar"
+    ""
+
+fail: i64 = (code: i64)
+    st.why = code
+    code
+
+# ---- the byte book
+
+putb: i64 = (b: i64)
+    tb[tb:len() + 1] = b
+    tb:len()
+
+blen: i64 = ()
+    tb:len()
+
+wtext: i64 = (s: str)
+    j = 1
+    while j <= s:len()
+        putb(s:byte(j))
+        j = j + 1
+    s:len()
+
+piece: str = (off: i64, len: i64)
+    out = ""
+    j = 0
+    while j < len
+        b = tb[off + j + 1]
+        out = appv(out, b:char())
+        j = j + 1
+    out
+
+# append one string to another through a parameter-only
+# face (the D-FORM-safe form for concatenation)
+appv: str = (a: str, v: str)
+    a .. v
+
+streq: i64 = (a: str, b: str)
+    if a:len() != b:len()
+        return 0
+    i = 1
+    while i <= a:len()
+        if a:byte(i) != b:byte(i)
+            return 0
+        i = i + 1
+    1
+
+digits: str = (v: i64)
+    if v == 0
+        return "0"
+    out = ""
+    n = v
+    while n > 0
+        d = 48 + n % 10
+        out = appv(d:char(), out)
+        n = n // 10
+    out
+
+itext: str = (v: i64)
+    if v < 0
+        return appv("-", digits(0 - v))
+    digits(v)
+
+# a substring built byte by byte: this home's own sub
+# face (expression subtraction) shadows the string edge
+# of the same name inside the home, so no string is
+# ever cut with that edge here
+substr: str = (s: str, a: i64, b: i64)
+    out = ""
+    i = a
+    while i <= b
+        c = s:byte(i)
+        out = appv(out, c:char())
+        i = i + 1
+    out
+
+# ---- text reading: split a comma text into the token
+# table (the agent home's split idiom, one output table)
+
+split2: i64 = (s: str, sep: i64)
+    n = 0
+    mark = 1
+    i = 1
+    empty = ""
+    while i <= s:len()
+        if s:byte(i) == sep
+            n = n + 1
+            if i == mark
+                tok[n] = empty
+            else
+                tok[n] = substr(s, mark, i - 1)
+            mark = i + 1
+        i = i + 1
+    if s:len() >= mark
+        n = n + 1
+        tok[n] = substr(s, mark, s:len())
+    st.ntok = n
+    n
+
+tokof: str = (j: i64)
+    if j < 1
+        return ""
+    if j > st.ntok
+        return ""
+    tok[j]
+
+isint: i64 = (s: str)
+    if s:len() == 0
+        return 0
+    i = 1
+    if s:byte(1) == 45
+        if s:len() == 1
+            return 0
+        i = 2
+    while i <= s:len()
+        b = s:byte(i)
+        if b < 48
+            return 0
+        if b > 57
+            return 0
+        i = i + 1
+    1
+
+atoi2: i64 = (s: str)
+    v = 0
+    i = 1
+    neg = 0
+    if s:byte(1) == 45
+        neg = 1
+        i = 2
+    while i <= s:len()
+        v = v * 10 + (s:byte(i) - 48)
+        i = i + 1
+    if neg == 1
+        return 0 - v
+    v
+
+# ---- coordinates. Flat index to coordinates over the
+# extents staged in de slots 1..rank, axis order. The
+# result lands in dc slots 1..rank, axis order. The
+# three passes run upward with counter keys throughout:
+# the graph-observed lowering seats a scratch table as
+# a hash when a write key is an arithmetic binding, and
+# refuses the integer key against that seat, so the
+# reversal is spelled as two upward copies around an
+# upward walk (the numeric home's decomp, carried here
+# in this home's own scratch).
+
+decomp: i64 = (flat: i64, rank: i64)
+    p = 1
+    while p <= rank
+        er[p] = de[rank - p + 1]
+        p = p + 1
+    rem = flat
+    p = 1
+    while p <= rank
+        ext = er[p]
+        co = 0
+        if ext != 0
+            co = rem % ext
+            rem = rem // ext
+        dr[p] = co
+        p = p + 1
+    p = 1
+    while p <= rank
+        dc[p] = dr[rank - p + 1]
+        p = p + 1
+    0
+
+# stage a weight's extents in de and decompose a flat
+# index over them; dc holds the coordinates, the rank
+# is returned
+coords: i64 = (flat: i64, w: i64)
+    rank = wsp.numeric.rankof(w)
+    j = 1
+    while j <= rank
+        de[j] = wsp.numeric.dimof(w, j - 1)
+        j = j + 1
+    dcr = decomp(flat, rank)
+    rank
+
+# the coords text of the coordinates currently in dc
+dctext: str = (rank: i64)
+    t = ""
+    j = 1
+    while j <= rank
+        if j > 1
+            t = appv(t, ",")
+        t = appv(t, itext(dc[j]))
+        j = j + 1
+    t
+
+# the coords text of a flat index into a weight
+coordtext: str = (flat: i64, w: i64)
+    rank = coords(flat, w)
+    dctext(rank)
+
+# the dims text of a weight ("" at rank zero)
+dimtextof: str = (w: i64)
+    t = ""
+    rank = wsp.numeric.rankof(w)
+    j = 1
+    while j <= rank
+        if j > 1
+            t = appv(t, ",")
+        t = appv(t, itext(wsp.numeric.dimof(w, j - 1)))
+        j = j + 1
+    t
+
+# a zero Q weight of a weight's shape, carrying no
+# support of its own
+zerow: i64 = (w: i64)
+    dims = dimtextof(w)
+    card = wsp.numeric.cardof(w)
+    vals = ""
+    if card > 0
+        vals = "0"
+        k = 2
+        while k <= card
+            vals = appv(vals, ",0")
+            k = k + 1
+    wsp.numeric.lit(0, 0, dims, vals)
+
+negw: i64 = (x: i64)
+    z = zerow(x)
+    if z < 0
+        return z
+    wsp.numeric.sub(z, x)
+
+# ---- constructors. A node is appended only over
+# existing children, so a child's handle is always
+# smaller than its parent's.
+
+mknode: i64 = (k: i64, a: i64, b: i64, cw: i64, t1: str, t2: str)
+    o1 = blen()
+    l1 = wtext(t1)
+    o2 = blen()
+    l2 = wtext(t2)
+    h = kind:len() + 1
+    kind[h] = k
+    ca[h] = a
+    cb[h] = b
+    ccw[h] = cw
+    t1o[h] = o1
+    t1l[h] = l1
+    t2o[h] = o2
+    t2l[h] = l2
+    h
+
+childok: i64 = (x: i64)
+    if x < 1
+        return 0
+    if x > kind:len()
+        return 0
+    1
+
+input: i64 = ()
+    st.why = 0
+    mknode(1, 0, 0, 0, "", "")
+
+constant: i64 = (w: i64)
+    st.why = 0
+    if w < 1
+        return fail(-1)
+    mknode(2, 0, 0, w, "", "")
+
+binode: i64 = (k: i64, a: i64, b: i64)
+    if childok(a) == 0
+        return fail(-1)
+    if childok(b) == 0
+        return fail(-1)
+    mknode(k, a, b, 0, "", "")
+
+add: i64 = (a: i64, b: i64)
+    st.why = 0
+    binode(3, a, b)
+
+sub: i64 = (a: i64, b: i64)
+    st.why = 0
+    binode(4, a, b)
+
+mul: i64 = (a: i64, b: i64)
+    st.why = 0
+    binode(5, a, b)
+
+div: i64 = (a: i64, b: i64)
+    st.why = 0
+    binode(6, a, b)
+
+scale: i64 = (a: i64, s: i64)
+    st.why = 0
+    binode(7, a, s)
+
+read: i64 = (a: i64, coords: str)
+    st.why = 0
+    if childok(a) == 0
+        return fail(-1)
+    mknode(8, a, 0, 0, coords, "")
+
+replace: i64 = (a: i64, coords: str, x: i64)
+    st.why = 0
+    if childok(a) == 0
+        return fail(-1)
+    if childok(x) == 0
+        return fail(-1)
+    mknode(9, a, x, 0, coords, "")
+
+broadcast: i64 = (a: i64, dims: str, map: str)
+    st.why = 0
+    if childok(a) == 0
+        return fail(-1)
+    mknode(10, a, 0, 0, dims, map)
+
+contract: i64 = (a: i64, b: i64, axes: str, axes2: str)
+    st.why = 0
+    binode2(11, a, b, axes, axes2)
+
+binode2: i64 = (k: i64, a: i64, b: i64, t1: str, t2: str)
+    if childok(a) == 0
+        return fail(-1)
+    if childok(b) == 0
+        return fail(-1)
+    mknode(k, a, b, 0, t1, t2)
+
+branch: i64 = (a: i64)
+    st.why = 0
+    if childok(a) == 0
+        return fail(-1)
+    mknode(12, a, 0, 0, "", "")
+
+draw: i64 = ()
+    st.why = 0
+    mknode(13, 0, 0, 0, "", "")
+
+# ---- reachability and the structural refusal walk.
+# The generation mark keeps a call's reached set
+# without clearing: gm holds the generation in which
+# the node was last reached. Every gm slot up to the
+# root handle is written before any read in the call:
+# an integer-indexed read of a slot that was never
+# written aborts in this runtime (the emitted code
+# bounds-checks the index against the written length),
+# where a string-keyed read of an absent key yields
+# nil. The zero fill is what "not reached in this
+# generation" reads as; generations start at 1.
+
+reach: i64 = (e: i64)
+    gen = 0
+    if st.gen != nil
+        gen = st.gen
+    gen = gen + 1
+    st.gen = gen
+    i = gm:len() + 1
+    while i <= e
+        gm[i] = 0
+        i = i + 1
+    stk = {}
+    sp = 0
+    sp = sp + 1
+    stk[sp] = e
+    while sp >= 1
+        n = stk[sp]
+        sp = sp - 1
+        if gm[n] != gen
+            gm[n] = gen
+            a = ca[n]
+            if a >= 1
+                sp = sp + 1
+                stk[sp] = a
+            b = cb[n]
+            if b >= 1
+                sp = sp + 1
+                stk[sp] = b
+    0
+
+structcheck: i64 = (e: i64)
+    n = 1
+    while n <= e
+        if gm[n] == st.gen
+            if kind[n] == 12
+                return fail(-19)
+            if kind[n] == 13
+                return fail(-20)
+        n = n + 1
+    0
+
+# a child's value in the walk in progress: mode 0 is
+# the primal table, mode 1 the ideal table
+valof: i64 = (mode: i64, node: i64)
+    if mode == 0
+        return pv[node]
+    iv[node]
+
+# ---- the two evaluations, one ascending walk each.
+# Mode 0 is the primal evaluation under the chapter's
+# section 4 rules; mode 1 is the ideal interpretation:
+# leaves lifted to Q, every interior node evaluated at
+# dtype Q. A numeric face's refusal is the walk's
+# refusal, returned unchanged.
+
+walk: i64 = (e: i64, w: i64, mode: i64)
+    n = 1
+    while n <= e
+        if gm[n] == st.gen
+            k = kind[n]
+            v = 0
+            if k == 1
+                if mode == 0
+                    v = w
+                else
+                    v = wsp.numeric.cast(0, 0, w)
+            if k == 2
+                if mode == 0
+                    v = ccw[n]
+                else
+                    v = wsp.numeric.cast(0, 0, ccw[n])
+            if k == 3
+                v = wsp.numeric.add(valof(mode, ca[n]), valof(mode, cb[n]))
+            if k == 4
+                v = wsp.numeric.sub(valof(mode, ca[n]), valof(mode, cb[n]))
+            if k == 5
+                v = wsp.numeric.mul(valof(mode, ca[n]), valof(mode, cb[n]))
+            if k == 6
+                v = wsp.numeric.div(valof(mode, ca[n]), valof(mode, cb[n]))
+            if k == 7
+                s = valof(mode, cb[n])
+                if s < 0
+                    return s
+                if wsp.numeric.rankof(s) != 0
+                    return fail(-1)
+                a = valof(mode, ca[n])
+                bv = wsp.numeric.broadcast(s, dimtextof(a), "")
+                if bv < 0
+                    return bv
+                v = wsp.numeric.mul(bv, a)
+            if k == 8
+                v = wsp.numeric.read(valof(mode, ca[n]), piece(t1o[n], t1l[n]))
+            if k == 9
+                v = wsp.numeric.replace(valof(mode, ca[n]), piece(t1o[n], t1l[n]), valof(mode, cb[n]))
+            if k == 10
+                v = wsp.numeric.broadcast(valof(mode, ca[n]), piece(t1o[n], t1l[n]), piece(t2o[n], t2l[n]))
+            if k == 11
+                v = wsp.numeric.contract(valof(mode, ca[n]), valof(mode, cb[n]), piece(t1o[n], t1l[n]), piece(t2o[n], t2l[n]))
+            if v < 0
+                return v
+            if mode == 0
+                pv[n] = v
+            else
+                iv[n] = v
+        n = n + 1
+    valof(mode, e)
+
+primal: i64 = (e: i64, w: i64)
+    st.why = 0
+    if childok(e) == 0
+        return fail(-1)
+    c = reach(e)
+    c = structcheck(e)
+    if c != 0
+        return c
+    v = walk(e, w, 0)
+    if v < 0
+        return fail(v)
+    v
+
+ideal: i64 = (e: i64, w: i64)
+    st.why = 0
+    if childok(e) == 0
+        return fail(-1)
+    dt = wsp.numeric.dtypeof(w)
+    if dt == 1
+        return fail(-18)
+    if dt == 2
+        return fail(-18)
+    c = reach(e)
+    c = structcheck(e)
+    if c != 0
+        return c
+    v = walk(e, w, 1)
+    if v < 0
+        return fail(v)
+    v
+
+# ---- the adjoint pass. Adjoints are Q weights of the
+# node's ideal shape, distributed in descending handle
+# order (every parent before its children) by the
+# chapter's rules, accumulated by exact addition. All
+# arithmetic is the numeric home's faces at dtype Q.
+
+# accumulate one contribution into a child's adjoint;
+# returns 0 or the contribution's refusal code
+acc: i64 = (child: i64, term: i64)
+    if term < 0
+        return term
+    cur = adj[child]
+    if cur == 0
+        adj[child] = term
+        return 0
+    v = wsp.numeric.add(cur, term)
+    if v < 0
+        return v
+    adj[child] = v
+    0
+
+# the scalar child's adjoint under scale: the sum over
+# the value child's coordinates of adjoint times the
+# value child's ideal value at that coordinate
+scaladj: i64 = (A: i64, x: i64)
+    acc0 = wsp.numeric.lit(0, 0, "", "0")
+    if acc0 < 0
+        return acc0
+    card = wsp.numeric.cardof(x)
+    flat = 0
+    while flat < card
+        ct = coordtext(flat, x)
+        r1 = wsp.numeric.read(A, ct)
+        if r1 < 0
+            return r1
+        r2 = wsp.numeric.read(x, ct)
+        if r2 < 0
+            return r2
+        term = wsp.numeric.mul(r1, r2)
+        if term < 0
+            return term
+        acc0 = wsp.numeric.add(acc0, term)
+        if acc0 < 0
+            return acc0
+        flat = flat + 1
+    acc0
+
+# the broadcast child's adjoint: at each source
+# coordinate, the sum of the adjoint over every target
+# coordinate that projects to it
+bcastadj: i64 = (n: i64, A: i64)
+    src = iv[ca[n]]
+    accw = zerow(src)
+    if accw < 0
+        return accw
+    cnt = split2(piece(t2o[n], t2l[n]), 44)
+    j = 1
+    while j <= cnt
+        t = tokof(j)
+        if isint(t) == 0
+            return fail(-15)
+        gmp[j] = atoi2(t)
+        j = j + 1
+    srank = wsp.numeric.rankof(src)
+    card = wsp.numeric.cardof(A)
+    flat = 0
+    while flat < card
+        r = coords(flat, A)
+        j = 1
+        while j <= r
+            gac[j] = dc[j]
+            j = j + 1
+        ttext = dctext(r)
+        stext = ""
+        j = 1
+        while j <= srank
+            co = 0
+            if wsp.numeric.dimof(src, j - 1) != 1
+                co = gac[gmp[j] + 1]
+            if j > 1
+                stext = appv(stext, ",")
+            stext = appv(stext, itext(co))
+            j = j + 1
+        val = wsp.numeric.read(A, ttext)
+        if val < 0
+            return val
+        cur = wsp.numeric.read(accw, stext)
+        if cur < 0
+            return cur
+        nv = wsp.numeric.add(cur, val)
+        if nv < 0
+            return nv
+        accw = wsp.numeric.replace(accw, stext, nv)
+        if accw < 0
+            return accw
+        flat = flat + 1
+    accw
+
+# is axis j in the parsed axis table selected by which
+# (0 for gka with count na, 1 for gkb with count nb)
+inaxes: i64 = (which: i64, cnt: i64, j: i64)
+    k = 1
+    while k <= cnt
+        if which == 0
+            if gka[k] == j
+                return 1
+        else
+            if gkb[k] == j
+                return 1
+        k = k + 1
+    0
+
+# one side's adjoint under contract: side 0 is the
+# first child's, side 1 the second's. At each of the
+# side's coordinates, the sum over the other child's
+# coordinates whose contracted coordinates agree, of
+# the adjoint at the combined output coordinate times
+# the other child's ideal value there.
+contractadj: i64 = (n: i64, A: i64, side: i64)
+    wa = iv[ca[n]]
+    wb = iv[cb[n]]
+    mine = wa
+    other = wb
+    if side == 1
+        mine = wb
+        other = wa
+    na = split2(piece(t1o[n], t1l[n]), 44)
+    j = 1
+    while j <= na
+        t = tokof(j)
+        if isint(t) == 0
+            return fail(-15)
+        gka[j] = atoi2(t)
+        j = j + 1
+    nb = split2(piece(t2o[n], t2l[n]), 44)
+    j = 1
+    while j <= nb
+        t = tokof(j)
+        if isint(t) == 0
+            return fail(-15)
+        gkb[j] = atoi2(t)
+        j = j + 1
+    res = zerow(mine)
+    if res < 0
+        return res
+    ranka = wsp.numeric.rankof(wa)
+    rankb = wsp.numeric.rankof(wb)
+    carda = wsp.numeric.cardof(wa)
+    cardb = wsp.numeric.cardof(wb)
+    fa = 0
+    while fa < carda
+        ra = coords(fa, wa)
+        j = 1
+        while j <= ra
+            gac[j] = dc[j]
+            j = j + 1
+        atext = dctext(ra)
+        fb = 0
+        while fb < cardb
+            rb = coords(fb, wb)
+            j = 1
+            while j <= rb
+                gbc[j] = dc[j]
+                j = j + 1
+            btext = dctext(rb)
+            agree = 1
+            k2 = 1
+            while k2 <= na
+                ka1 = gka[k2]
+                kb1 = gkb[k2]
+                if gac[ka1 + 1] != gbc[kb1 + 1]
+                    agree = 0
+                k2 = k2 + 1
+            if agree == 1
+                outtext = ""
+                first = 1
+                j = 0
+                while j < ranka
+                    if inaxes(0, na, j) == 0
+                        if first == 0
+                            outtext = appv(outtext, ",")
+                        first = 0
+                        outtext = appv(outtext, itext(gac[j + 1]))
+                    j = j + 1
+                j = 0
+                while j < rankb
+                    if inaxes(1, nb, j) == 0
+                        if first == 0
+                            outtext = appv(outtext, ",")
+                        first = 0
+                        outtext = appv(outtext, itext(gbc[j + 1]))
+                    j = j + 1
+                t1 = wsp.numeric.read(A, outtext)
+                if t1 < 0
+                    return t1
+                otext = btext
+                mtext = atext
+                if side == 1
+                    otext = atext
+                    mtext = btext
+                t2 = wsp.numeric.read(other, otext)
+                if t2 < 0
+                    return t2
+                term = wsp.numeric.mul(t1, t2)
+                if term < 0
+                    return term
+                cur = wsp.numeric.read(res, mtext)
+                if cur < 0
+                    return cur
+                nv = wsp.numeric.add(cur, term)
+                if nv < 0
+                    return nv
+                res = wsp.numeric.replace(res, mtext, nv)
+                if res < 0
+                    return res
+            fb = fb + 1
+        fa = fa + 1
+    res
+
+adjpass: i64 = (e: i64)
+    n = 1
+    while n <= e
+        if gm[n] == st.gen
+            adj[n] = 0
+        n = n + 1
+    seed = wsp.numeric.lit(0, 0, "", "1")
+    if seed < 0
+        return seed
+    adj[e] = seed
+    st.gacc = 0
+    n = e
+    while n >= 1
+        if gm[n] == st.gen
+            A = adj[n]
+            if A != 0
+                k = kind[n]
+                if k == 1
+                    if st.gacc == 0
+                        st.gacc = A
+                    else
+                        v = wsp.numeric.add(st.gacc, A)
+                        if v < 0
+                            return v
+                        st.gacc = v
+                if k == 3
+                    c = acc(ca[n], A)
+                    if c != 0
+                        return c
+                    c = acc(cb[n], A)
+                    if c != 0
+                        return c
+                if k == 4
+                    c = acc(ca[n], A)
+                    if c != 0
+                        return c
+                    c = acc(cb[n], negw(A))
+                    if c != 0
+                        return c
+                if k == 5
+                    c = acc(ca[n], wsp.numeric.mul(A, iv[cb[n]]))
+                    if c != 0
+                        return c
+                    c = acc(cb[n], wsp.numeric.mul(A, iv[ca[n]]))
+                    if c != 0
+                        return c
+                if k == 6
+                    t = wsp.numeric.div(iv[ca[n]], iv[cb[n]])
+                    if t < 0
+                        return t
+                    c = acc(ca[n], wsp.numeric.div(A, iv[cb[n]]))
+                    if c != 0
+                        return c
+                    d2 = wsp.numeric.div(t, iv[cb[n]])
+                    if d2 < 0
+                        return d2
+                    m6 = wsp.numeric.mul(A, d2)
+                    if m6 < 0
+                        return m6
+                    c = acc(cb[n], negw(m6))
+                    if c != 0
+                        return c
+                if k == 7
+                    bv = wsp.numeric.broadcast(iv[cb[n]], dimtextof(iv[ca[n]]), "")
+                    if bv < 0
+                        return bv
+                    c = acc(ca[n], wsp.numeric.mul(A, bv))
+                    if c != 0
+                        return c
+                    c = acc(cb[n], scaladj(A, iv[ca[n]]))
+                    if c != 0
+                        return c
+                if k == 8
+                    z = zerow(iv[ca[n]])
+                    if z < 0
+                        return z
+                    c = acc(ca[n], wsp.numeric.replace(z, piece(t1o[n], t1l[n]), A))
+                    if c != 0
+                        return c
+                if k == 9
+                    c = acc(cb[n], wsp.numeric.read(A, piece(t1o[n], t1l[n])))
+                    if c != 0
+                        return c
+                    z0 = wsp.numeric.lit(0, 0, "", "0")
+                    if z0 < 0
+                        return z0
+                    c = acc(ca[n], wsp.numeric.replace(A, piece(t1o[n], t1l[n]), z0))
+                    if c != 0
+                        return c
+                if k == 10
+                    c = acc(ca[n], bcastadj(n, A))
+                    if c != 0
+                        return c
+                if k == 11
+                    c = acc(ca[n], contractadj(n, A, 0))
+                    if c != 0
+                        return c
+                    c = acc(cb[n], contractadj(n, A, 1))
+                    if c != 0
+                        return c
+        n = n - 1
+    0
+
+# ---- Grad: the exact rational gradient of the ideal
+# interpretation at lift(w), over a successful primal.
+# The returned weight is the adjoint sum plus a zero
+# weight of the input's shape carrying the primal
+# value's support — a value minus itself, whose
+# payload is zero and whose support is the closed
+# union of the input's and every captured constant's
+# support (spec section 6).
+
+grad: i64 = (e: i64, w: i64)
+    st.why = 0
+    if childok(e) == 0
+        return fail(-1)
+    dt = wsp.numeric.dtypeof(w)
+    if dt == 1
+        return fail(-18)
+    if dt == 2
+        return fail(-18)
+    c = reach(e)
+    c = structcheck(e)
+    if c != 0
+        return c
+    p = walk(e, w, 0)
+    if p < 0
+        return fail(p)
+    if wsp.numeric.rankof(p) != 0
+        return fail(-21)
+    q = walk(e, w, 1)
+    if q < 0
+        return fail(q)
+    c = adjpass(e)
+    if c != 0
+        return fail(c)
+    g = st.gacc
+    if g == 0
+        g = zerow(w)
+        if g < 0
+            return fail(g)
+    bv = wsp.numeric.broadcast(p, dimtextof(w), "")
+    if bv < 0
+        return fail(bv)
+    zq = wsp.numeric.cast(0, 0, bv)
+    if zq < 0
+        return fail(zq)
+    z = wsp.numeric.sub(zq, zq)
+    if z < 0
+        return fail(z)
+    r = wsp.numeric.add(g, z)
+    if r < 0
+        return fail(r)
+    r
+
+M = {}
+M.input = input
+M.constant = constant
+M.add = add
+M.sub = sub
+M.mul = mul
+M.div = div
+M.scale = scale
+M.read = read
+M.replace = replace
+M.broadcast = broadcast
+M.contract = contract
+M.branch = branch
+M.draw = draw
+M.primal = primal
+M.ideal = ideal
+M.grad = grad
+M.why = why
+M.refusal = refusal
+M
