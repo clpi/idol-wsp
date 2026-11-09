@@ -1,0 +1,194 @@
+# The retraction battery, predicates arm: the identity cases
+# (chapter examples 18 and 20 in their identity form) over
+# the same / content / numeric faces in both homes. At the
+# base pin this file does not compile: the absent faces are
+# its red set. Governing semantics: the completed chapter
+# as landed in this repo (Idol-Weights-Semantics.md, core
+# profile 1; the candidate chapter weight-semantics.md is
+# superseded) and the record at
+# research/weight-semantics-conformance-2026-11-08.md.
+#
+# The ruling these cases enforce (completed chapter,
+# sections 2.1 and 7): a digest is an index over canonically
+# compared content, never the identity. Identity is
+# provenance identity — the seat occurrence. The chapter
+# names three comparisons and no default: Same
+# (authoritative occurrence identity), Numeric (dtype laws
+# and shape match, canonical numeric coordinates equal —
+# the finite profiles have a single canonical zero, so the
+# two zero encodings are one value and are equal), and
+# Equivalent (revision membership; not exercised over
+# seatings here). The staged content face is the machinery's
+# canonical-encoding comparison; under the finite profiles
+# it agrees with Numeric on every representable value.
+# Re-pinned 2026-11-08: the candidate chapter's
+# same-as-default ruling and its positive/negative zero
+# content distinction are superseded and struck.
+
+# Faces: ml.space (seat, seatings, odigest, same, content,
+# numeric), wsp.agent (file, seatfile, setvals, seatid, same,
+# content, numeric).
+
+state = { fails = 0 }
+
+expect: i64 = (cond: bool, label: str)
+    if cond
+        return 1
+    state.fails = state.fails + 1
+    print("FAIL " .. label)
+    1
+
+digits: str = (v: i64)
+    if v == 0
+        return "0"
+    s = ""
+    n = v
+    while n > 0
+        d = n % 10
+        s = d:char() .. s
+        n = n / 10
+    s
+
+# ── A one-tensor binary32 model file (builder) ────────────────
+fb = { bytes = {} }
+
+fput: i64 = (v: i64)
+    fb.bytes[fb.bytes:len() + 1] = v & 255
+    1
+
+fw16: i64 = (v: i64)
+    fput(v)
+    fput(v >> 8)
+    1
+
+fw32: i64 = (v: i64)
+    fw16(v)
+    fw16(v >> 16)
+    1
+
+fw64: i64 = (v: i64)
+    fw32(v)
+    fw32((v >> 32) & 4294967295)
+    1
+
+fwtext: i64 = (s: str)
+    fw64(s:len())
+    i = 1
+    while i <= s:len()
+        fput(s:byte(i))
+        i = i + 1
+    1
+
+fpack: str = ()
+    out = {}
+    for b in fb.bytes
+        out[out:len() + 1] = b:char()
+    s = out:concat()
+    fb.bytes = {}
+    s
+
+fpad: i64 = ()
+    while fb.bytes:len() % 32 != 0
+        fput(0)
+    1
+
+fmeta: i64 = ()
+    fwtext("general.architecture")
+    fw32(8)
+    fwtext("retract")
+    fwtext("tokenizer.ggml.tokens")
+    fw32(9)
+    fw32(8)
+    fw64(0)
+    1
+
+file1: str = (word: i64)
+    fw32(1179993927)
+    fw32(3)
+    fw64(1)
+    fw64(2)
+    fmeta()
+    fwtext("w")
+    fw32(1)
+    fw64(1)
+    fw32(0)
+    fw64(0)
+    fpad()
+    fw32(word)
+    fpack()
+
+main: i64 = ()
+    wsp.agent.init()
+
+    # ── R18/R20, space arm: occurrence is identity ───────────
+    # Seating the same bytes twice produces two identities
+    # with equal content. The predicates separate them.
+    fseven = file1(1088421888)
+    o0 = ml.space.seatings()
+    expect(ml.space.seat(fseven) == 1, "r18 seat first copy")
+    expect(ml.space.seat(fseven) == 1, "r18 seat second copy")
+    o1 = o0 + 1
+    o2 = o0 + 2
+    expect(ml.space.seatings() == o2, "r18 seatings are counted")
+    expect(ml.space.same(o1, 1, o1, 1) == 1,
+        "r18 an occurrence is itself")
+    expect(ml.space.same(o1, 1, o2, 1) == 0,
+        "r18 two seatings of one file are not the same")
+    expect(ml.space.content(o1, 1, o2, 1) == 1,
+        "r18 two seatings of one file share content")
+    expect(ml.space.numeric(o1, 1, o2, 1) == 1,
+        "r18 two seatings of one file are numeric-equal")
+
+    # ── The zeros: one canonical zero ────────────────────────
+    # The two zero encodings (the plain word and the sign-bit
+    # word): under core profile 1 the finite profiles have a
+    # single zero, so both seatings hold the same value —
+    # Numeric-equal and content-equal — while remaining two
+    # occurrences: not Same. Their shared digest is the index
+    # over one value's content, which is exactly why the
+    # digest cannot serve as identity (sections 2.1 and 7).
+    # Re-pinned 2026-11-08: the candidate law this case
+    # asserted (the zeros differ in content) is superseded.
+    fpos = file1(0)
+    fneg = file1(2147483648)
+    z0 = ml.space.seatings()
+    expect(ml.space.seat(fpos) == 1, "r20 seat positive zero")
+    expect(ml.space.seat(fneg) == 1, "r20 seat negative zero")
+    z1 = z0 + 1
+    z2 = z0 + 2
+    expect(ml.space.numeric(z1, 1, z2, 1) == 1,
+        "r20 the zeros are numeric-equal")
+    expect(ml.space.content(z1, 1, z2, 1) == 1,
+        "r20 the zeros share one canonical content")
+    expect(ml.space.same(z1, 1, z2, 1) == 0,
+        "r20 the zeros are not the same")
+    expect(ml.space.odigest(z1, 1) == ml.space.odigest(z2, 1),
+        "r20 the index is over the one zero value")
+
+    # ── R18, slice arm: seating identity in the slice ────────
+    fsa = wsp.agent.file(7, 7, 0, 0, 0, 0, 2, 2, 0, "spare")
+    h1 = wsp.agent.seatfile(3, fsa, "", 2, 0)
+    expect(h1 > 0, "r18 first slice seating admitted")
+    wsp.agent.setvals(h1, 7, 7, 0, 0, 0, 0, 2)
+    fsa2 = wsp.agent.file(7, 7, 0, 0, 0, 0, 2, 2, 0, "spare")
+    h2 = wsp.agent.seatfile(3, fsa2, "", 2, 0)
+    expect(h2 > 0, "r18 second slice seating admitted")
+    wsp.agent.setvals(h2, 7, 7, 0, 0, 0, 0, 2)
+    expect(wsp.agent.same(h1, h1) == 1,
+        "r18 a slice seating is itself")
+    expect(wsp.agent.same(h1, h2) == 0,
+        "r18 two slice seatings are not the same")
+    expect(wsp.agent.content(h1, h2) == 1,
+        "r18 two slice seatings share content")
+    expect(wsp.agent.numeric(h1, h2) == 1,
+        "r18 two slice seatings are numeric-equal")
+    expect(wsp.agent.seatid(h1) != wsp.agent.seatid(h2),
+        "r18 slice seating identities differ")
+
+    if state.fails > 0
+        print("retract predicates battery: FAIL " .. digits(state.fails))
+        return 1
+    print("retract predicates battery: PASS")
+    0
+
+os.exit(main())

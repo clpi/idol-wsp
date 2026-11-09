@@ -1,0 +1,439 @@
+# The retraction battery: the weight semantics chapter's
+# retraction cluster (examples 14-24) plus the depth case the
+# reconciliation filed as WS-SEM-10, standing as the control for
+# the conformance fixes. Governing semantics: the chapter as
+# landed in this repo (weight-semantics.md) and the record at
+# research/weight-semantics-conformance-2026-11-08.md in the
+# main tree's workspace.
+#
+# An event in this battery is a record built through the slice's
+# record faces, citing the premises and prior records its
+# derivation read. The battery's payload table and its
+# resolution fold (sum the payloads of the events that stand)
+# are the battery's own clean derivation, the construction the
+# substrate battery uses for its independent derivation.
+# Independence and basis in examples 14 and 15 are expressed by
+# citation presence or absence: an independent event does not
+# cite the event it is independent of; a basis-dependent event
+# cites the basis event's record. Naming a basis as a basis is
+# WS-SEM-3's remaining face and is not claimed here.
+#
+# Expected states. At the base pin every case in this file is
+# green, including the depth case (R11): since the 2026-11-09
+# rebase the pack base carries the merged unbounded traversal
+# (clpi/idol-wsp 262b2fb6, on ce1b8844), so the twelfth record
+# of a citation chain falls with its root from the first
+# stage on. (Before the rebase the base cone stopped at depth
+# ten and the depth case was red by construction.) The
+# companion file gate/retract-faces.id carries the cases that
+# need the faces the fixes add; at the base pin it does not
+# compile, and the absent faces are its red set.
+
+# Faces: ml.space (seat, derive, stands), wsp.agent (the slice),
+# compiler.sha256 for statement digests.
+
+state = { fails = 0, seq = 0, off = 0 }
+cur = {}
+pay = {}
+
+expect: i64 = (cond: bool, label: str)
+    if cond
+        return 1
+    state.fails = state.fails + 1
+    print("FAIL " .. label)
+    1
+
+digits: str = (v: i64)
+    if v == 0
+        return "0"
+    s = ""
+    n = v
+    while n > 0
+        d = n % 10
+        s = d:char() .. s
+        n = n / 10
+    s
+
+# A fresh case: an empty event list.
+fresh: i64 = ()
+    state.off = cur:len()
+    1
+
+# Begin one battery event with an integer payload. The caller
+# adds the event's citations, then seals with fin (or with
+# publish for the fixed-form case).
+mk: i64 = (delta: i64)
+    r = wsp.agent.begin(7, 0, 0, 0)
+    cur[cur:len() + 1] = r
+    pay[r] = delta
+    r
+
+fin: i64 = (r: i64)
+    state.seq = state.seq + 1
+    wsp.agent.seal(r, "retract-1",
+        compiler.digest.sha256(
+            "retract battery event " .. digits(state.seq)))
+    1
+
+publish: i64 = (r: i64, outd: str)
+    wsp.agent.seal(r, "retract-1", outd)
+    1
+
+# The resolution fold: sum the payloads of the events in the
+# current case that stand.
+resolve: i64 = ()
+    s = 0
+    i = state.off + 1
+    while i <= cur:len()
+        r = cur[i]
+        if wsp.agent.stands(r) == 1
+            s = s + pay[r]
+        i = i + 1
+    s
+
+# ── A one-tensor binary32 model file (for R16) ────────────────
+fb = { bytes = {} }
+
+fput: i64 = (v: i64)
+    fb.bytes[fb.bytes:len() + 1] = v & 255
+    1
+
+fw16: i64 = (v: i64)
+    fput(v)
+    fput(v >> 8)
+    1
+
+fw32: i64 = (v: i64)
+    fw16(v)
+    fw16(v >> 16)
+    1
+
+fw64: i64 = (v: i64)
+    fw32(v)
+    fw32((v >> 32) & 4294967295)
+    1
+
+fwtext: i64 = (s: str)
+    fw64(s:len())
+    i = 1
+    while i <= s:len()
+        fput(s:byte(i))
+        i = i + 1
+    1
+
+fpack: str = ()
+    out = {}
+    for b in fb.bytes
+        out[out:len() + 1] = b:char()
+    s = out:concat()
+    fb.bytes = {}
+    s
+
+fpad: i64 = ()
+    while fb.bytes:len() % 32 != 0
+        fput(0)
+    1
+
+fmeta: i64 = ()
+    fwtext("general.architecture")
+    fw32(8)
+    fwtext("retract")
+    fwtext("tokenizer.ggml.tokens")
+    fw32(9)
+    fw32(8)
+    fw64(0)
+    1
+
+# One tensor named "w", shape (1), binary32, holding the value
+# whose word is given.
+file1: str = (word: i64)
+    fw32(1179993927)
+    fw32(3)
+    fw64(1)
+    fw64(2)
+    fmeta()
+    fwtext("w")
+    fw32(1)
+    fw64(1)
+    fw32(0)
+    fw64(0)
+    fpad()
+    fw32(word)
+    fpack()
+
+main: i64 = ()
+    wsp.agent.init()
+
+    # ── R14: independent adds ────────────────────────────────
+    # Two updates founded on the same base but citing only
+    # their own premises. Withdrawing one premise disables
+    # exactly its own update; the other stands.
+    fresh()
+    p14 = wsp.agent.premise("retract battery fourteen first", 1)
+    q14 = wsp.agent.premise("retract battery fourteen second", 1)
+    e14a = mk(1)
+    wsp.agent.citeadd(e14a, p14, 2, 0)
+    fin(e14a)
+    e14b = mk(10)
+    wsp.agent.citeadd(e14b, q14, 2, 0)
+    fin(e14b)
+    expect(resolve() == 11, "r14 both updates apply")
+    expect(wsp.agent.withdraw(p14) == 1, "r14 withdraw first")
+    expect(wsp.agent.stands(e14a) == 0, "r14 own update falls")
+    expect(wsp.agent.stands(e14b) == 1, "r14 other update stands")
+    expect(resolve() == 10, "r14 resolution keeps the other")
+    expect(wsp.agent.withdraw(q14) == 1, "r14 withdraw second")
+    expect(resolve() == 0, "r14 resolution empties")
+
+    # ── R15: the basis event is invalidated ──────────────────
+    # Scaled by two so integers carry the chapter's halves:
+    # root 4 (chapter 2), first event -2 (chapter -1), second
+    # event -1 (chapter -1/2). The second event cites the
+    # first event's record as its basis. Withdrawing the basis
+    # premise disables both events; the root remains.
+    fresh()
+    p15 = wsp.agent.premise("retract battery fifteen basis", 1)
+    q15 = wsp.agent.premise("retract battery fifteen second", 1)
+    e15a = mk(-2)
+    wsp.agent.citeadd(e15a, p15, 2, 0)
+    fin(e15a)
+    e15b = mk(-1)
+    wsp.agent.citeadd(e15b, q15, 2, 0)
+    wsp.agent.citeadd(e15b, wsp.agent.recid(e15a), 3, 0)
+    fin(e15b)
+    expect(4 + resolve() == 1, "r15 resolved value is one half")
+    expect(wsp.agent.withdraw(p15) == 1, "r15 withdraw basis")
+    expect(wsp.agent.stands(e15a) == 0, "r15 basis event falls")
+    expect(wsp.agent.stands(e15b) == 0, "r15 dependent falls")
+    expect(4 + resolve() == 4, "r15 resolution returns the root")
+
+    # ── R17: one event, two consumers ────────────────────────
+    # Both consumers cite the shared event's record. Retracting
+    # the event disables both consumers.
+    fresh()
+    p17 = wsp.agent.premise("retract battery seventeen shared", 1)
+    e17 = mk(1)
+    wsp.agent.citeadd(e17, p17, 2, 0)
+    fin(e17)
+    c17a = mk(0)
+    wsp.agent.citeadd(c17a, wsp.agent.recid(e17), 3, 0)
+    fin(c17a)
+    c17b = mk(0)
+    wsp.agent.citeadd(c17b, wsp.agent.recid(e17), 3, 0)
+    fin(c17b)
+    expect(wsp.agent.stands(c17a) == 1, "r17 first consumer stands")
+    expect(wsp.agent.stands(c17b) == 1, "r17 second consumer stands")
+    expect(wsp.agent.stands(c17a) + wsp.agent.stands(c17b) == 2,
+        "r17 both consumers use the event")
+    expect(wsp.agent.withdraw(p17) == 1, "r17 withdraw premise")
+    expect(wsp.agent.stands(e17) == 0, "r17 shared event falls")
+    expect(wsp.agent.stands(c17a) == 0, "r17 first consumer falls")
+    expect(wsp.agent.stands(c17b) == 0, "r17 second consumer falls")
+
+    # ── R18, event arm: equal payloads, distinct events ──────
+    # Two events with the same payload under different
+    # premises. Retracting one premise leaves the other event
+    # standing; the events are distinct records.
+    fresh()
+    p18 = wsp.agent.premise("retract battery eighteen first", 1)
+    q18 = wsp.agent.premise("retract battery eighteen second", 1)
+    e18a = mk(1)
+    wsp.agent.citeadd(e18a, p18, 2, 0)
+    fin(e18a)
+    e18b = mk(1)
+    wsp.agent.citeadd(e18b, q18, 2, 0)
+    fin(e18b)
+    expect(wsp.agent.recid(e18a) != wsp.agent.recid(e18b),
+        "r18 equal payloads are distinct events")
+    expect(resolve() == 2, "r18 both events apply")
+    expect(wsp.agent.withdraw(p18) == 1, "r18 withdraw first")
+    expect(wsp.agent.stands(e18b) == 1, "r18 other event stands")
+    expect(resolve() == 1, "r18 resolution keeps one")
+
+    # ── R19: the stale alias ─────────────────────────────────
+    # A version whose premise is withdrawn: its frozen values
+    # still read (the historical view), current use rejects it
+    # (a record citing it does not stand).
+    fs19 = wsp.agent.file(9, 8, 0, 0, 0, 0, 2, 2, 0, "spare")
+    h19 = wsp.agent.seatfile(3, fs19, "", 2, 0)
+    expect(h19 > 0, "r19 seating admitted")
+    wsp.agent.setvals(h19, 9, 8, 0, 0, 0, 0, 2)
+    fresh()
+    p19 = wsp.agent.premise("retract battery nineteen version", 1)
+    v19 = mk(0)
+    wsp.agent.citeadd(v19, p19, 2, 0)
+    wsp.agent.citeadd(v19, wsp.agent.sdigest(h19), 4, 0)
+    fin(v19)
+    expect(wsp.agent.stands(v19) == 1, "r19 version stands")
+    expect(wsp.agent.withdraw(p19) == 1, "r19 withdraw premise")
+    expect(wsp.agent.stands(v19) == 0, "r19 version falls")
+    expect(wsp.agent.get(h19, 0) == 9, "r19 history reads first")
+    expect(wsp.agent.get(h19, 1) == 8, "r19 history reads second")
+    u19 = mk(0)
+    wsp.agent.citeadd(u19, wsp.agent.recid(v19), 3, 0)
+    fin(u19)
+    expect(wsp.agent.stands(u19) == 0,
+        "r19 current use of the stale version rejects")
+
+    # ── R20: a zero-valued event changes the trace ───────────
+    # The zero event contributes no value. A later event cites
+    # its version, so withdrawing the zero event disables the
+    # later event even though no coefficient changed.
+    fresh()
+    p20 = wsp.agent.premise("retract battery twenty zero", 1)
+    q20 = wsp.agent.premise("retract battery twenty control", 1)
+    z20 = mk(0)
+    wsp.agent.citeadd(z20, p20, 2, 0)
+    fin(z20)
+    a20 = mk(5)
+    wsp.agent.citeadd(a20, wsp.agent.recid(z20), 3, 0)
+    fin(a20)
+    c20 = mk(5)
+    wsp.agent.citeadd(c20, q20, 2, 0)
+    fin(c20)
+    expect(resolve() == 10, "r20 resolution before withdrawal")
+    expect(wsp.agent.withdraw(p20) == 1, "r20 withdraw zero event")
+    expect(wsp.agent.stands(z20) == 0, "r20 zero event falls")
+    expect(wsp.agent.stands(a20) == 0, "r20 later event disabled")
+    expect(wsp.agent.stands(c20) == 1, "r20 control stands")
+    expect(resolve() == 5, "r20 resolution keeps the control")
+
+    # ── R21: a learned condition controls an event ───────────
+    # The event's payload is constant; its condition is itself
+    # a learned premise. Withdrawing the condition disables
+    # the event.
+    fresh()
+    c21 = wsp.agent.premise("retract battery twentyone condition", 2)
+    e21 = mk(7)
+    wsp.agent.citeadd(e21, c21, 2, 0)
+    fin(e21)
+    expect(resolve() == 7, "r21 event applies under its condition")
+    expect(wsp.agent.withdraw(c21) == 1, "r21 withdraw condition")
+    expect(wsp.agent.stands(e21) == 0, "r21 event disabled")
+    expect(resolve() == 0, "r21 resolution empties")
+
+    # ── R11: the cone admits no depth bound ──────────────────
+    # A twelve-deep citation chain over one premise.
+    # Withdrawing the premise must retract the twelfth record.
+    # At the base pin the cone stops at depth ten and this case
+    # is red; it is green only with the bound removed.
+    fresh()
+    p11 = wsp.agent.premise("retract battery eleven root", 1)
+    prev = mk(0)
+    wsp.agent.citeadd(prev, p11, 2, 0)
+    fin(prev)
+    k = 2
+    while k <= 12
+        nx = mk(0)
+        wsp.agent.citeadd(nx, wsp.agent.recid(prev), 3, 0)
+        fin(nx)
+        prev = nx
+        k = k + 1
+    expect(wsp.agent.stands(prev) == 1, "r11 chain stands whole")
+    expect(wsp.agent.withdraw(p11) == 1, "r11 withdraw root")
+    expect(wsp.agent.stands(prev) == 0,
+        "r11 the twelfth record falls with the root")
+
+    # ── R23: identity is the provenance form ─────────────────
+    # Two records with identical form (same rule, same output,
+    # same citations) are the same event record: graph union
+    # deduplicates the repeat. A record differing only in its
+    # output is a different event.
+    fresh()
+    p23 = wsp.agent.premise("retract battery twentythree premise", 1)
+    out23 = compiler.digest.sha256(
+        "retract battery twentythree payload")
+    a23 = mk(0)
+    wsp.agent.citeadd(a23, p23, 2, 0)
+    publish(a23, out23)
+    b23 = mk(0)
+    wsp.agent.citeadd(b23, p23, 2, 0)
+    publish(b23, out23)
+    expect(wsp.agent.recid(a23) == wsp.agent.recid(b23),
+        "r23 identical form is the same event")
+    d23 = mk(0)
+    wsp.agent.citeadd(d23, p23, 2, 0)
+    publish(d23, compiler.digest.sha256(
+        "retract battery twentythree other payload"))
+    expect(wsp.agent.recid(d23) != wsp.agent.recid(a23),
+        "r23 a different output is a different event")
+
+    # ── R24: an old bundle in a world that withdrew ──────────
+    # The bundle was recorded while both premises stood. It
+    # loads whole in the receiving world (historical validity:
+    # its standings reproduce). Current use rejects the record
+    # whose premise the receiving world withdraws; the
+    # independent record stands; an explicit re-derivation
+    # under live premises produces the repaired result.
+    fresh()
+    p24 = wsp.agent.premise("retract battery twentyfour fallen", 1)
+    q24 = wsp.agent.premise("retract battery twentyfour standing", 1)
+    x24 = mk(3)
+    wsp.agent.citeadd(x24, p24, 2, 0)
+    fin(x24)
+    y24 = mk(4)
+    wsp.agent.citeadd(y24, q24, 2, 0)
+    fin(y24)
+    expect(resolve() == 7, "r24 resolution before the bundle")
+    bundle = wsp.agent.store()
+    expect(bundle:len() > 0, "r24 bundle written")
+    expect(wsp.agent.load(bundle) == 1, "r24 bundle loads whole")
+    expect(wsp.agent.stands(x24) == 1,
+        "r24 history reproduces the first standing")
+    expect(wsp.agent.stands(y24) == 1,
+        "r24 history reproduces the second standing")
+    expect(wsp.agent.withdraw(p24) == 1,
+        "r24 receiving world withdraws the premise")
+    expect(wsp.agent.stands(x24) == 0,
+        "r24 current use rejects the dependent record")
+    expect(wsp.agent.stands(y24) == 1,
+        "r24 the independent record stands")
+    x24b = mk(3)
+    wsp.agent.citeadd(x24b, q24, 2, 0)
+    fin(x24b)
+    expect(wsp.agent.stands(x24b) == 1, "r24 repair stands")
+    expect(resolve() == 7, "r24 repaired resolution")
+
+    # ── R16: exact reconstruction at 2^53 ────────────────────
+    # The learned version's value is the frozen seating whose
+    # payload the learning event carried. Inverse arithmetic in
+    # binary64 provably cannot recover the root
+    # ((1 + 2^53) - 2^53 is 0, not 1); premise retraction
+    # reconstructs and returns exactly 1.
+    fa = file1(1065353216)
+    fb16 = file1(1509949440)
+    expect(ml.space.seat(fa) == 1, "r16 seat the root table")
+    va = ml.space.derive(1, "sixteen root")
+    expect(va == 1.0, "r16 root value is one")
+    expect(ml.space.stands(1, "sixteen root") == 1,
+        "r16 root derivation stands")
+    fresh()
+    p16 = wsp.agent.premise("retract battery sixteen premise", 1)
+    e16 = mk(0)
+    wsp.agent.citeadd(e16, p16, 2, 0)
+    fin(e16)
+    expect(ml.space.seat(fb16) == 1, "r16 seat the learned table")
+    vb = ml.space.derive(1, "sixteen learned")
+    expect(vb == 9007199254740992.0, "r16 learned value is 2^53")
+    got16 = va
+    if wsp.agent.stands(e16) == 1
+        got16 = vb
+    expect(got16 == 9007199254740992.0,
+        "r16 standing resolution is the learned value")
+    sub = (va + vb) - vb
+    expect(sub == 0.0, "r16 subtraction loses the one")
+    expect(sub != 1.0, "r16 subtraction is not the root")
+    expect(wsp.agent.withdraw(p16) == 1, "r16 withdraw premise")
+    expect(wsp.agent.stands(e16) == 0, "r16 event falls")
+    got16 = va
+    if wsp.agent.stands(e16) == 1
+        got16 = vb
+    expect(got16 == 1.0, "r16 reconstruction returns exactly one")
+
+    if state.fails > 0
+        print("retract battery: FAIL " .. digits(state.fails))
+        return 1
+    print("retract battery: PASS")
+    0
+
+os.exit(main())

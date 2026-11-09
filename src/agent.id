@@ -1472,4 +1472,8 @@ M.store = store
 M.load = load
 M.reset = reset
 M.derive = derive
+M.begin = begin
+M.citeadd = citeadd
+M.seal = seal
+M.get = get
 M

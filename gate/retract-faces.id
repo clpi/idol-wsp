@@ -1,0 +1,208 @@
+# The retraction battery, faces arm: the cases that need the
+# three-state standing face the R3 fix adds, in both homes.
+# At the base pin this file does not compile: the absent face
+# is its red set. The identity and predicate cases live in
+# the companion file gate/retract-predicates.id.
+# Governing semantics: the chapter as landed in this repo
+# (weight-semantics.md), the author's correction that false
+# dominates in three-valued evaluation (relayed 2026-11-08),
+# and the record at
+# research/weight-semantics-conformance-2026-11-08.md.
+
+# Faces: ml.space (seat, derive, standing, stands),
+# wsp.agent (standing), compiler.sha256.
+
+state = { fails = 0, seq = 0, off = 0 }
+cur = {}
+pay = {}
+
+expect: i64 = (cond: bool, label: str)
+    if cond
+        return 1
+    state.fails = state.fails + 1
+    print("FAIL " .. label)
+    1
+
+digits: str = (v: i64)
+    if v == 0
+        return "0"
+    s = ""
+    n = v
+    while n > 0
+        d = n % 10
+        s = d:char() .. s
+        n = n / 10
+    s
+
+fresh: i64 = ()
+    state.off = cur:len()
+    1
+
+mk: i64 = (delta: i64)
+    r = wsp.agent.begin(7, 0, 0, 0)
+    cur[cur:len() + 1] = r
+    pay[r] = delta
+    r
+
+fin: i64 = (r: i64)
+    state.seq = state.seq + 1
+    wsp.agent.seal(r, "retract-1",
+        compiler.digest.sha256(
+            "retract faces event " .. digits(state.seq)))
+    1
+
+resolve: i64 = ()
+    s = 0
+    i = state.off + 1
+    while i <= cur:len()
+        r = cur[i]
+        if wsp.agent.stands(r) == 1
+            s = s + pay[r]
+        i = i + 1
+    s
+
+# ── A one-tensor binary32 model file (builder) ────────────────
+fb = { bytes = {} }
+
+fput: i64 = (v: i64)
+    fb.bytes[fb.bytes:len() + 1] = v & 255
+    1
+
+fw16: i64 = (v: i64)
+    fput(v)
+    fput(v >> 8)
+    1
+
+fw32: i64 = (v: i64)
+    fw16(v)
+    fw16(v >> 16)
+    1
+
+fw64: i64 = (v: i64)
+    fw32(v)
+    fw32((v >> 32) & 4294967295)
+    1
+
+fwtext: i64 = (s: str)
+    fw64(s:len())
+    i = 1
+    while i <= s:len()
+        fput(s:byte(i))
+        i = i + 1
+    1
+
+fpack: str = ()
+    out = {}
+    for b in fb.bytes
+        out[out:len() + 1] = b:char()
+    s = out:concat()
+    fb.bytes = {}
+    s
+
+fpad: i64 = ()
+    while fb.bytes:len() % 32 != 0
+        fput(0)
+    1
+
+fmeta: i64 = ()
+    fwtext("general.architecture")
+    fw32(8)
+    fwtext("retract")
+    fwtext("tokenizer.ggml.tokens")
+    fw32(9)
+    fw32(8)
+    fw64(0)
+    1
+
+file1: str = (word: i64)
+    fw32(1179993927)
+    fw32(3)
+    fw64(1)
+    fw64(2)
+    fmeta()
+    fwtext("w")
+    fw32(1)
+    fw64(1)
+    fw32(0)
+    fw64(0)
+    fpad()
+    fw32(word)
+    fpack()
+
+main: i64 = ()
+    wsp.agent.init()
+
+    # ── R22, space arm: three states in the substrate ────────
+    fone = file1(1065353216)
+    ftwo = file1(1073741824)
+    expect(ml.space.seat(fone) == 1, "r22 seat the first table")
+    expect(ml.space.standing(1, "twentytwo unrecorded") == -1,
+        "r22 an unrecorded rule answers unavailable")
+    dv = ml.space.derive(1, "twentytwo rule")
+    expect(dv == 1.0, "r22 derivation value")
+    expect(ml.space.standing(1, "twentytwo rule") == 1,
+        "r22 a standing derivation answers stands")
+    expect(ml.space.seat(ftwo) == 1, "r22 seat the second table")
+    expect(ml.space.standing(1, "twentytwo rule") == 0,
+        "r22 a moved table answers fallen, not unavailable")
+    expect(ml.space.stands(1, "twentytwo rule") == 0,
+        "r22 the boolean projection agrees")
+
+
+    # ── R22, slice arm: the unknown premise ──────────────────
+    # A record citing a statement this generation never
+    # registered: its standing is unavailable (-1), which the
+    # boolean projection still answers as not standing (0) —
+    # but it is not fallen, and the battery asserts the
+    # distinction on the three-state face.
+    fresh()
+    u22 = mk(5)
+    wsp.agent.citeadd(u22,
+        compiler.digest.sha256(
+            "retract battery twentytwo unregistered statement"),
+        2, 0)
+    fin(u22)
+    expect(wsp.agent.standing(u22) == -1,
+        "r22 unknown premise answers unavailable")
+    expect(wsp.agent.stands(u22) == 0,
+        "r22 unknown premise does not stand")
+
+    # ── R22b: the author's worked case — false dominates ─────
+    # An event with a valid unconditional base, its own premise
+    # unknown, and one captured observation invalid because
+    # its supporting premise was withdrawn. The earlier draft
+    # answered unavailable; the corrected rule answers: the
+    # event is ineligible (a known false dominates the
+    # unknown), and the result is the base.
+    fresh()
+    pv = wsp.agent.premise("retract battery worked support", 1)
+    v22 = mk(0)
+    wsp.agent.citeadd(v22, pv, 2, 0)
+    fin(v22)
+    expect(wsp.agent.withdraw(pv) == 1, "r22b support withdrawn")
+    expect(wsp.agent.standing(v22) == 0,
+        "r22b the observation is known fallen")
+    qw = wsp.agent.premise("retract battery worked base", 1)
+    b22 = mk(0)
+    wsp.agent.citeadd(b22, qw, 2, 0)
+    fin(b22)
+    e22 = mk(99)
+    wsp.agent.citeadd(e22,
+        compiler.digest.sha256(
+            "retract battery worked unknown premise"),
+        2, 0)
+    wsp.agent.citeadd(e22, wsp.agent.recid(v22), 3, 0)
+    fin(e22)
+    expect(wsp.agent.standing(e22) == 0,
+        "r22b a known false dominates the unknown")
+    expect(wsp.agent.stands(e22) == 0, "r22b the event is skipped")
+    expect(wsp.agent.stands(b22) == 1, "r22b the base stands")
+    expect(resolve() == 0, "r22b the result is the base")
+
+    if state.fails > 0
+        print("retract faces battery: FAIL " .. digits(state.fails))
+        return 1
+    print("retract faces battery: PASS")
+    0
+
+os.exit(main())
