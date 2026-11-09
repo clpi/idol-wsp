@@ -1,0 +1,1707 @@
+# The weights chapter's numeric and shape faces, core
+# profile 1. Home wsp.numeric, staged into the compiler
+# tree as lib/wsp beside lib/wsp/agent.id.
+#
+# Spec: spec-numeric-faces.md in clpi/idol-wsp (the repo of
+# record), work order WS-CONF-2. Governing semantics: the
+# chapter as landed in this repo (Idol-Weights-Semantics.md)
+# sections 3, 4, 5, 7 and 13.
+#
+# Representation, in the agent home's idiom: file-scope
+# tables keyed by integer handles, byte books for text, no
+# string-keyed tables, no strings in records. Every string
+# comparison goes through a face whose operands are both
+# parameters, and a string read out of a book is always
+# passed as an argument before it is compared or appended:
+# this realizer's lowering of a string operation flips on
+# the construct form that produced the operands (defect
+# class D-FORM, filed in the fleet record
+# wsp-remainder-successor-2026-11-09.md section 6), and
+# those are the forms it lowers correctly.
+#
+# A weight's support is a closed set of premise identities
+# of the agent home, held as fixed-width identity texts in
+# a byte book. Standing is never cached: the usable and
+# revision faces resolve premise state through the agent
+# home at call time, so the agent home's withdraw — the
+# one retraction path — changes their answers directly.
+
+st = {}
+
+# factored rational books: value is rnum * 2^rshift / rden,
+# canonical (rden odd and positive, gcd 1, rnum odd or the
+# whole triple exactly 0, 1, 0)
+rnum = {}
+
+rden = {}
+
+rshift = {}
+
+# shape book: dims holds extents; a shape row is an offset
+# and a rank
+dims = {}
+
+shoff = {}
+
+shlen = {}
+
+# weight rows; pay holds payload rational handles in
+# canonical coordinate order
+wdt = {}
+
+wwd = {}
+
+wsh = {}
+
+wpoff = {}
+
+wplen = {}
+
+wsupo = {}
+
+wsupl = {}
+
+pay = {}
+
+# the support byte book: one 64-byte identity text after
+# another; a support set is an offset and a count
+sup = {}
+
+# the premise-over book: rows of premise identities whose
+# admission carried a tracked computation's support
+pob = {}
+
+pooff = {}
+
+polen = {}
+
+posupo = {}
+
+posupl = {}
+
+# event rows
+evanc = {}
+
+evdel = {}
+
+evsupo = {}
+
+evsupl = {}
+
+# revision rows; evlist holds candidate event handles
+rvanc = {}
+
+rvevo = {}
+
+rvevl = {}
+
+evlist = {}
+
+rvselo = {}
+
+rvsell = {}
+
+rvsupo = {}
+
+rvsupl = {}
+
+# parse scratch: tokens of the text being read, and parsed
+# integer arguments beside them
+tok = {}
+
+pd = {}
+
+de = {}
+
+er = {}
+
+dr = {}
+
+dc = {}
+
+# closure and union scratch for support sets
+su = {}
+
+# grid field scratch for the finite profiles
+gf = {}
+
+# ---- refusal state: every face sets st.why on entry; a
+# refusal leaves its code there and in the return value
+# where the return type carries it
+
+why: i64 = ()
+    if st.why == nil
+        return 0
+    st.why
+
+refusal: str = ()
+    c = why()
+    if c == -1
+        return "shape"
+    if c == -2
+        return "dtype"
+    if c == -3
+        return "range"
+    if c == -4
+        return "integral"
+    if c == -5
+        return "zero"
+    if c == -6
+        return "count"
+    if c == -7
+        return "extent"
+    if c == -8
+        return "coordinate"
+    if c == -9
+        return "axis"
+    if c == -10
+        return "broadcast"
+    if c == -11
+        return "contract"
+    if c == -12
+        return "unknown"
+    if c == -13
+        return "anchor"
+    if c == -14
+        return "resource"
+    if c == -15
+        return "text"
+    if c == -16
+        return "premises"
+    if c == -17
+        return "withdrawn"
+    ""
+
+fail: i64 = (code: i64)
+    st.why = code
+    code
+
+# ---- byte book helpers (the agent home's idiom: one
+# selector pair of faces for the two text books here)
+
+putb: i64 = (book: i64, b: i64)
+    if book == 1
+        sup[sup:len() + 1] = b
+        return sup:len()
+    pob[pob:len() + 1] = b
+    pob:len()
+
+getb: i64 = (book: i64, at: i64)
+    if book == 1
+        return sup[at]
+    pob[at]
+
+blen: i64 = (book: i64)
+    if book == 1
+        return sup:len()
+    pob:len()
+
+wtext: i64 = (book: i64, s: str)
+    j = 1
+    while j <= s:len()
+        putb(book, s:byte(j))
+        j = j + 1
+    s:len()
+
+piece: str = (book: i64, off: i64, len: i64)
+    out = ""
+    j = 0
+    while j < len
+        b = getb(book, off + j + 1)
+        out = out .. b:char()
+        j = j + 1
+    out
+
+# append one string to another through a parameter-only
+# face (the D-FORM-safe form for concatenation)
+appv: str = (a: str, v: str)
+    a .. v
+
+streq: i64 = (a: str, b: str)
+    if a:len() != b:len()
+        return 0
+    i = 1
+    while i <= a:len()
+        if a:byte(i) != b:byte(i)
+            return 0
+        i = i + 1
+    1
+
+digits: str = (v: i64)
+    if v == 0
+        return "0"
+    out = ""
+    n = v
+    while n > 0
+        d = 48 + n % 10
+        out = appv(d:char(), out)
+        n = n // 10
+    out
+
+itext: str = (v: i64)
+    if v < 0
+        return appv("-", digits(0 - v))
+    digits(v)
+
+# a substring built byte by byte: this home's own sub
+# face (weight subtraction) shadows the string edge of
+# the same name inside the home, so no string is ever
+# cut with that edge here
+substr: str = (s: str, a: i64, b: i64)
+    out = ""
+    i = a
+    while i <= b
+        c = s:byte(i)
+        out = appv(out, c:char())
+        i = i + 1
+    out
+
+# ---- text reading: split a comma text into the token
+# table (the agent home's split idiom, one output table)
+
+split2: i64 = (s: str, sep: i64)
+    n = 0
+    mark = 1
+    i = 1
+    empty = ""
+    while i <= s:len()
+        if s:byte(i) == sep
+            n = n + 1
+            if i == mark
+                tok[n] = empty
+            else
+                tok[n] = substr(s, mark, i - 1)
+            mark = i + 1
+        i = i + 1
+    if s:len() >= mark
+        n = n + 1
+        tok[n] = substr(s, mark, s:len())
+    st.ntok = n
+    n
+
+tokof: str = (j: i64)
+    if j < 1
+        return ""
+    if j > st.ntok
+        return ""
+    tok[j]
+
+isint: i64 = (s: str)
+    if s:len() == 0
+        return 0
+    i = 1
+    if s:byte(1) == 45
+        if s:len() == 1
+            return 0
+        i = 2
+    while i <= s:len()
+        b = s:byte(i)
+        if b < 48
+            return 0
+        if b > 57
+            return 0
+        i = i + 1
+    1
+
+atoi2: i64 = (s: str)
+    v = 0
+    i = 1
+    neg = 0
+    if s:byte(1) == 45
+        neg = 1
+        i = 2
+    while i <= s:len()
+        v = v * 10 + (s:byte(i) - 48)
+        i = i + 1
+    if neg == 1
+        return 0 - v
+    v
+
+# ---- integer helpers. MAXI is the largest i64; MAXP is
+# the representation bound of the spec (2^62 - 1): no
+# canonical rational part exceeds it.
+
+absi: i64 = (v: i64)
+    if v < 0
+        return 0 - v
+    v
+
+gcd: i64 = (a: i64, b: i64)
+    x = a
+    y = b
+    while y != 0
+        t = x % y
+        x = y
+        y = t
+    x
+
+bitlen: i64 = (v: i64)
+    n = 0
+    p = 1
+    while p <= v
+        n = n + 1
+        if p > 4611686018427387903
+            return 63
+        p = p * 2
+    n
+
+pow2i: i64 = (k: i64)
+    r = 1
+    i = 0
+    while i < k
+        r = r * 2
+        i = i + 1
+    r
+
+# guarded product: returns the product, or sets the
+# resource refusal and returns a value the caller must
+# not use (callers check why() after each guarded call)
+mulchk: i64 = (a: i64, b: i64)
+    if a == 0
+        return 0
+    if b == 0
+        return 0
+    if absi(a) > 9223372036854775807 // absi(b)
+        st.why = -14
+        return 0
+    a * b
+
+addchk: i64 = (a: i64, b: i64)
+    if b > 0
+        if a > 9223372036854775807 - b
+            st.why = -14
+            return 0
+    if b < 0
+        if a < 0 - 9223372036854775807 - 1 - b
+            st.why = -14
+            return 0
+    a + b
+
+# ---- factored rationals. rat3 is the one constructor:
+# every rational in the home is born here, in canonical
+# form (spec section 1.1).
+
+rat3: i64 = (n: i64, d: i64, s: i64)
+    st.why = 0
+    if n == 0
+        rnum[rnum:len() + 1] = 0
+        rden[rden:len() + 1] = 1
+        rshift[rshift:len() + 1] = 0
+        return rnum:len()
+    nn = n
+    dd = d
+    ss = s
+    if dd < 0
+        nn = 0 - nn
+        dd = 0 - dd
+    while dd % 2 == 0
+        dd = dd // 2
+        ss = ss - 1
+    while nn % 2 == 0
+        nn = nn // 2
+        ss = ss + 1
+    g = gcd(absi(nn), dd)
+    nn = nn // g
+    dd = dd // g
+    if absi(nn) > 4611686018427387903
+        return fail(-14)
+    if dd > 4611686018427387903
+        return fail(-14)
+    rnum[rnum:len() + 1] = nn
+    rden[rden:len() + 1] = dd
+    rshift[rshift:len() + 1] = ss
+    rnum:len()
+
+rat: i64 = (n: i64, d: i64)
+    st.why = 0
+    if d == 0
+        return fail(-5)
+    rat3(n, d, 0)
+
+rnumof: i64 = (r: i64)
+    rnum[r]
+
+rdenof: i64 = (r: i64)
+    rden[r]
+
+rshiftof: i64 = (r: i64)
+    rshift[r]
+
+req: i64 = (a: i64, b: i64)
+    if rnum[a] != rnum[b]
+        return 0
+    if rden[a] != rden[b]
+        return 0
+    if rshift[a] != rshift[b]
+        return 0
+    1
+
+rtext: str = (r: i64)
+    t = itext(rnum[r])
+    if rshift[r] == 0
+        if rden[r] == 1
+            return t
+        t = appv(t, "/")
+        return appv(t, itext(rden[r]))
+    t = appv(t, "e")
+    t = appv(t, itext(rshift[r]))
+    t = appv(t, "/")
+    appv(t, itext(rden[r]))
+
+rnegh: i64 = (a: i64)
+    rat3(0 - rnum[a], rden[a], rshift[a])
+
+# alignment for add, sub and compare: fills the al record
+# (kept in the su scratch fields aln1, aln2, ald, als) so
+# that value(a) - value(b) has the sign of aln1 - aln2
+# over the common denominator ald at shift als. Returns 0
+# or the resource refusal.
+al = {}
+
+align2: i64 = (a: i64, b: i64)
+    st.why = 0
+    d1 = rden[a]
+    d2 = rden[b]
+    g = gcd(d1, d2)
+    l = mulchk(d1 // g, d2)
+    if why() != 0
+        return st.why
+    s1 = rshift[a]
+    s2 = rshift[b]
+    ss = s1
+    if s2 < ss
+        ss = s2
+    n1 = mulchk(rnum[a], l // d1)
+    if why() != 0
+        return st.why
+    n2 = mulchk(rnum[b], l // d2)
+    if why() != 0
+        return st.why
+    if s1 > ss
+        ds = s1 - ss
+        if ds > 62
+            return fail(-14)
+        n1 = mulchk(n1, pow2i(ds))
+        if why() != 0
+            return st.why
+    if s2 > ss
+        ds = s2 - ss
+        if ds > 62
+            return fail(-14)
+        n2 = mulchk(n2, pow2i(ds))
+        if why() != 0
+            return st.why
+    al.n1 = n1
+    al.n2 = n2
+    al.d = l
+    al.s = ss
+    0
+
+radd: i64 = (a: i64, b: i64)
+    c = align2(a, b)
+    if c != 0
+        return c
+    n = addchk(al.n1, al.n2)
+    if why() != 0
+        return st.why
+    rat3(n, al.d, al.s)
+
+rsub: i64 = (a: i64, b: i64)
+    nb = rnegh(b)
+    if nb < 0
+        return nb
+    radd(a, nb)
+
+rmul: i64 = (a: i64, b: i64)
+    st.why = 0
+    n = mulchk(rnum[a], rnum[b])
+    if why() != 0
+        return st.why
+    d = mulchk(rden[a], rden[b])
+    if why() != 0
+        return st.why
+    rat3(n, d, rshift[a] + rshift[b])
+
+rdiv: i64 = (a: i64, b: i64)
+    st.why = 0
+    if rnum[b] == 0
+        return fail(-5)
+    n = mulchk(rnum[a], rden[b])
+    if why() != 0
+        return st.why
+    d = mulchk(rden[a], rnum[b])
+    if why() != 0
+        return st.why
+    rat3(n, d, rshift[a] - rshift[b])
+
+# ---- decimal: the exact literal meaning (chapter section
+# 3.3). A token is an optional minus, digits, and either a
+# point with more digits, or a slash and unsigned nonzero
+# denominator digits. Anything else refuses -15.
+
+decimal: i64 = (s: str)
+    st.why = 0
+    if s:len() == 0
+        return fail(-15)
+    i = 1
+    neg = 0
+    if s:byte(1) == 45
+        neg = 1
+        i = 2
+        if s:len() == 1
+            return fail(-15)
+    n = 0
+    ndig = 0
+    while i <= s:len()
+        b = s:byte(i)
+        if b < 48
+            break
+        if b > 57
+            break
+        if n > 461168601842738790
+            return fail(-14)
+        n = n * 10 + (b - 48)
+        ndig = ndig + 1
+        i = i + 1
+    if ndig == 0
+        return fail(-15)
+    if i > s:len()
+        if neg == 1
+            n = 0 - n
+        return rat3(n, 1, 0)
+    if s:byte(i) == 46
+        i = i + 1
+        fdig = 0
+        d5 = 1
+        while i <= s:len()
+            b = s:byte(i)
+            if b < 48
+                return fail(-15)
+            if b > 57
+                return fail(-15)
+            if n > 461168601842738790
+                return fail(-14)
+            n = n * 10 + (b - 48)
+            fdig = fdig + 1
+            if fdig > 26
+                return fail(-14)
+            d5 = mulchk(d5, 5)
+            if why() != 0
+                return st.why
+            i = i + 1
+        if fdig == 0
+            return fail(-15)
+        if neg == 1
+            n = 0 - n
+        return rat3(n, d5, 0 - fdig)
+    if s:byte(i) == 47
+        i = i + 1
+        dn = 0
+        ddig = 0
+        while i <= s:len()
+            b = s:byte(i)
+            if b < 48
+                return fail(-15)
+            if b > 57
+                return fail(-15)
+            if dn > 461168601842738790
+                return fail(-14)
+            dn = dn * 10 + (b - 48)
+            ddig = ddig + 1
+            i = i + 1
+        if ddig == 0
+            return fail(-15)
+        if dn == 0
+            return fail(-15)
+        if neg == 1
+            n = 0 - n
+        return rat3(n, dn, 0)
+    fail(-15)
+
+# ---- the finite grid: exact rounding of a factored
+# rational onto an F32 or F64 grid (spec section 3).
+
+# the integer nearest to A * 2^sh / B (A, B positive), ties
+# to the even neighbour; refuses -14 if the quotient would
+# exceed the bound
+rounddiv: i64 = (a: i64, b: i64, sh: i64)
+    st.why = 0
+    if a == 0
+        return 0
+    if sh >= 0
+        acc = a // b
+        rem = a % b
+        i = 0
+        while i < sh
+            if acc > 4611686018427387903
+                return fail(-14)
+            acc = acc * 2
+            rem = rem * 2
+            if rem >= b
+                rem = rem - b
+                acc = acc + 1
+            i = i + 1
+        if rem > b - rem
+            acc = acc + 1
+            return acc
+        if rem == b - rem
+            if acc % 2 == 1
+                acc = acc + 1
+        return acc
+    j = 0 - sh
+    if bitlen(b) + j > 63
+        return 0
+    den = b * pow2i(j)
+    acc = a // den
+    rem = a % den
+    if rem > den - rem
+        acc = acc + 1
+        return acc
+    if rem == den - rem
+        if acc % 2 == 1
+            acc = acc + 1
+    acc
+
+# the e with 2^e <= n * 2^s / d < 2^(e+1), for positive
+# n and d, by bit lengths and one exact comparison
+floorlog2: i64 = (n: i64, d: i64, s: i64)
+    key = s + bitlen(n) - bitlen(d)
+    dk = bitlen(d) - bitlen(n)
+    ge = 0
+    if dk >= 0
+        if n * pow2i(dk) >= d
+            ge = 1
+    else
+        if n >= d * pow2i(0 - dk)
+            ge = 1
+    if ge == 1
+        return key
+    key - 1
+
+# fills gf for the rounding of rational r on the grid with
+# parameters p, emin: gf.sign, gf.efield, gf.frac, gf.m,
+# gf.exp2 (the value is sign * m * 2^exp2). r is assumed in
+# range; convert checks the range before calling.
+gridfields: i64 = (r: i64, p: i64, emin: i64, bias: i64)
+    st.why = 0
+    gf.sign = 0
+    gf.efield = 0
+    gf.frac = 0
+    gf.m = 0
+    gf.exp2 = 0
+    if rnum[r] == 0
+        return 0
+    if rnum[r] < 0
+        gf.sign = 1
+    a = absi(rnum[r])
+    d = rden[r]
+    s = rshift[r]
+    e = floorlog2(a, d, s)
+    if e >= emin
+        m = rounddiv(a, d, s - (e - p + 1))
+        if m < 0
+            return m
+        if m == pow2i(p)
+            m = pow2i(p - 1)
+            e = e + 1
+        gf.m = m
+        gf.exp2 = e - p + 1
+        gf.efield = e + bias
+        gf.frac = m - pow2i(p - 1)
+        return 0
+    m = rounddiv(a, d, s - (emin - p + 1))
+    if m < 0
+        return m
+    gf.m = m
+    gf.exp2 = emin - p + 1
+    if m == pow2i(p - 1)
+        gf.efield = 1
+        gf.frac = 0
+        return 0
+    gf.efield = 0
+    gf.frac = m
+    0
+
+# the chapter's convert(D, q): the one conversion every
+# face uses
+convert: i64 = (dt: i64, wd: i64, r: i64)
+    st.why = 0
+    if dt == 0
+        return r
+    if dt == 1 or dt == 2
+        if rden[r] != 1
+            return fail(-4)
+        if rshift[r] < 0
+            return fail(-4)
+        if rshift[r] > 62
+            return fail(-3)
+        if bitlen(absi(rnum[r])) + rshift[r] > 62
+            if rnum[r] != 0
+                return fail(-3)
+        v = rnum[r] * pow2i(rshift[r])
+        if dt == 1
+            if v < 0 - pow2i(wd - 1)
+                return fail(-3)
+            if v > pow2i(wd - 1) - 1
+                return fail(-3)
+            return rat3(v, 1, 0)
+        if v < 0
+            return fail(-3)
+        if v > pow2i(wd) - 1
+            return fail(-3)
+        return rat3(v, 1, 0)
+    p = 24
+    emin = -126
+    emax = 127
+    bias = 127
+    if dt == 4
+        p = 53
+        emin = -1022
+        emax = 1023
+        bias = 1023
+    if rnum[r] != 0
+        e = floorlog2(absi(rnum[r]), rden[r], rshift[r])
+        if e > emax
+            return fail(-3)
+        if e == emax
+            mh = rat3(pow2i(p) - 1, 1, emax - p + 1)
+            if mh < 0
+                return mh
+            ah = r
+            if rnum[r] < 0
+                ah = rnegh(r)
+            df = rsub(ah, mh)
+            if df < 0
+                return df
+            if rnum[df] > 0
+                return fail(-3)
+    c = gridfields(r, p, emin, bias)
+    if c != 0
+        return c
+    if gf.sign == 1
+        return rat3(0 - gf.m, 1, gf.exp2)
+    rat3(gf.m, 1, gf.exp2)
+
+wordof: i64 = (w: i64, i: i64)
+    st.why = 0
+    if wdt[w] != 3
+        if wdt[w] != 4
+            return fail(-2)
+    if i < 0
+        return fail(-8)
+    if i >= wplen[w]
+        return fail(-8)
+    r = pay[wpoff[w] + i + 1]
+    p = 24
+    emin = -126
+    bias = 127
+    if wdt[w] == 4
+        p = 53
+        emin = -1022
+        bias = 1023
+    c = gridfields(r, p, emin, bias)
+    if c != 0
+        return c
+    if wdt[w] == 3
+        return gf.sign * 2147483648 + gf.efield * 8388608 + gf.frac
+    v = gf.efield * 4503599627370496 + gf.frac
+    if gf.sign == 1
+        return v - 9223372036854775807 - 1
+    v
+
+# ---- shapes and weights
+
+mkshape: i64 = (n: i64)
+    h = shoff:len() + 1
+    shoff[h] = dims:len()
+    shlen[h] = n
+    j = 1
+    while j <= n
+        dims[dims:len() + 1] = pd[j]
+        j = j + 1
+    h
+
+shapeof: i64 = (h: i64, axis: i64)
+    dims[shoff[h] + axis + 1]
+
+cardofshape: i64 = (h: i64)
+    st.why = 0
+    c = 1
+    j = 0
+    while j < shlen[h]
+        c = mulchk(c, shapeof(h, j))
+        if why() != 0
+            return st.why
+        j = j + 1
+    c
+
+# parses a dims text into pd and st.npd; returns 0 or a
+# refusal code
+parsedims: i64 = (s: str)
+    st.why = 0
+    n = split2(s, 44)
+    j = 1
+    while j <= n
+        t = tokof(j)
+        if isint(t) == 0
+            return fail(-15)
+        v = atoi2(t)
+        if v < 0
+            return fail(-7)
+        pd[j] = v
+        j = j + 1
+    st.npd = n
+    0
+
+mkweight: i64 = (dt: i64, wd: i64, sh: i64, poff: i64, plen: i64, supo: i64, supl: i64)
+    h = wdt:len() + 1
+    wdt[h] = dt
+    wwd[h] = wd
+    wsh[h] = sh
+    wpoff[h] = poff
+    wplen[h] = plen
+    wsupo[h] = supo
+    wsupl[h] = supl
+    h
+
+# validates a dtype argument pair; returns 0 or a code
+dtcheck: i64 = (dt: i64, wd: i64)
+    st.why = 0
+    if dt < 0
+        return fail(-2)
+    if dt > 4
+        return fail(-2)
+    if dt == 1 or dt == 2
+        if wd < 1
+            return fail(-7)
+        if wd > 62
+            return fail(-7)
+        return 0
+    if wd != 0
+        return fail(-7)
+    0
+
+lit: i64 = (dt: i64, wd: i64, dimtext: str, valtext: str)
+    st.why = 0
+    c = dtcheck(dt, wd)
+    if c != 0
+        return c
+    c = parsedims(dimtext)
+    if c != 0
+        return c
+    sh = mkshape(st.npd)
+    card = cardofshape(sh)
+    if card < 0
+        return card
+    n = split2(valtext, 44)
+    if n != card
+        return fail(-6)
+    poff = pay:len()
+    j = 1
+    while j <= n
+        r = decimal(tokof(j))
+        if r < 0
+            return r
+        cv = convert(dt, wd, r)
+        if cv < 0
+            return cv
+        pay[pay:len() + 1] = cv
+        j = j + 1
+    mkweight(dt, wd, sh, poff, n, blen(1), 0)
+
+dtypeof: i64 = (w: i64)
+    wdt[w]
+
+widthof: i64 = (w: i64)
+    wwd[w]
+
+rankof: i64 = (w: i64)
+    shlen[wsh[w]]
+
+dimof: i64 = (w: i64, axis: i64)
+    st.why = 0
+    if axis < 0
+        return fail(-9)
+    if axis >= shlen[wsh[w]]
+        return fail(-9)
+    shapeof(wsh[w], axis)
+
+cardof: i64 = (w: i64)
+    wplen[w]
+
+at: i64 = (w: i64, i: i64)
+    st.why = 0
+    if i < 0
+        return fail(-8)
+    if i >= wplen[w]
+        return fail(-8)
+    pay[wpoff[w] + i + 1]
+
+shapematch: i64 = (a: i64, b: i64)
+    if shlen[wsh[a]] != shlen[wsh[b]]
+        return 0
+    j = 0
+    while j < shlen[wsh[a]]
+        if shapeof(wsh[a], j) != shapeof(wsh[b], j)
+            return 0
+        j = j + 1
+    1
+
+# flat index of a coordinate held in pd (st.npd entries),
+# or a refusal code
+flatof: i64 = (w: i64)
+    st.why = 0
+    if st.npd != shlen[wsh[w]]
+        return fail(-1)
+    flat = 0
+    j = 0
+    while j < st.npd
+        co = pd[j + 1]
+        if co < 0
+            return fail(-8)
+        if co >= shapeof(wsh[w], j)
+            return fail(-8)
+        flat = flat * shapeof(wsh[w], j) + co
+        j = j + 1
+    flat
+
+parsecoords: i64 = (s: str)
+    st.why = 0
+    n = split2(s, 44)
+    j = 1
+    while j <= n
+        t = tokof(j)
+        if isint(t) == 0
+            return fail(-15)
+        pd[j] = atoi2(t)
+        j = j + 1
+    st.npd = n
+    0
+
+read: i64 = (a: i64, coords: str)
+    st.why = 0
+    c = parsecoords(coords)
+    if c != 0
+        return c
+    f = flatof(a)
+    if f < 0
+        return f
+    pd[1] = 0
+    st.npd = 0
+    sh = mkshape(0)
+    poff = pay:len()
+    pay[pay:len() + 1] = pay[wpoff[a] + f + 1]
+    mkweight(wdt[a], wwd[a], sh, poff, 1, wsupo[a], wsupl[a])
+
+replace: i64 = (a: i64, coords: str, x: i64)
+    st.why = 0
+    if shlen[wsh[x]] != 0
+        return fail(-1)
+    c = parsecoords(coords)
+    if c != 0
+        return c
+    f = flatof(a)
+    if f < 0
+        return f
+    cv = convert(wdt[a], wwd[a], pay[wpoff[x] + 1])
+    if cv < 0
+        return cv
+    poff = pay:len()
+    j = 0
+    while j < wplen[a]
+        if j == f
+            pay[pay:len() + 1] = cv
+        else
+            pay[pay:len() + 1] = pay[wpoff[a] + j + 1]
+        j = j + 1
+    so = supmerge(wsupo[a], wsupl[a], wsupo[x], wsupl[x])
+    mkweight(wdt[a], wwd[a], wsh[a], poff, wplen[a], su.off, su.len)
+
+# ---- the binary operations: one body, the operation
+# selected by its code (1 add, 2 sub, 3 mul, 4 div)
+
+binop: i64 = (a: i64, b: i64, op: i64)
+    st.why = 0
+    if wdt[a] != wdt[b]
+        return fail(-2)
+    if wwd[a] != wwd[b]
+        return fail(-2)
+    if shapematch(a, b) == 0
+        return fail(-1)
+    poff = pay:len()
+    j = 0
+    while j < wplen[a]
+        ra = pay[wpoff[a] + j + 1]
+        rb = pay[wpoff[b] + j + 1]
+        r = 0
+        if op == 1
+            r = radd(ra, rb)
+        if op == 2
+            r = rsub(ra, rb)
+        if op == 3
+            r = rmul(ra, rb)
+        if op == 4
+            r = rdiv(ra, rb)
+        if r < 0
+            return r
+        cv = convert(wdt[a], wwd[a], r)
+        if cv < 0
+            return cv
+        pay[pay:len() + 1] = cv
+        j = j + 1
+    so = supmerge(wsupo[a], wsupl[a], wsupo[b], wsupl[b])
+    mkweight(wdt[a], wwd[a], wsh[a], poff, wplen[a], su.off, su.len)
+
+add: i64 = (a: i64, b: i64)
+    binop(a, b, 1)
+
+sub: i64 = (a: i64, b: i64)
+    binop(a, b, 2)
+
+mul: i64 = (a: i64, b: i64)
+    binop(a, b, 3)
+
+div: i64 = (a: i64, b: i64)
+    binop(a, b, 4)
+
+cast: i64 = (dt: i64, wd: i64, a: i64)
+    st.why = 0
+    c = dtcheck(dt, wd)
+    if c != 0
+        return c
+    poff = pay:len()
+    j = 0
+    while j < wplen[a]
+        cv = convert(dt, wd, pay[wpoff[a] + j + 1])
+        if cv < 0
+            return cv
+        pay[pay:len() + 1] = cv
+        j = j + 1
+    mkweight(dt, wd, wsh[a], poff, wplen[a], wsupo[a], wsupl[a])
+
+-- Flat index to coordinates over the extents staged in de slots 1..rank,
+-- axis order. The result lands in dc slots 1..rank, axis order. The three
+-- passes run upward with counter keys throughout: the graph-observed
+-- lowering seats a scratch table as a hash when a write key is an
+-- arithmetic binding, and refuses the integer key against that seat, so
+-- the reversal is spelled as two upward copies around an upward walk.
+decomp: i64 = (flat: i64, rank: i64)
+    p = 1
+    while p <= rank
+        er[p] = de[rank - p + 1]
+        p = p + 1
+    rem = flat
+    p = 1
+    while p <= rank
+        ext = er[p]
+        co = 0
+        if ext != 0
+            co = rem % ext
+            rem = rem // ext
+        dr[p] = co
+        p = p + 1
+    p = 1
+    while p <= rank
+        dc[p] = dr[rank - p + 1]
+        p = p + 1
+    0
+
+broadcast: i64 = (a: i64, dimtext: str, maptext: str)
+    st.why = 0
+    c = parsedims(dimtext)
+    if c != 0
+        return c
+    trank = st.npd
+    td = {}
+    j = 1
+    while j <= trank
+        td[j] = pd[j]
+        j = j + 1
+    n = split2(maptext, 44)
+    if n != shlen[wsh[a]]
+        return fail(-10)
+    mp = {}
+    j = 1
+    while j <= n
+        t = tokof(j)
+        if isint(t) == 0
+            return fail(-15)
+        v = atoi2(t)
+        if v < 0
+            return fail(-10)
+        if v >= trank
+            return fail(-10)
+        mp[j] = v
+        k = 1
+        while k < j
+            if mp[k] == v
+                return fail(-10)
+            k = k + 1
+        j = j + 1
+    j = 1
+    while j <= n
+        se = shapeof(wsh[a], j - 1)
+        mi = mp[j]
+        te = td[mi + 1]
+        if se != te
+            if se != 1
+                return fail(-10)
+        j = j + 1
+    j = 1
+    while j <= trank
+        pd[j] = td[j]
+        j = j + 1
+    st.npd = trank
+    sh = mkshape(trank)
+    card = cardofshape(sh)
+    if card < 0
+        return card
+    poff = pay:len()
+    flat = 0
+    while flat < card
+        j = 1
+        while j <= trank
+            de[j] = td[j]
+            j = j + 1
+        dcr = decomp(flat, trank)
+        sf = 0
+        j = 1
+        while j <= shlen[wsh[a]]
+            co = 0
+            if shapeof(wsh[a], j - 1) != 1
+                mi = mp[j]
+                co = dc[mi + 1]
+            sf = sf * shapeof(wsh[a], j - 1) + co
+            j = j + 1
+        pay[pay:len() + 1] = pay[wpoff[a] + sf + 1]
+        flat = flat + 1
+    mkweight(wdt[a], wwd[a], sh, poff, card, wsupo[a], wsupl[a])
+
+contract: i64 = (a: i64, b: i64, axtext: str, axtext2: str)
+    st.why = 0
+    if wdt[a] != wdt[b]
+        return fail(-2)
+    if wwd[a] != wwd[b]
+        return fail(-2)
+    na = split2(axtext, 44)
+    ka = {}
+    j = 1
+    while j <= na
+        t = tokof(j)
+        if isint(t) == 0
+            return fail(-15)
+        v = atoi2(t)
+        if v < 0
+            return fail(-11)
+        if v >= shlen[wsh[a]]
+            return fail(-11)
+        ka[j] = v
+        k = 1
+        while k < j
+            if ka[k] == v
+                return fail(-11)
+            k = k + 1
+        j = j + 1
+    nb = split2(axtext2, 44)
+    kb = {}
+    j = 1
+    while j <= nb
+        t = tokof(j)
+        if isint(t) == 0
+            return fail(-15)
+        v = atoi2(t)
+        if v < 0
+            return fail(-11)
+        if v >= shlen[wsh[b]]
+            return fail(-11)
+        kb[j] = v
+        k = 1
+        while k < j
+            if kb[k] == v
+                return fail(-11)
+            k = k + 1
+        j = j + 1
+    if na != nb
+        return fail(-11)
+    j = 1
+    while j <= na
+        if shapeof(wsh[a], ka[j]) != shapeof(wsh[b], kb[j])
+            return fail(-11)
+        j = j + 1
+    rd = {}
+    nr = 0
+    j = 0
+    while j < shlen[wsh[a]]
+        hit = 0
+        k = 1
+        while k <= na
+            if ka[k] == j
+                hit = 1
+            k = k + 1
+        if hit == 0
+            nr = nr + 1
+            rd[nr] = shapeof(wsh[a], j)
+        j = j + 1
+    la = nr
+    j = 0
+    while j < shlen[wsh[b]]
+        hit = 0
+        k = 1
+        while k <= nb
+            if kb[k] == j
+                hit = 1
+            k = k + 1
+        if hit == 0
+            nr = nr + 1
+            rd[nr] = shapeof(wsh[b], j)
+        j = j + 1
+    j = 1
+    while j <= nr
+        pd[j] = rd[j]
+        j = j + 1
+    st.npd = nr
+    sh = mkshape(nr)
+    card = cardofshape(sh)
+    if card < 0
+        return card
+    combos = 1
+    j = 1
+    while j <= na
+        combos = combos * shapeof(wsh[a], ka[j])
+        j = j + 1
+    zero = rat(0, 1)
+    poff = pay:len()
+    flat = 0
+    while flat < card
+        rc = {}
+        j = 1
+        while j <= nr
+            de[j] = rd[j]
+            j = j + 1
+        dcr = decomp(flat, nr)
+        j = 1
+        while j <= nr
+            rc[j] = dc[j]
+            j = j + 1
+        sum = zero
+        ci = 0
+        while ci < combos
+            j = 1
+            while j <= na
+                de[j] = shapeof(wsh[a], ka[j])
+                j = j + 1
+            dcr = decomp(ci, na)
+            af = 0
+            pos = 0
+            j = 0
+            while j < shlen[wsh[a]]
+                hit = 0
+                co = 0
+                k = 1
+                while k <= na
+                    if ka[k] == j
+                        hit = 1
+                        co = dc[k]
+                    k = k + 1
+                if hit == 0
+                    pos = pos + 1
+                    co = rc[pos]
+                af = af * shapeof(wsh[a], j) + co
+                j = j + 1
+            bf = 0
+            pos = la
+            j = 0
+            while j < shlen[wsh[b]]
+                hit = 0
+                co = 0
+                k = 1
+                while k <= nb
+                    if kb[k] == j
+                        hit = 1
+                        co = dc[k]
+                    k = k + 1
+                if hit == 0
+                    pos = pos + 1
+                    co = rc[pos]
+                bf = bf * shapeof(wsh[b], j) + co
+                j = j + 1
+            term = rmul(pay[wpoff[a] + af + 1], pay[wpoff[b] + bf + 1])
+            if term < 0
+                return term
+            sum = radd(sum, term)
+            if sum < 0
+                return sum
+            ci = ci + 1
+        cv = convert(wdt[a], wwd[a], sum)
+        if cv < 0
+            return cv
+        pay[pay:len() + 1] = cv
+        flat = flat + 1
+    so = supmerge(wsupo[a], wsupl[a], wsupo[b], wsupl[b])
+    mkweight(wdt[a], wwd[a], sh, poff, card, su.off, su.len)
+
+numeric: i64 = (a: i64, b: i64)
+    st.why = 0
+    if wdt[a] != wdt[b]
+        return 0
+    if wwd[a] != wwd[b]
+        return 0
+    if shapematch(a, b) == 0
+        return 0
+    j = 0
+    while j < wplen[a]
+        if req(pay[wpoff[a] + j + 1], pay[wpoff[b] + j + 1]) == 0
+            return 0
+        j = j + 1
+    1
+
+same: i64 = (a: i64, b: i64)
+    if a == b
+        return 1
+    0
+
+digestof: str = (w: i64)
+    form = "w"
+    form = appv(form, itext(wdt[w]))
+    form = appv(form, ",")
+    form = appv(form, itext(wwd[w]))
+    form = appv(form, ",")
+    j = 0
+    while j < shlen[wsh[w]]
+        form = appv(form, itext(shapeof(wsh[w], j)))
+        form = appv(form, ",")
+        j = j + 1
+    j = 0
+    while j < wplen[w]
+        r = pay[wpoff[w] + j + 1]
+        form = appv(form, itext(rnum[r]))
+        form = appv(form, "/")
+        form = appv(form, itext(rden[r]))
+        form = appv(form, "/")
+        form = appv(form, itext(rshift[r]))
+        form = appv(form, ",")
+        j = j + 1
+    compiler.digest.sha256(form)
+
+# ---- support sets. A set is a window of the sup book:
+# offset and count, each member one 64-byte identity text.
+# Windows are immutable once built; union and closure
+# build fresh windows at the book's tail and report them
+# through the su record.
+
+supmember: i64 = (off: i64, len: i64, p: str)
+    k = 0
+    while k < len
+        m = piece(1, off + k * 64, 64)
+        if streq(m, p) == 1
+            return 1
+        k = k + 1
+    0
+
+# appends one member to the tail window (off, len) — the
+# caller guarantees the window is the book's tail
+suppush: i64 = (off: i64, len: i64, p: str)
+    if supmember(off, len, p) == 1
+        return len
+    wtext(1, p)
+    len + 1
+
+supmerge: i64 = (o1: i64, l1: i64, o2: i64, l2: i64)
+    off = blen(1)
+    len = 0
+    k = 0
+    while k < l1
+        m = piece(1, o1 + k * 64, 64)
+        len = suppush(off, len, m)
+        k = k + 1
+    k = 0
+    while k < l2
+        m = piece(1, o2 + k * 64, 64)
+        len = suppush(off, len, m)
+        k = k + 1
+    su.off = off
+    su.len = len
+    0
+
+# resolves a face argument naming a premise to its
+# occurrence identity, or "" when it does not resolve
+normprem: str = (x: str)
+    id = wsp.agent.premiseid(x)
+    if id != ""
+        return id
+    if wsp.agent.premstate(x) != -1
+        return x
+    ""
+
+supclose: i64 = (o1: i64, l1: i64)
+    off = blen(1)
+    len = 0
+    k = 0
+    while k < l1
+        m = piece(1, o1 + k * 64, 64)
+        len = suppush(off, len, m)
+        k = k + 1
+    changed = 1
+    while changed == 1
+        changed = 0
+        k = 0
+        while k < len
+            m = piece(1, off + k * 64, 64)
+            row = 1
+            while row <= pooff:len()
+                pm = piece(2, pooff[row], 64)
+                if streq(pm, m) == 1
+                    q = 0
+                    while q < posupl[row]
+                        om = piece(1, posupo[row] + q * 64, 64)
+                        if supmember(off, len, om) == 0
+                            len = suppush(off, len, om)
+                            changed = 1
+                        q = q + 1
+                row = row + 1
+            k = k + 1
+    su.off = off
+    su.len = len
+    0
+
+supportcount: i64 = (w: i64)
+    wsupl[w]
+
+supporthas: i64 = (w: i64, p: str)
+    id = normprem(p)
+    if id == ""
+        return 0
+    supmember(wsupo[w], wsupl[w], id)
+
+premiseover: str = (text: str, w: i64)
+    d = wsp.agent.premise(text, 1)
+    id = wsp.agent.premiseid(d)
+    if id == ""
+        return d
+    row = pooff:len() + 1
+    pooff[row] = blen(2)
+    wtext(2, id)
+    polen[row] = 64
+    posupo[row] = wsupo[w]
+    posupl[row] = wsupl[w]
+    d
+
+usable: i64 = (w: i64)
+    k = 0
+    while k < wsupl[w]
+        m = piece(1, wsupo[w] + k * 64, 64)
+        ps = wsp.agent.premstate(m)
+        if ps != 1
+            return 0
+        k = k + 1
+    1
+
+# ---- events and revisions (chapter section 5; the
+# faces total and observe recompute from the surviving
+# event set at every call — section 13.3's discipline)
+
+event: i64 = (anchor: i64, delta: i64, premtext: str)
+    st.why = 0
+    if wdt[delta] != 0
+        return fail(-2)
+    if shapematch(anchor, delta) == 0
+        return fail(-1)
+    n = split2(premtext, 44)
+    if n == 0
+        return fail(-16)
+    off = blen(1)
+    len = 0
+    j = 1
+    while j <= n
+        t = tokof(j)
+        ps = wsp.agent.premstate(t)
+        if ps == -1
+            return fail(-12)
+        if ps == 0
+            return fail(-17)
+        id = normprem(t)
+        len = suppush(off, len, id)
+        j = j + 1
+    c = supclose(off, len)
+    so = supmerge(su.off, su.len, wsupo[anchor], wsupl[anchor])
+    so = supmerge(su.off, su.len, wsupo[delta], wsupl[delta])
+    h = evanc:len() + 1
+    evanc[h] = anchor
+    evdel[h] = delta
+    evsupo[h] = su.off
+    evsupl[h] = su.len
+    h
+
+revision: i64 = (anchor: i64, evtext: str, seltext: str)
+    st.why = 0
+    n = split2(evtext, 44)
+    evs = {}
+    ne = 0
+    j = 1
+    while j <= n
+        t = tokof(j)
+        if isint(t) == 0
+            return fail(-15)
+        v = atoi2(t)
+        if v < 1
+            return fail(-13)
+        if v > evanc:len()
+            return fail(-13)
+        if evanc[v] != anchor
+            return fail(-13)
+        ne = ne + 1
+        evs[ne] = v
+        j = j + 1
+    m = split2(seltext, 44)
+    off = blen(1)
+    len = 0
+    j = 1
+    while j <= m
+        t = tokof(j)
+        ps = wsp.agent.premstate(t)
+        if ps == -1
+            return fail(-12)
+        if ps == 0
+            return fail(-17)
+        id = normprem(t)
+        len = suppush(off, len, id)
+        j = j + 1
+    selo = off
+    sell = len
+    if m > 0
+        c = supclose(off, len)
+        selo = su.off
+        sell = su.len
+    so = supmerge(selo, sell, wsupo[anchor], wsupl[anchor])
+    h = rvanc:len() + 1
+    rvanc[h] = anchor
+    rvevo[h] = evlist:len()
+    rvevl[h] = ne
+    j = 1
+    while j <= ne
+        evlist[evlist:len() + 1] = evs[j]
+        j = j + 1
+    rvselo[h] = selo
+    rvsell[h] = sell
+    rvsupo[h] = su.off
+    rvsupl[h] = su.len
+    h
+
+# the live-set walk shared by livecount, total and
+# observe: returns the live count, or a refusal code;
+# the live event handles are left in the pd table with
+# their count in st.npd
+livewalk: i64 = (rev: i64)
+    st.why = 0
+    a = rvanc[rev]
+    k = 0
+    while k < wsupl[a]
+        mm = piece(1, wsupo[a] + k * 64, 64)
+        ps = wsp.agent.premstate(mm)
+        if ps == 0
+            return fail(-13)
+        if ps == -1
+            return fail(-12)
+        k = k + 1
+    cnt = 0
+    j = 1
+    while j <= rvevl[rev]
+        ev = evlist[rvevo[rev] + j]
+        live = 1
+        k = 0
+        while k < evsupl[ev]
+            mm = piece(1, evsupo[ev] + k * 64, 64)
+            ps = wsp.agent.premstate(mm)
+            if ps == -1
+                return fail(-12)
+            if ps == 0
+                live = 0
+            k = k + 1
+        if live == 1
+            cnt = cnt + 1
+            pd[cnt] = ev
+        j = j + 1
+    st.npd = cnt
+    cnt
+
+livecount: i64 = (rev: i64)
+    livewalk(rev)
+
+total: i64 = (rev: i64)
+    c = livewalk(rev)
+    if c < 0
+        return c
+    a = rvanc[rev]
+    poff = pay:len()
+    j = 0
+    while j < wplen[a]
+        pay[pay:len() + 1] = pay[wpoff[a] + j + 1]
+        j = j + 1
+    so = supmerge(rvsupo[rev], rvsupl[rev], wsupo[a], wsupl[a])
+    soff = su.off
+    slen = su.len
+    q = 1
+    while q <= st.npd
+        ev = pd[q]
+        d = evdel[ev]
+        j = 0
+        while j < wplen[a]
+            r = radd(pay[poff + j + 1], pay[wpoff[d] + j + 1])
+            if r < 0
+                return r
+            pay[poff + j + 1] = r
+            j = j + 1
+        so = supmerge(soff, slen, evsupo[ev], evsupl[ev])
+        soff = su.off
+        slen = su.len
+        q = q + 1
+    mkweight(0, 0, wsh[a], poff, wplen[a], soff, slen)
+
+observe: i64 = (rev: i64)
+    t = total(rev)
+    if t < 0
+        return t
+    a = rvanc[rev]
+    cast(wdt[a], wwd[a], t)
+
+M = {}
+M.rat = rat
+M.decimal = decimal
+M.rnumof = rnumof
+M.rdenof = rdenof
+M.rshiftof = rshiftof
+M.req = req
+M.rtext = rtext
+M.lit = lit
+M.dtypeof = dtypeof
+M.widthof = widthof
+M.rankof = rankof
+M.dimof = dimof
+M.cardof = cardof
+M.at = at
+M.shapematch = shapematch
+M.supportcount = supportcount
+M.supporthas = supporthas
+M.add = add
+M.sub = sub
+M.mul = mul
+M.div = div
+M.cast = cast
+M.read = read
+M.replace = replace
+M.broadcast = broadcast
+M.contract = contract
+M.numeric = numeric
+M.same = same
+M.usable = usable
+M.digestof = digestof
+M.wordof = wordof
+M.premiseover = premiseover
+M.event = event
+M.revision = revision
+M.livecount = livecount
+M.total = total
+M.observe = observe
+M.why = why
+M.refusal = refusal
+M
