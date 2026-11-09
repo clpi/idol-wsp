@@ -26,8 +26,12 @@
 # row the step read. A learned seating is additive: it does
 # not displace the current seating, so derivations over the
 # original seating are untouched by learning; a correcting
-# seating displaces the current one and withdraws it as a
-# premise, so what was learned from it retracts.
+# seating displaces the current one (mark 1 on the displaced
+# seating), so its readers keep the row rule above. An
+# explicit withdrawal is a different fate (mark 2): every
+# citation of the withdrawn seating falls, table-row and
+# seating citations alike, direct and transitive, even while
+# the withdrawn seating is still the current one.
 #
 # A derivation's identity, which later records cite, is the
 # sha256 of its premise record form — output digest, rule
@@ -510,7 +514,8 @@ seatfile: i64 = (role: i64, data: str, expected: str, d1: i64, d2: i64)
     h = regseat(role, dg, 0, 0, data:len(), d1, d2)
     if old > 0
         if old != h
-            swd[old] = 1
+            if swd[old] == 0
+                swd[old] = 1
     curt[role] = h
     actt[role] = h
     h
@@ -568,7 +573,7 @@ withdraw: i64 = (d: str)
         return 1
     h = findseat(d)
     if h > 0
-        swd[h] = 1
+        swd[h] = 2
         return 1
     0
 
@@ -831,6 +836,10 @@ nrecords: i64 = ()
 # Marks belong to this read only: visiting (1) rejects a cycle;
 # complete (2) shares a fully checked cone in a diamond. Nothing
 # survives a later withdrawal or a generation replacement.
+# The stack tables live at file scope: the C realizer refuses
+# function-local tables assigned by integer key, and the marks
+# are fully rewritten at the start of every read, so no state
+# carries between reads.
 falls: i64 = (root: i64)
     if root < 1 or root > rkind:len()
         return 1
@@ -877,11 +886,13 @@ falls: i64 = (root: i64)
                 h = findseat(d)
                 if h == 0
                     return 1
-                if swd[h] == 1
+                if swd[h] > 0
                     return 1
             if ck == 1
                 h = findseat(d)
                 if h == 0
+                    return 1
+                if swd[h] == 2
                     return 1
                 # Only the queried record reads its row by value.
                 # Its descendants contribute existence falls.
