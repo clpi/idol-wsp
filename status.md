@@ -105,17 +105,26 @@ every assertion passed in the executed run.
 ## What exists today (2026-11-08)
 
 - This repo's founding documents and the slice-one spec.
-- The normative weight-semantics chapter
-  ([weight-semantics.md](weight-semantics.md)), received by relay on
-  2026-11-08 and landed the same day: the core model, typing and
-  evaluation rules, learning and exact retraction, differentiation,
-  and the serialization contract the machinery is reconciled
-  against. The received text carries the governing semantics with
-  examples 1 to 24 in full; the exact transport record forms,
-  examples 25 to 42 in full, and 6 of the 16 decision entries were
-  not in the relay and are named as outstanding in the chapter file
-  itself. Every Idol implementation and performance claim in the
-  chapter is UNMEASURED, as the chapter itself states.
+- The weight-semantics chapter
+  ([weight-semantics.md](weight-semantics.md)) — a candidate
+  specification, received by relay on 2026-11-08 and landed the
+  same day: the core model, typing and evaluation rules, learning
+  and retraction by reconstruction, differentiation, and the
+  serialization contract the machinery is reconciled against. The
+  author's own correction of 2026-11-08 states that the chapter's
+  strongest guarantee — every learned change premise-tracked and
+  exactly retractable — is an obligation the design states, not
+  yet a consequence the design establishes: dependency
+  completeness is unspecified, and several contracts the author
+  named are not fully specified. The received text carries the
+  governing semantics with examples 1 to 24 in full; the exact
+  transport record forms, examples 25 to 42 in full, and 6 of the
+  16 decision entries were not in the relay and are named as
+  outstanding in the chapter file itself. The author's corrected
+  chapter file, including its adversarial review, has likewise not
+  been received as a file. Every Idol implementation and
+  performance claim in the chapter is UNMEASURED, as the chapter
+  itself states.
 - Slice one, landed in this repo (commit
   61197dfe783f5ae733b2cc280fe278c0d6b8cc68): the agent
   (`src/agent.id`), its battery (`gate/agent.id`, cases B1–B15), and
