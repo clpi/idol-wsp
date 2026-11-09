@@ -1,0 +1,229 @@
+# The WS-CONF-3 battery: the weights chapter's
+# differentiation faces against conformance examples
+# E09-E12 and the empty-gradient arm of E30
+# (spec-differentiation-faces.md section 8). Every
+# check prints one line; the closing vector is the
+# verdict. Run by gate/grad.sh.
+
+bc = {}
+
+chk: i64 = (label: str, cond: bool)
+    if cond
+        bc.ok = bc.ok + 1
+        print("ok: " .. label)
+        return 1
+    bc.bad = bc.bad + 1
+    print("FAIL: " .. label)
+    0
+
+streq: i64 = (a: str, b: str)
+    if a:len() != b:len()
+        return 0
+    i = 1
+    while i <= a:len()
+        if a:byte(i) != b:byte(i)
+            return 0
+        i = i + 1
+    1
+
+digits: str = (v: i64)
+    if v == 0
+        return "0"
+    out = ""
+    n = v
+    while n > 0
+        out = "0123456789":sub(n % 10 + 1, n % 10 + 1) .. out
+        n = n // 10
+    out
+
+itext: str = (v: i64)
+    if v < 0
+        return "-" .. digits(0 - v)
+    digits(v)
+
+appv: str = (a: str, v: str)
+    a .. v
+
+eqrat: i64 = (w: i64, i: i64, n: i64, d: i64)
+    if w < 1
+        return 0
+    r = wsp.numeric.at(w, i)
+    if r < 0
+        return 0
+    q = wsp.numeric.rat(n, d)
+    wsp.numeric.req(r, q)
+
+main: i64 = ()
+    bc.ok = 0
+    bc.bad = 0
+    wsp.agent.init()
+
+    # E09: rational gradient and the update step
+    # (chapter 6). w = [2, 3], f(w) = w0^2 + 3*w1.
+    w = wsp.numeric.lit(0, 0, "2", "2,3")
+    gn = wsp.grad.input()
+    r0 = wsp.grad.read(gn, "0")
+    r1 = wsp.grad.read(gn, "1")
+    c3 = wsp.grad.constant(wsp.numeric.lit(0, 0, "", "3"))
+    f = wsp.grad.add(wsp.grad.mul(r0, r0), wsp.grad.scale(r1, c3))
+    p = wsp.grad.primal(f, w)
+    chk("e09 primal constructs", p >= 1)
+    chk("e09 primal is scalar", wsp.numeric.rankof(p) == 0)
+    chk("e09 primal is 13", eqrat(p, 0, 13, 1) == 1)
+    g = wsp.grad.grad(f, w)
+    chk("e09 gradient constructs", g >= 1)
+    chk("e09 gradient dtype is q", wsp.numeric.dtypeof(g) == 0)
+    chk("e09 gradient rank", wsp.numeric.rankof(g) == 1)
+    chk("e09 gradient extent", wsp.numeric.dimof(g, 0) == 2)
+    chk("e09 gradient cell 0 is 4", eqrat(g, 0, 4, 1) == 1)
+    chk("e09 gradient cell 1 is 3", eqrat(g, 1, 3, 1) == 1)
+    neta = wsp.numeric.lit(0, 0, "", "-0.1")
+    delta = wsp.numeric.mul(g, wsp.numeric.broadcast(neta, "2", ""))
+    chk("e09 delta cell 0", eqrat(delta, 0, -2, 5) == 1)
+    chk("e09 delta cell 1", eqrat(delta, 1, -3, 10) == 1)
+    anchor = wsp.numeric.lit(0, 0, "2", "2,3")
+    dq = wsp.numeric.premiseover("wsconf3 e09 training premise", delta)
+    ev = wsp.numeric.event(anchor, delta, dq)
+    chk("e09 event constructs", ev >= 1)
+    rev = wsp.numeric.revision(anchor, itext(ev), "")
+    ob = wsp.numeric.observe(rev)
+    chk("e09 observed cell 0", eqrat(ob, 0, 8, 5) == 1)
+    chk("e09 observed cell 1", eqrat(ob, 1, 27, 10) == 1)
+
+    # E09 support arm: the gradient carries the model
+    # it was taken of, and a learned event falls with
+    # that model even under a fresh training premise.
+    anc0 = wsp.numeric.lit(0, 0, "2", "0,0")
+    dpw = wsp.numeric.lit(0, 0, "2", "2,3")
+    dp = wsp.numeric.premiseover("wsconf3 e09 model premise", dpw)
+    e0 = wsp.numeric.event(anc0, dpw, dp)
+    rev0 = wsp.numeric.revision(anc0, itext(e0), "")
+    model = wsp.numeric.total(rev0)
+    chk("e09 support model constructs", model >= 1)
+    chk("e09 model carries the premise", wsp.numeric.supporthas(model, dp) == 1)
+    g2 = wsp.grad.grad(f, model)
+    chk("e09 gradient at the model constructs", g2 >= 1)
+    chk("e09 gradient carries the model premise", wsp.numeric.supporthas(g2, dp) == 1)
+    gn2 = wsp.grad.input()
+    fz = wsp.grad.read(wsp.grad.sub(gn2, gn2), "0")
+    gz = wsp.grad.grad(fz, model)
+    chk("e09 zero gradient cell 0", eqrat(gz, 0, 0, 1) == 1)
+    chk("e09 zero gradient cell 1", eqrat(gz, 1, 0, 1) == 1)
+    chk("e09 zero gradient keeps the support", wsp.numeric.supporthas(gz, dp) == 1)
+    delta2 = wsp.numeric.mul(g2, wsp.numeric.broadcast(neta, "2", ""))
+    dq2 = wsp.numeric.premiseover("wsconf3 e09 second training premise", delta2)
+    e2 = wsp.numeric.event(anchor, delta2, dq2)
+    rev2 = wsp.numeric.revision(anchor, itext(e2), "")
+    chk("e09 learned event live", wsp.numeric.livecount(rev2) == 1)
+    chk("e09 withdraw lands", wsp.agent.withdraw(dp) == 1)
+    chk("e09 event falls with the model", wsp.numeric.livecount(rev2) == 0)
+
+    # E10: unsupported differentiation refuses (chapter 6)
+    wi = wsp.numeric.lit(1, 8, "", "5")
+    gi = wsp.grad.input()
+    fi = wsp.grad.mul(gi, gi)
+    chk("e10 integer gradient refuses", wsp.grad.grad(fi, wi) == -18)
+    chk("e10 refusal named integer", streq(wsp.grad.refusal(), "integer") == 1)
+    chk("e10 integer ideal refuses", wsp.grad.ideal(fi, wi) == -18)
+    fb = wsp.grad.branch(wsp.grad.input())
+    chk("e10 branch refuses away from zero", wsp.grad.grad(fb, w) == -19)
+    chk("e10 refusal named branch", streq(wsp.grad.refusal(), "branch") == 1)
+    fd = wsp.grad.draw()
+    chk("e10 draw refuses", wsp.grad.grad(fd, w) == -20)
+    chk("e10 refusal named effect", streq(wsp.grad.refusal(), "effect") == 1)
+    fe = wsp.grad.add(wsp.grad.draw(), wsp.grad.constant(wsp.numeric.lit(0, 0, "", "1")))
+    chk("e10 nested draw refuses", wsp.grad.grad(fe, w) == -20)
+
+    # E11: floating primal and ideal gradient (chapter 6)
+    x = wsp.numeric.lit(3, 0, "", "1")
+    cn = wsp.grad.constant(wsp.numeric.lit(3, 0, "", "16777216"))
+    gx = wsp.grad.input()
+    f11 = wsp.grad.sub(wsp.grad.add(gx, cn), cn)
+    p11 = wsp.grad.primal(f11, x)
+    chk("e11 primal constructs", p11 >= 1)
+    chk("e11 primal is zero", eqrat(p11, 0, 0, 1) == 1)
+    chk("e11 primal word is zero", wsp.numeric.wordof(p11, 0) == 0)
+    i11 = wsp.grad.ideal(f11, x)
+    chk("e11 ideal is one", eqrat(i11, 0, 1, 1) == 1)
+    g11 = wsp.grad.grad(f11, x)
+    chk("e11 gradient dtype is q", wsp.numeric.dtypeof(g11) == 0)
+    chk("e11 gradient is one", eqrat(g11, 0, 1, 1) == 1)
+    x64 = wsp.numeric.lit(4, 0, "", "1")
+    cn64 = wsp.grad.constant(wsp.numeric.lit(4, 0, "", "16777216"))
+    f64 = wsp.grad.sub(wsp.grad.add(wsp.grad.input(), cn64), cn64)
+    p64 = wsp.grad.primal(f64, x64)
+    chk("e11 f64 primal is one", eqrat(p64, 0, 1, 1) == 1)
+    g64 = wsp.grad.grad(f64, x64)
+    chk("e11 f64 gradient is one", eqrat(g64, 0, 1, 1) == 1)
+
+    # E12: differentiation requires both domains (chapter 6)
+    one = wsp.grad.constant(wsp.numeric.lit(3, 0, "", "1"))
+    f1 = wsp.grad.div(one, f11)
+    chk("e12 primal zero denominator refuses", wsp.grad.primal(f1, x) == -5)
+    chk("e12 refusal named zero", streq(wsp.grad.refusal(), "zero") == 1)
+    chk("e12 gradient refuses primal direction", wsp.grad.grad(f1, x) == -5)
+    f2 = wsp.grad.div(one, wsp.grad.sub(f11, wsp.grad.input()))
+    p2 = wsp.grad.primal(f2, x)
+    chk("e12 second primal is minus one", eqrat(p2, 0, -1, 1) == 1)
+    chk("e12 gradient refuses ideal direction", wsp.grad.grad(f2, x) == -5)
+    chk("e12 refusal named zero again", streq(wsp.grad.refusal(), "zero") == 1)
+
+    # E30 gradient arm: a constant function on an empty
+    # input has an empty gradient of that shape
+    w03 = wsp.numeric.lit(0, 0, "0,3", "")
+    fc = wsp.grad.constant(wsp.numeric.lit(0, 0, "", "5"))
+    p30 = wsp.grad.primal(fc, w03)
+    chk("e30 primal is five", eqrat(p30, 0, 5, 1) == 1)
+    g30 = wsp.grad.grad(fc, w03)
+    chk("e30 gradient constructs", g30 >= 1)
+    chk("e30 gradient dtype is q", wsp.numeric.dtypeof(g30) == 0)
+    chk("e30 gradient rank", wsp.numeric.rankof(g30) == 2)
+    chk("e30 gradient extent zero", wsp.numeric.dimof(g30, 0) == 0)
+    chk("e30 gradient extent three", wsp.numeric.dimof(g30, 1) == 3)
+    chk("e30 gradient is empty", wsp.numeric.cardof(g30) == 0)
+
+    # Adjoint spot checks: the distribution rules at
+    # the faces (spec section 8)
+    gd = wsp.grad.input()
+    fdv = wsp.grad.div(wsp.grad.read(gd, "0"), wsp.grad.read(gd, "1"))
+    gv = wsp.grad.grad(fdv, w)
+    chk("spot div gradient cell 0", eqrat(gv, 0, 1, 3) == 1)
+    chk("spot div gradient cell 1", eqrat(gv, 1, -2, 9) == 1)
+    frp = wsp.grad.read(wsp.grad.replace(wsp.grad.input(), "0", wsp.grad.constant(wsp.numeric.lit(0, 0, "", "5"))), "1")
+    grp = wsp.grad.grad(frp, w)
+    chk("spot replace gradient cell 0", eqrat(grp, 0, 0, 1) == 1)
+    chk("spot replace gradient cell 1", eqrat(grp, 1, 1, 1) == 1)
+    wm = wsp.numeric.lit(0, 0, "2,2", "1,2,3,4")
+    fk = wsp.grad.read(wsp.grad.contract(wsp.grad.input(), wsp.grad.constant(wsp.numeric.lit(0, 0, "2", "5,6")), "1", "0"), "0")
+    gk = wsp.grad.grad(fk, wm)
+    chk("spot contract gradient cell 0", eqrat(gk, 0, 5, 1) == 1)
+    chk("spot contract gradient cell 1", eqrat(gk, 1, 6, 1) == 1)
+    chk("spot contract gradient cell 2", eqrat(gk, 2, 0, 1) == 1)
+    chk("spot contract gradient cell 3", eqrat(gk, 3, 0, 1) == 1)
+    fbc = wsp.grad.contract(wsp.grad.broadcast(wsp.grad.input(), "2,2", "0"), wsp.grad.constant(wsp.numeric.lit(0, 0, "2,2", "1,1,1,1")), "0,1", "0,1")
+    gbc = wsp.grad.grad(fbc, w)
+    chk("spot broadcast gradient cell 0", eqrat(gbc, 0, 2, 1) == 1)
+    chk("spot broadcast gradient cell 1", eqrat(gbc, 1, 2, 1) == 1)
+    fsc = wsp.grad.read(wsp.grad.scale(wsp.grad.constant(wsp.numeric.lit(0, 0, "2", "4,5")), wsp.grad.input()), "0")
+    s3 = wsp.numeric.lit(0, 0, "", "3")
+    psc = wsp.grad.primal(fsc, s3)
+    chk("spot scale primal is twelve", eqrat(psc, 0, 12, 1) == 1)
+    gsc = wsp.grad.grad(fsc, s3)
+    chk("spot scale gradient is four", eqrat(gsc, 0, 4, 1) == 1)
+    fn = wsp.grad.input()
+    chk("spot nonscalar gradient refuses", wsp.grad.grad(fn, w) == -21)
+    chk("spot refusal named scalar", streq(wsp.grad.refusal(), "scalar") == 1)
+
+    line = "grad vector: "
+    line = appv(line, itext(bc.ok))
+    line = appv(line, " ok / ")
+    line = appv(line, itext(bc.bad))
+    line = appv(line, " FAIL")
+    print(line)
+    if bc.bad == 0
+        print("PASS")
+        return 0
+    print("FAIL")
+    1
+
+os.exit(main())
