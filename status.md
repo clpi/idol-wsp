@@ -436,6 +436,62 @@ application id defect class, pre-existing at the base pin,
 owned by the compiler lane named in the lane record). Speed
 is UNMEASURED.
 
+## Differentiation faces (WS-CONF-3)
+
+The differentiation faces of the weights chapter are landed.
+spec-differentiation-faces.md states the executable spec: the
+expression graph a presented function is built as, the primal
+evaluation under the chapter's section 4 rules, the ideal
+interpretation at exact rationals, the gradient law of section
+6 with its adjoint distribution per expression kind, the
+support the returned gradient carries, and the refusal cases
+by name, each bound to the chapter examples it unblocks. The
+faces are implemented in pure Idol in src/grad.id as the home
+wsp.grad: constructors for the expression kinds the landed
+numeric faces evaluate, the two evaluations as ascending
+walks over the node books, and the adjoint pass in descending
+handle order over the ideal values. Every value is a numeric
+home weight and every premise travels in the numeric home's
+support, so the gradient's support is the closed union the
+chapter requires by construction, and a learned update made
+from a gradient retracts through the agent home's one path —
+the battery's learn-and-withdraw arm executes exactly that.
+The standing battery is gate/grad.id with its control
+gate/grad.sh. Measured at this landing, on the Mac mini at
+the reduced contract stated in the lane record (same compiler
+tree, C route): grad vector 67 ok / 0 FAIL, covering E09 in
+full (primal 13, gradient [4, 3], the update by the chapter's
+step, the learned revision observed at [8/5, 27/10], support
+carried into the gradient, a zero gradient keeping its
+support, and the learned event falling when the model's
+premise is withdrawn), E10 (the integer, branch, and effect
+refusals), E11 (the F32 rounding example: primal zero, ideal
+one, gradient exactly one, with the F64 contrast), E12 (a
+zero primal denominator refused, and a denominator that
+vanishes only in the ideal interpretation refused in the
+gradient while its primal is minus one), and the gradient
+arm of E30 (an empty Q gradient of shape (0,3)), with adjoint
+spot checks for division, replace, contraction, broadcast
+fiber sums, the scale scalar adjoint, and the non-scalar
+refusal. The standing batteries hold at this pin: agent
+126 ok / 0 FAIL, withdrawal 22 / 0, intent 25 / 0, numeric
+98 / 0, slice batteries 148 / 0, 159 / 0, 159 / 0 with bundle
+control 14 / 0 and basis control 10 / 0; the retract battery
+passes. The two retract companions still do not compile
+under the standing tree binary (the missing application id
+refusal in home ml.space, reproduced identically at this
+pin; pre-existing, owned by the compiler lane named in the
+lane record). One accommodation is carried in the landed
+bytes: the generation book's slots are written over their
+full index range before any read, the work order 3 two-form
+table seating accommodation named under Named dependencies
+above — an integer-indexed read of a slot that was never
+written aborts in the array form, where a string-keyed read
+of an absent key yields nil. The reshape, permute, concat,
+and sum expression kinds wait on their numeric faces, which
+are not landed; the spec names them as the remainder. Speed
+is UNMEASURED.
+
 ## Host seams
 
 One, named at this landing: slice one's execution route at its pin is
