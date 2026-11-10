@@ -45,6 +45,7 @@ carries measurements at a named pin, or states UNMEASURED.
 - [work.md](work.md) — the open work this repo carries.
 - [spec-additive-example.md](spec-additive-example.md) — the restricted
   fixed-schema learner and its retained-data rebuild reference.
+- [weight-form-census.md](weight-form-census.md) — weight-form-census-1: the shared WSP + Wide census of weights by deterministic input form (graph, syntax/grammar, intent, unmapped).
 
 ## Execute the current regression cohort
 
