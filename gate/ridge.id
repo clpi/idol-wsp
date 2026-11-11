@@ -1,0 +1,169 @@
+count = {}
+
+check: i64 = (label: str, condition: bool)
+    if condition
+        count.pass = count.pass + 1
+        return 1
+    print("FAIL " .. label)
+    count.fail = count.fail + 1
+    0
+
+appv: str = (a: str, b: str)
+    a .. b
+
+digits: str = (v: i64)
+    if v == 0
+        return "0"
+    out = ""
+    n = v
+    while n > 0
+        out = appv("0123456789":sub(n % 10 + 1, n % 10 + 1), out)
+        n = n // 10
+    out
+
+itext: str = (v: i64)
+    if v < 0
+        return appv("-", digits(0 - v))
+    digits(v)
+
+join: str = (a: str, b: str)
+    if a == ""
+        return b
+    if b == ""
+        return a
+    appv(appv(a, ","), b)
+
+equal: i64 = (weight: i64, coordinate: i64, n: i64, d: i64)
+    if weight < 1
+        return 0
+    wsp.numeric.req(wsp.numeric.at(weight, coordinate), wsp.numeric.rat(n, d))
+
+oracle: i64 = (mask: i64)
+    if mask == 0
+        return wsp.numeric.lit(0, 0, "2", "-2/3,7/3")
+    if mask == 1
+        return wsp.numeric.lit(0, 0, "2", "4/3,5/3")
+    if mask == 2
+        return wsp.numeric.lit(0, 0, "2", "-1/6,7/3")
+    if mask == 3
+        return wsp.numeric.lit(0, 0, "2", "8,0")
+    if mask == 4
+        return wsp.numeric.lit(0, 0, "2", "1,2/3")
+    if mask == 5
+        return wsp.numeric.lit(0, 0, "2", "3,0")
+    wsp.numeric.lit(0, 0, "2", "1,0")
+
+conditioning: i64 = (mask: i64)
+    if mask == 0
+        return wsp.numeric.lit(0, 0, "", "49")
+    if mask == 1
+        return wsp.numeric.lit(0, 0, "", "361/3")
+    if mask == 2
+        return wsp.numeric.lit(0, 0, "", "75/2")
+    if mask == 3
+        return wsp.numeric.lit(0, 0, "", "169")
+    if mask == 4
+        return wsp.numeric.lit(0, 0, "", "27")
+    if mask == 5
+        return wsp.numeric.lit(0, 0, "", "49")
+    wsp.numeric.lit(0, 0, "", "9")
+
+verify: i64 = ()
+    count.pass = 0
+    count.fail = 0
+    wsp.agent.init()
+    zero = wsp.numeric.lit(0, 0, "", "0")
+    one = wsp.numeric.lit(0, 0, "", "1")
+    two = wsp.numeric.lit(0, 0, "", "2")
+    three = wsp.numeric.lit(0, 0, "", "3")
+    eight = wsp.numeric.lit(0, 0, "", "8")
+    rule = wsp.numeric.premiseover("ridge fixed exact normal equation with unpenalized intercept", zero)
+    regularizer = wsp.numeric.premiseover("ridge exact slope penalty one", one)
+    penalty = wsp.numeric.observe(wsp.numeric.revision(zero, itext(wsp.numeric.event(zero, one, regularizer)), ""))
+    mask = 0
+    while mask < 8
+        anchor = wsp.numeric.lit(0, 0, "5", "0,0,0,0,0")
+        schema = wsp.numeric.premiseover(appv("ridge schema ", itext(mask)), anchor)
+        policy = join(schema, rule)
+        a = wsp.numeric.premiseover(appv("ridge example a ", itext(mask)), one)
+        b = wsp.numeric.premiseover(appv("ridge example b ", itext(mask)), three)
+        c = wsp.numeric.premiseover(appv("ridge example c ", itext(mask)), eight)
+        ea = wsp.numeric.example(anchor, one, one, a)
+        eb = wsp.numeric.example(anchor, two, three, b)
+        ec = wsp.numeric.example(anchor, three, eight, c)
+        left = wsp.numeric.revision(anchor, join(itext(ea), itext(eb)), schema)
+        right = wsp.numeric.revision(anchor, join(itext(eb), itext(ec)), rule)
+        revision = wsp.numeric.merge(left, right)
+        earlier = wsp.numeric.fit(revision, penalty)
+        check("initial exact solution", wsp.numeric.numeric(earlier, oracle(0)) == 1)
+        selected = ""
+        fresh = wsp.numeric.lit(0, 0, "5", "0,0,0,0,0")
+        live = 3
+        if mask % 2 == 1
+            wsp.agent.withdraw(a)
+            live = live - 1
+        else
+            selected = join(selected, itext(wsp.numeric.example(fresh, one, one, a)))
+        if (mask // 2) % 2 == 1
+            wsp.agent.withdraw(b)
+            live = live - 1
+        else
+            selected = join(selected, itext(wsp.numeric.example(fresh, two, three, b)))
+        if (mask // 4) % 2 == 1
+            wsp.agent.withdraw(c)
+            live = live - 1
+        else
+            selected = join(selected, itext(wsp.numeric.example(fresh, three, eight, c)))
+        rebuilt = wsp.numeric.revision(fresh, selected, policy)
+        check("full inventory retained", wsp.numeric.members(revision) == 3)
+        check("exact live inventory", wsp.numeric.livecount(revision) == live)
+        check("fresh exact sufficient statistics", wsp.numeric.numeric(wsp.numeric.total(revision), wsp.numeric.total(rebuilt)) == 1)
+        fitted = wsp.numeric.fit(revision, penalty)
+        replay = wsp.numeric.fit(rebuilt, penalty)
+        if mask == 7
+            check("empty system singular", fitted == -18)
+            check("empty rebuild singular", replay == -18)
+            check("empty condition singular", wsp.numeric.condition(revision, penalty) == -18)
+        else
+            check("independent exact coefficients", wsp.numeric.numeric(fitted, oracle(mask)) == 1)
+            check("fresh coefficient reconstruction", wsp.numeric.numeric(fitted, replay) == 1)
+            check("exact condition number", wsp.numeric.numeric(wsp.numeric.condition(revision, penalty), conditioning(mask)) == 1)
+            check("current coefficient usable", wsp.numeric.usable(fitted) == 1)
+            check("schema preserved", wsp.numeric.supporthas(fitted, schema) == 1)
+            check("rule preserved", wsp.numeric.supporthas(fitted, rule) == 1)
+            check("regularizer preserved", wsp.numeric.supporthas(fitted, regularizer) == 1)
+            check("required support cardinality", wsp.numeric.supportcount(fitted) == live + 3)
+            check("a support exact", wsp.numeric.supporthas(fitted, a) == 1 - mask % 2)
+            check("b support exact", wsp.numeric.supporthas(fitted, b) == 1 - (mask // 2) % 2)
+            check("c support exact", wsp.numeric.supporthas(fitted, c) == 1 - (mask // 4) % 2)
+        if mask != 0
+            check("historical coefficient loses current validity", wsp.numeric.usable(earlier) == 0)
+        wsp.agent.withdraw(schema)
+        check("schema withdrawal stops reconstruction", wsp.numeric.fit(revision, penalty) == -17)
+        mask = mask + 1
+    anchor = wsp.numeric.lit(0, 0, "5", "0,0,0,0,0")
+    a = wsp.numeric.premiseover("ridge ill conditioned a", one)
+    b = wsp.numeric.premiseover("ridge ill conditioned b", one)
+    large = wsp.numeric.lit(0, 0, "", "1000")
+    nearby = wsp.numeric.lit(0, 0, "", "1001")
+    ea = wsp.numeric.example(anchor, large, large, a)
+    eb = wsp.numeric.example(anchor, nearby, nearby, b)
+    revision = wsp.numeric.revision(anchor, join(itext(ea), itext(eb)), rule)
+    fitted = wsp.numeric.fit(revision, zero)
+    check("ill conditioned exact intercept", equal(fitted, 0, 0, 1) == 1)
+    check("ill conditioned exact slope", equal(fitted, 1, 1, 1) == 1)
+    check("ill conditioned exact kappa", equal(wsp.numeric.condition(revision, zero), 0, 4016024016004, 1) == 1)
+    repeated = wsp.numeric.example(anchor, large, nearby, b)
+    singular = wsp.numeric.revision(anchor, join(itext(ea), repeated:to(str)), rule)
+    check("rank deficient singular", wsp.numeric.fit(singular, zero) == -18)
+    check("regularization makes rank deficiency invertible", wsp.numeric.fit(singular, one) > 0)
+    check("negative regularization refuses", wsp.numeric.fit(revision, wsp.numeric.lit(0, 0, "", "-1")) == -3)
+    check("inexact penalty refuses", wsp.numeric.fit(revision, wsp.numeric.lit(3, 0, "", "1")) == -2)
+    check("invalid revision refuses", wsp.numeric.fit(0, one) == -12)
+    check("invalid example refuses", wsp.numeric.example(0, one, one, a) == -12)
+    wsp.agent.withdraw(regularizer)
+    check("withdrawn penalty refuses", wsp.numeric.fit(revision, penalty) == -17)
+    print(appv(appv(appv("ridge passes ", itext(count.pass)), " failures "), itext(count.fail)))
+    count.fail
+
+verify()
