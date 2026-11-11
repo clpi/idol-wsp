@@ -4,6 +4,33 @@ The state of Idol WSP, stated plainly. This document is updated in the
 same commit as any landing it describes. Claims here carry their
 evidence or are marked UNMEASURED / UNVERIFIED / OPEN.
 
+## Exact merge and fixed-feature ridge (2026-11-11)
+
+The existing numeric producer now implements `extend` and `merge` through
+its sole revision constructor. Both preserve exact anchor identity, fixed
+event inventory and transitive selection support. Shared events count
+once; distinct equal-valued events count separately; the F32 2^24 control
+adds both exact +1 events before the one final observation.
+
+`example`, `fit` and `condition` implement a bounded one-feature ridge
+learner with an unpenalized intercept, exact sufficient statistics and
+exact rational coefficients. All eight subsets of the three-example
+dataset are compared against fresh retained-input rebuilds and independent
+rational oracles. Singular and ill-conditioned cases are explicit.
+
+The executed [qualification record](evidence/frontier/README.md) contains
+input/output hashes and outputs. **Native merge passed 27/0 and native
+ridge passed 137/0.** The same new gates passed on the separately named
+hosted C route; existing hosted C revision 227/0 and additive 106/0
+regressions passed. A native compiled mutation that dropped merge selection
+support failed five assertions, as required. `gate/frontier.sh` exited 0.
+
+The exact [contract](ridge.md) describes the public faces and boundaries.
+Native qualification of these numerical lanes is now measured; it does
+not close global event transport, all compiler support, general model
+unlearning, timing, memory, task quality, or privacy. Earlier status text
+below describes its own historical pin and remains as history.
+
 ## Current-evidence corrections and delivered artifact (2026-11-09)
 
 This landing extends main `e5abd8bc8eb743ae5bca432da0151882a0cecfb9`

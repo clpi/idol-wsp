@@ -173,6 +173,8 @@ refusal: str = ()
         return "premises"
     if c == -17
         return "withdrawn"
+    if c == -18
+        return "singular"
     ""
 
 fail: i64 = (code: i64)
@@ -1773,6 +1775,174 @@ receipt: str = (rev: i64, ev: i64)
         k = k + 1
     first
 
+inventory: str = (rev: i64)
+    st.why = 0
+    if rev < 1 or rev > rvanc:len()
+        st.why = -12
+        return ""
+    out = ""
+    j = 1
+    while j <= rvevl[rev]
+        if j > 1
+            out = appv(out, ",")
+        out = appv(out, itext(evlist[rvevo[rev] + j]))
+        j = j + 1
+    out
+
+selection: str = (rev: i64)
+    st.why = 0
+    if rev < 1 or rev > rvanc:len()
+        st.why = -12
+        return ""
+    out = ""
+    j = 0
+    while j < rvsell[rev]
+        if j > 0
+            out = appv(out, ",")
+        out = appv(out, piece(1, rvselo[rev] + j * 64, 64))
+        j = j + 1
+    out
+
+joined: str = (a: str, b: str)
+    if a == ""
+        return b
+    if b == ""
+        return a
+    appv(appv(a, ","), b)
+
+extend: i64 = (rev: i64, addition: str, policy: str)
+    st.why = 0
+    if rev < 1 or rev > rvanc:len()
+        return fail(-12)
+    candidate = joined(inventory(rev), addition)
+    support = joined(selection(rev), policy)
+    revision(rvanc[rev], candidate, support)
+
+merge: i64 = (a: i64, b: i64)
+    st.why = 0
+    if a < 1 or a > rvanc:len() or b < 1 or b > rvanc:len()
+        return fail(-12)
+    if rvanc[a] != rvanc[b]
+        return fail(-13)
+    candidate = joined(inventory(a), inventory(b))
+    support = joined(selection(a), selection(b))
+    revision(rvanc[a], candidate, support)
+
+example: i64 = (anchor: i64, x: i64, y: i64, support: str)
+    st.why = 0
+    if anchor < 1 or anchor > wdt:len() or x < 1 or x > wdt:len() or y < 1 or y > wdt:len()
+        return fail(-12)
+    if rankof(anchor) != 1 or cardof(anchor) != 5 or rankof(x) != 0 or rankof(y) != 0
+        return fail(-1)
+    if dtypeof(anchor) != 0 or dtypeof(x) != 0 or dtypeof(y) != 0
+        return fail(-2)
+    square = mul(x, x)
+    if square < 0
+        return square
+    product = mul(x, y)
+    if product < 0
+        return product
+    delta = lit(0, 0, "5", "1,0,0,0,0")
+    delta = replace(delta, "1", x)
+    delta = replace(delta, "2", y)
+    delta = replace(delta, "3", square)
+    delta = replace(delta, "4", product)
+    event(anchor, delta, support)
+
+ridge: i64 = (rev: i64, penalty: i64, query: i64)
+    st.why = 0
+    if rev < 1 or rev > rvanc:len() or penalty < 1 or penalty > wdt:len()
+        return fail(-12)
+    if rankof(penalty) != 0
+        return fail(-1)
+    if dtypeof(penalty) != 0
+        return fail(-2)
+    if rnum[at(penalty, 0)] < 0
+        return fail(-3)
+    j = 0
+    while j < wsupl[penalty]
+        ps = wsp.agent.premstate(piece(1, wsupo[penalty] + j * 64, 64))
+        if ps == -1
+            return fail(-12)
+        if ps == 0
+            return fail(-17)
+        j = j + 1
+    statistic = total(rev)
+    if statistic < 0
+        return statistic
+    if rankof(statistic) != 1 or cardof(statistic) != 5
+        return fail(-1)
+    n = read(statistic, "0")
+    x = read(statistic, "1")
+    y = read(statistic, "2")
+    square = read(statistic, "3")
+    product = read(statistic, "4")
+    diagonal = add(square, penalty)
+    if diagonal < 0
+        return diagonal
+    determinant = mul(n, diagonal)
+    if determinant < 0
+        return determinant
+    xx = mul(x, x)
+    if xx < 0
+        return xx
+    determinant = sub(determinant, xx)
+    if determinant < 0
+        return determinant
+    if rnum[at(n, 0)] == 0 or rnum[at(determinant, 0)] == 0
+        return fail(-18)
+    if rnum[at(n, 0)] < 0 or rnum[at(determinant, 0)] < 0
+        return fail(-11)
+    if query == 2
+        magnitude = x
+        if rnum[at(x, 0)] < 0
+            magnitude = mul(x, lit(0, 0, "", "-1"))
+            if magnitude < 0
+                return magnitude
+        comparison = sub(n, diagonal)
+        if comparison < 0
+            return comparison
+        norm = diagonal
+        if rnum[at(comparison, 0)] >= 0
+            norm = n
+        norm = add(norm, magnitude)
+        if norm < 0
+            return norm
+        numerator = mul(norm, norm)
+        if numerator < 0
+            return numerator
+        return div(numerator, determinant)
+    numerator = mul(n, product)
+    if numerator < 0
+        return numerator
+    xy = mul(x, y)
+    if xy < 0
+        return xy
+    numerator = sub(numerator, xy)
+    if numerator < 0
+        return numerator
+    slope = div(numerator, determinant)
+    if slope < 0
+        return slope
+    projection = mul(slope, x)
+    if projection < 0
+        return projection
+    residual = sub(y, projection)
+    if residual < 0
+        return residual
+    intercept = div(residual, n)
+    if intercept < 0
+        return intercept
+    result = lit(0, 0, "2", "0,0")
+    result = replace(result, "0", intercept)
+    replace(result, "1", slope)
+
+fit: i64 = (rev: i64, penalty: i64)
+    ridge(rev, penalty, 1)
+
+condition: i64 = (rev: i64, penalty: i64)
+    ridge(rev, penalty, 2)
+
 equivalent: i64 = (ra: i64, rb: i64)
     if rvanc[ra] != rvanc[rb]
         return 0
@@ -1835,6 +2005,13 @@ M.members = members
 M.excluded = excluded
 M.receipt = receipt
 M.equivalent = equivalent
+M.inventory = inventory
+M.selection = selection
+M.extend = extend
+M.merge = merge
+M.example = example
+M.fit = fit
+M.condition = condition
 M.why = why
 M.refusal = refusal
 M

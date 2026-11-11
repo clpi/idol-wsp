@@ -38,6 +38,7 @@ carries measurements at a named pin, or states UNMEASURED.
   in Chris's own words.
 - [weight-space.md](weight-space.md) — what Idol's weight space is today,
   from the landed record in clpi/idol.
+- [ridge.md](ridge.md) — exact revision merge, fixed-feature ridge, native gates, and measured boundaries.
 - [status.md](status.md) — what exists and what does not, the three proofs,
   the bar, and every named dependency with its state.
 - [spec-slice-one.md](spec-slice-one.md) — the executable spec for slice

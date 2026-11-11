@@ -1,0 +1,96 @@
+count = {}
+
+check: i64 = (label: str, condition: bool)
+    if condition
+        count.pass = count.pass + 1
+        return 1
+    print("FAIL " .. label)
+    count.fail = count.fail + 1
+    0
+
+appv: str = (a: str, b: str)
+    a .. b
+
+digits: str = (v: i64)
+    if v == 0
+        return "0"
+    out = ""
+    n = v
+    while n > 0
+        out = appv("0123456789":sub(n % 10 + 1, n % 10 + 1), out)
+        n = n // 10
+    out
+
+itext: str = (v: i64)
+    if v < 0
+        return appv("-", digits(0 - v))
+    digits(v)
+
+join: str = (a: str, b: str)
+    appv(appv(a, ","), b)
+
+verify: i64 = ()
+    count.pass = 0
+    count.fail = 0
+    wsp.agent.init()
+    anchor = wsp.numeric.lit(0, 0, "", "0")
+    delta = wsp.numeric.lit(0, 0, "", "1")
+    premise = wsp.numeric.premiseover("merge occurrence", delta)
+    left = wsp.numeric.premiseover("merge selection left", anchor)
+    right = wsp.numeric.premiseover("merge selection right", anchor)
+    a = wsp.numeric.event(anchor, delta, premise)
+    b = wsp.numeric.event(anchor, delta, premise)
+    c = wsp.numeric.event(anchor, delta, premise)
+    ra = wsp.numeric.revision(anchor, itext(a), left)
+    rb = wsp.numeric.revision(anchor, join(itext(a), itext(b)), right)
+    rc = wsp.numeric.revision(anchor, itext(c), "")
+    merged = wsp.numeric.merge(ra, rb)
+    check("shared occurrence contributes once", wsp.numeric.members(merged) == 2)
+    check("equal independent occurrences remain distinct", wsp.numeric.livecount(merged) == 2)
+    check("left selection retained", wsp.numeric.supporthas(wsp.numeric.total(merged), left) == 1)
+    check("right selection retained", wsp.numeric.supporthas(wsp.numeric.total(merged), right) == 1)
+    check("event support retained", wsp.numeric.supporthas(wsp.numeric.total(merged), premise) == 1)
+    check("commutative event inventory", wsp.numeric.equivalent(merged, wsp.numeric.merge(rb, ra)) == 1)
+    check("idempotent event inventory", wsp.numeric.equivalent(merged, wsp.numeric.merge(merged, merged)) == 1)
+    ab = wsp.numeric.merge(wsp.numeric.merge(ra, rb), rc)
+    ba = wsp.numeric.merge(ra, wsp.numeric.merge(rb, rc))
+    check("associative event inventory", wsp.numeric.equivalent(ab, ba) == 1)
+    check("all independent occurrences retained", wsp.numeric.members(ab) == 3)
+    extended = wsp.numeric.extend(ra, join(itext(a), itext(c)), right)
+    check("extension keeps original membership", wsp.numeric.members(extended) == 2)
+    check("extension keeps original selection", wsp.numeric.supporthas(wsp.numeric.total(extended), left) == 1)
+    check("extension adds new selection", wsp.numeric.supporthas(wsp.numeric.total(extended), right) == 1)
+    check("invalid revision refuses", wsp.numeric.merge(0, ra) == -12)
+    check("invalid extension refuses", wsp.numeric.extend(0, "", "") == -12)
+    alien = wsp.numeric.lit(0, 0, "", "0")
+    unrelated = wsp.numeric.revision(alien, "", "")
+    check("numerical anchor equality is insufficient", wsp.numeric.merge(ra, unrelated) == -13)
+    observed = wsp.numeric.observe(ra)
+    copied = wsp.numeric.revision(observed, "", "")
+    check("rounded observation cannot replace anchor", wsp.numeric.merge(ra, copied) == -13)
+    rounded = wsp.numeric.lit(3, 0, "", "16777216")
+    first = wsp.numeric.event(rounded, delta, premise)
+    second = wsp.numeric.event(rounded, delta, premise)
+    rf = wsp.numeric.revision(rounded, itext(first), left)
+    rs = wsp.numeric.revision(rounded, itext(second), right)
+    combined = wsp.numeric.merge(rf, rs)
+    expected = wsp.numeric.lit(3, 0, "", "16777218")
+    check("float merge retains exact addition before observation", wsp.numeric.numeric(wsp.numeric.observe(combined), expected) == 1)
+    check("float singleton observation still rounds to anchor", wsp.numeric.numeric(wsp.numeric.observe(rf), rounded) == 1)
+    check("float merge counts both distinct event identities", wsp.numeric.members(combined) == 2)
+    wsp.agent.withdraw(premise)
+    history = wsp.numeric.merge(ra, rb)
+    check("withdrawal keeps historical inventory", wsp.numeric.members(history) == 2)
+    check("withdrawal excludes both occurrences", wsp.numeric.livecount(history) == 0)
+    check("withdrawn event can remain fixed candidate", wsp.numeric.extend(ra, itext(b), "") > 0)
+    wsp.agent.withdraw(left)
+    check("selection cannot be erased by merge", wsp.numeric.merge(ra, rb) == -17)
+    check("selection cannot be erased by extension", wsp.numeric.extend(ra, "", "") == -17)
+    check("existing result becomes unusable", wsp.numeric.total(merged) == -17)
+    check("other selection remains independent", wsp.numeric.total(rb) > 0)
+    wsp.agent.reset()
+    check("unresolved selection remains unknown", wsp.numeric.merge(rb, rb) == -12)
+    print(appv(appv(appv("merge passes ", itext(count.pass)), " failures "), itext(count.fail)))
+    count.fail
+
+verify()
