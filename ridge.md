@@ -55,7 +55,13 @@ intercept = (sy - slope * sx) / n
 `fit(revision, penalty)` returns a Q vector `[intercept, slope]`. An empty
 system or zero determinant refuses with `-18` / `singular`; a negative
 count or determinant refuses `contract` before either singularity check.
-This precedence also applies to `condition` and to caller-supplied priors.
+This precedence also applies to `condition`. The prior anchor is checked
+independently: its count and unregularized determinant `n*sxx - sx*sx`
+must not be negative. Live examples and the slope penalty cannot make an
+invalid prior admissible. A zero or rank-deficient prior is admitted; the
+singularity refusal applies to the final retained-data normal equation,
+not to the prior by itself. The existing support checks still run before
+these numeric checks, so withdrawn or unknown support keeps its refusal.
 Shape, dtype, withdrawn support,
 unknown support and exact arithmetic resource refusals propagate from the
 existing producers. Every derived coefficient retains all demanded data,

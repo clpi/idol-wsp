@@ -6,40 +6,47 @@ evidence or are marked UNMEASURED / UNVERIFIED / OPEN.
 
 ## Exact merge and fixed-feature ridge (2026-11-11)
 
-The existing numeric producer now implements `extend` and `merge` through
-its sole revision constructor. Both preserve exact anchor identity, fixed
-event inventory and transitive selection support. Shared events count
-once; distinct equal-valued events count separately; the F32 2^24 control
-adds both exact +1 events before the one final observation.
+The numeric producer implements `extend` and `merge` through its sole
+revision constructor. Both preserve exact anchor identity, fixed event
+inventory and transitive selection support. Shared events count once;
+distinct equal-valued events count separately. The bounded one-feature
+ridge learner uses an unpenalized intercept, exact sufficient statistics
+and rational coefficients through `example`, `fit` and `condition`.
 
-`example`, `fit` and `condition` implement a bounded one-feature ridge
-learner with an unpenalized intercept, exact sufficient statistics and
-exact rational coefficients. All eight subsets of the three-example
-dataset are compared against fresh retained-input rebuilds and independent
-rational oracles. Singular and ill-conditioned cases are explicit.
+**Latest correction: source checked; native execution pending.** Invalid
+prior statistics are now rejected independently of later examples and
+regularization. A shared normal-system checker validates the prior's raw
+count and unregularized determinant before the accumulated system. Zero
+and singular priors remain admissible when the final system is invertible.
+The registered ridge fixture adds 24 assertions for prior masking, both
+public queries, penalty, valid priors, exact coefficients, support and
+withdrawal. `idol check gate/ridge.id` passed. The available surviving
+compiler refused both the published baseline and corrected native builds
+at the same imported `ml.space.concat` application before execution.
+**None of these 24 new assertions has executed.** Exact identities,
+commands, logs and the arithmetic counterexamples are retained in
+[prior.json](evidence/frontier/review/prior.json).
 
-The current [review qualification](evidence/frontier/review/README.md)
-retains exact inputs, outputs, and before/after results. The expanded native
-ridge fixture exposes the old invalid-prior classification and passes after
-negative statistics are rejected before singularity. Native merge and ridge,
-plus the separately named hosted C merge, ridge, revision, and additive
-regressions pass under `gate/frontier.sh`. The mutation now requires its exact
-named assertion outcome, and the complete staged input bytes and roster are
-checked after execution. Cross-filesystem staging and damaged-input controls
-are retained separately.
-
-This numerical qualification uses the earlier verified WSP compiler artifact
-named in its receipt. The newer integrated compiler refuses an unresolved
-imported application before these gates execute; its exact failure is retained
-as an open compatibility boundary. The earlier
-[qualification record](evidence/frontier/README.md) remains historical and
-now explicitly corrects its incomplete manifest and unexecuted recheck claim.
+The preceding qualification at
+`a2ce68f6f51aebd1c8fced79b92fcc75ca0c9f5c` passed 143 native ridge
+assertions, native merge, and separately named hosted C regressions using
+the earlier verified WSP compiler artifact. It also checked exact mutant
+outcomes and the complete staged input roster, with transport controls
+for changed, missing, added, linked and non-regular files and
+cross-filesystem compiler staging. These are historical results for those
+source bytes; they do not qualify the latest prior correction. The newer
+integrated compiler also refused an unresolved imported application
+before that earlier campaign executed. The
+[review qualification](evidence/frontier/review/README.md) keeps these
+compiler boundaries and the original receipts separate.
 
 The exact [contract](ridge.md) describes the public faces and boundaries.
-Native qualification of these numerical lanes is now measured; it does
-not close global event transport, all compiler support, general model
-unlearning, timing, memory, task quality, or privacy. Earlier status text
-below describes its own historical pin and remains as history.
+The latest native ridge qualification is OPEN. No result closes global
+event transport, all compiler support, general model unlearning, timing,
+memory, task quality or privacy. The earlier
+[qualification record](evidence/frontier/README.md) corrects its incomplete
+manifest and unexecuted recheck claim. Older status sections below remain
+history at their stated pins.
 
 ## Current-evidence corrections and delivered artifact (2026-11-09)
 

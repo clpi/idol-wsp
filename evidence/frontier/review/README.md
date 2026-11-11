@@ -1,5 +1,27 @@
 # Review qualification
 
+## Latest prior validation correction: native qualification open
+
+[prior.json](prior.json) records the source correction that validates raw
+prior statistics before examples or regularization can conceal an invalid
+count or determinant. It reuses the normal-system validator, permits a
+singular prior when the final system is invertible, and registers 24
+additional assertions in the existing ridge gate.
+
+The recovered compiler passed `idol check gate/ridge.id`. Native
+compilation of both the published baseline and the corrected source
+refused at `ml.space.concat` with `table-relation-not-realized`, before
+any assertion executed. The receipt contains the actual commands,
+compiler and source identities, and refusal logs. This is source and
+type-check qualification only; no new native pass or aggregate pass is
+claimed.
+
+## Preceding executed campaign at a2ce68f
+
+The following observations belong to
+`a2ce68f6f51aebd1c8fced79b92fcc75ca0c9f5c`. They do not qualify the
+latest prior correction.
+
 The existing numeric producer now rejects negative count or determinant
 before singularity classification, for both fit and condition. The unchanged
 expanded native fixture fails against the prior producer and passes against
