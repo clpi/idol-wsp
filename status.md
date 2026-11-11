@@ -18,12 +18,22 @@ exact rational coefficients. All eight subsets of the three-example
 dataset are compared against fresh retained-input rebuilds and independent
 rational oracles. Singular and ill-conditioned cases are explicit.
 
-The executed [qualification record](evidence/frontier/README.md) contains
-input/output hashes and outputs. **Native merge passed 27/0 and native
-ridge passed 137/0.** The same new gates passed on the separately named
-hosted C route; existing hosted C revision 227/0 and additive 106/0
-regressions passed. A native compiled mutation that dropped merge selection
-support failed five assertions, as required. `gate/frontier.sh` exited 0.
+The current [review qualification](evidence/frontier/review/README.md)
+retains exact inputs, outputs, and before/after results. The expanded native
+ridge fixture exposes the old invalid-prior classification and passes after
+negative statistics are rejected before singularity. Native merge and ridge,
+plus the separately named hosted C merge, ridge, revision, and additive
+regressions pass under `gate/frontier.sh`. The mutation now requires its exact
+named assertion outcome, and the complete staged input bytes and roster are
+checked after execution. Cross-filesystem staging and damaged-input controls
+are retained separately.
+
+This numerical qualification uses the earlier verified WSP compiler artifact
+named in its receipt. The newer integrated compiler refuses an unresolved
+imported application before these gates execute; its exact failure is retained
+as an open compatibility boundary. The earlier
+[qualification record](evidence/frontier/README.md) remains historical and
+now explicitly corrects its incomplete manifest and unexecuted recheck claim.
 
 The exact [contract](ridge.md) describes the public faces and boundaries.
 Native qualification of these numerical lanes is now measured; it does

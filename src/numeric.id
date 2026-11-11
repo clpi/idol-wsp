@@ -1889,10 +1889,10 @@ ridge: i64 = (rev: i64, penalty: i64, query: i64)
     determinant = sub(determinant, xx)
     if determinant < 0
         return determinant
-    if rnum[at(n, 0)] == 0 or rnum[at(determinant, 0)] == 0
-        return fail(-18)
     if rnum[at(n, 0)] < 0 or rnum[at(determinant, 0)] < 0
         return fail(-11)
+    if rnum[at(n, 0)] == 0 or rnum[at(determinant, 0)] == 0
+        return fail(-18)
     if query == 2
         magnitude = x
         if rnum[at(x, 0)] < 0

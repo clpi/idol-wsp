@@ -1,0 +1,11 @@
+{
+  "named assertion outcome": true,
+  "unrelated error": true,
+  "crash status": true,
+  "wrong assertion": true,
+  "wrong total": true,
+  "success status": true,
+  "unexpected stderr": true,
+  "missing assertion": true,
+  "extra output": true
+}
