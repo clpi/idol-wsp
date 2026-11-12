@@ -1,0 +1,39 @@
+{
+  "scope": "Native numerical qualification with the previously verified WSP compiler; hosted C regressions labeled separately",
+  "compiler_sha256": "0554c68da361cdf34fafa0fd6e9fc1a524b29fbf86980e33f2cc056a412902db",
+  "runner_sha256": "2ade98400dac39c2b86fbe0a1fdb6f7aaf2202109aeada43dbfb6c04faeec73f",
+  "receipt_helper_sha256": "e6fd356d6a5a1df097b86459ae5374ad3fdb59ac836884d975732e905574530a",
+  "source_sha256": "5b1f3580b43650e987b2a96d70e62872f131382b8066bec0b3fae1b27e47d7d5",
+  "gate_sha256": "bb587990bf76491fa7cdfbb7238278fb626176968bf482b8e104fc96d34a414b",
+  "invocation": {
+    "IDOL_ROOT": "/workspace/scratch/fa06012609fb/integration",
+    "IDOL_BIN": "/workspace/scratch/fa06012609fb/verification/wsp-frontier.YtSJ5o/zig-out/bin/idol",
+    "IDOL_BUILD_LOCK": "/workspace/scratch/fa06012609fb/verification/active.lock",
+    "command": "sh gate/frontier.sh"
+  },
+  "exit": 0,
+  "before": {
+    "compiler_sha256": "0554c68da361cdf34fafa0fd6e9fc1a524b29fbf86980e33f2cc056a412902db",
+    "numeric_sha256": "4c868052e54c61e03576dadb6edfd9a014e76ba68804551c8eeb6e0d32d9d37d",
+    "gate_sha256": "bb587990bf76491fa7cdfbb7238278fb626176968bf482b8e104fc96d34a414b",
+    "binary_sha256": "5ee446ced40e634573e2a90e43a6cc79ded4b6bc4b9d720b5b6d448bda84e377",
+    "compile_exit": 0,
+    "exit": 4,
+    "stdout": "FAIL negative count zero determinant refuses fit\nFAIL negative count zero determinant refuses condition\nFAIL zero count negative determinant refuses fit\nFAIL zero count negative determinant refuses condition\nridge passes 139 failures 4\n",
+    "stderr": ""
+  },
+  "after": {
+    "native_merge": "merge passes 27 failures 0\n",
+    "native_ridge": "ridge passes 143 failures 0\n",
+    "mutant_exit": 5,
+    "mutant_stdout": "FAIL left selection retained\nFAIL right selection retained\nFAIL selection cannot be erased by merge\nFAIL existing result becomes unusable\nFAIL unresolved selection remains unknown\nmerge passes 22 failures 5\n",
+    "mutant_stderr": "",
+    "mutant_admission": "Exact selection-loss assertion outcome verified.\n",
+    "input_verification": "All staged input bytes and paths match the initial manifest.\n"
+  },
+  "limits": [
+    "Integrated compiler82ff25 refuses imported ml.space.digest before executing these gates; see compiler.json.",
+    "Native and hosted observations remain distinct. No timing or model-quality result follows.",
+    "Post-run identity checking establishes matching bytes and roster before and after, not protection from a malicious host."
+  ]
+}

@@ -54,7 +54,15 @@ intercept = (sy - slope * sx) / n
 
 `fit(revision, penalty)` returns a Q vector `[intercept, slope]`. An empty
 system or zero determinant refuses with `-18` / `singular`; a negative
-count or determinant refuses `contract`. Shape, dtype, withdrawn support,
+count or determinant refuses `contract` before either singularity check.
+This precedence also applies to `condition`. The prior anchor is checked
+independently: its count and unregularized determinant `n*sxx - sx*sx`
+must not be negative. Live examples and the slope penalty cannot make an
+invalid prior admissible. A zero or rank-deficient prior is admitted; the
+singularity refusal applies to the final retained-data normal equation,
+not to the prior by itself. The existing support checks still run before
+these numeric checks, so withdrawn or unknown support keeps its refusal.
+Shape, dtype, withdrawn support,
 unknown support and exact arithmetic resource refusals propagate from the
 existing producers. Every derived coefficient retains all demanded data,
 schema, rule and penalty support even when its numeric payload is zero.
@@ -92,7 +100,15 @@ IDOL_ROOT=/absolute/path/to/idol sh gate/frontier.sh
 lock, and `WSP_ARTIFACTS` selects the parent of isolated evidence stages.
 The gate requires native `merge` and `ridge` success, reruns the related
 hosted C regressions, and proves that omitting selection propagation makes
-the native merge oracle fail. The executed record is
+the native merge oracle fail with exactly the named selection-loss assertions,
+their complete summary, and their expected exit status. An unrelated crash
+does not qualify the mutation. Python 3 supplies hashing and result-admission
+transport; the numerical decisions still execute in the named Idol routes.
+The compiler is copied into the stage so a different artifact filesystem is
+supported. The runner hashes every staged compiler-library, grammar, runtime,
+gate, driver and compiler input, and compares both bytes and file roster after
+restoring its declared mutant. It prints check diagnostics before refusing.
+The executed record is
 [evidence/frontier/README.md](evidence/frontier/README.md).
 
 ## Boundary

@@ -1,0 +1,6 @@
+FAIL left selection retained
+FAIL right selection retained
+FAIL selection cannot be erased by merge
+FAIL existing result becomes unusable
+FAIL unresolved selection remains unknown
+merge passes 22 failures 5

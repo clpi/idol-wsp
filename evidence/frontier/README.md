@@ -5,7 +5,12 @@ Executed 2026-11-11 on Linux x86-64 from the source bytes in
 `0554c68da361cdf34fafa0fd6e9fc1a524b29fbf86980e33f2cc056a412902db`.
 The producing compiler was the shared current Idol worktree build; that
 binary hash identifies the measured input and does not assert an upstream
-release tag. The runner checked these input hashes again after execution.
+release tag. This earlier runner recorded input hashes but did not recheck
+them after execution. The earlier statement that it did was incorrect.
+It also omitted copied compiler dependencies from the input list and accepted
+any nonzero mutant exit. The corrected runner and rerun are documented in
+[review/README.md](review/README.md); these original outputs remain bounded
+historical observations rather than qualification of the repaired runner.
 
 `gate/frontier.sh` exited 0. It compiled `merge` and `ridge` with the
 native route (`compile --no-cache`) and executed both. Separately it

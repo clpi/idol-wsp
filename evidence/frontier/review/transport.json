@@ -1,0 +1,128 @@
+{
+  "scope": "Python and filesystem qualification transport; not native semantic assertions",
+  "helper_sha256": "e6fd356d6a5a1df097b86459ae5374ad3fdb59ac836884d975732e905574530a",
+  "input_integrity_controls": [
+    {
+      "case": "unchanged input",
+      "expected_accept": true,
+      "result": {
+        "exit": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "case": "changed zig-out/bin/idol",
+      "expected_accept": false,
+      "result": {
+        "exit": 1,
+        "stdout": "",
+        "stderr": "input bytes or file roster changed during qualification\n"
+      }
+    },
+    {
+      "case": "changed lib/value.id",
+      "expected_accept": false,
+      "result": {
+        "exit": 1,
+        "stdout": "",
+        "stderr": "input bytes or file roster changed during qualification\n"
+      }
+    },
+    {
+      "case": "changed tools/grammar/input",
+      "expected_accept": false,
+      "result": {
+        "exit": 1,
+        "stdout": "",
+        "stderr": "input bytes or file roster changed during qualification\n"
+      }
+    },
+    {
+      "case": "changed run.sh",
+      "expected_accept": false,
+      "result": {
+        "exit": 1,
+        "stdout": "",
+        "stderr": "input bytes or file roster changed during qualification\n"
+      }
+    },
+    {
+      "case": "added source file",
+      "expected_accept": false,
+      "result": {
+        "exit": 1,
+        "stdout": "",
+        "stderr": "input bytes or file roster changed during qualification\n"
+      }
+    },
+    {
+      "case": "missing grammar source",
+      "expected_accept": false,
+      "result": {
+        "exit": 1,
+        "stdout": "",
+        "stderr": "input bytes or file roster changed during qualification\n"
+      }
+    },
+    {
+      "case": "matching linked source",
+      "expected_accept": false,
+      "result": {
+        "exit": 1,
+        "stdout": "",
+        "stderr": "linked input: lib/value.id\n"
+      }
+    },
+    {
+      "case": "linked directory",
+      "expected_accept": false,
+      "result": {
+        "exit": 1,
+        "stdout": "",
+        "stderr": "linked input: tools/grammar\n"
+      }
+    },
+    {
+      "case": "non-regular input",
+      "expected_accept": false,
+      "result": {
+        "exit": 1,
+        "stdout": "",
+        "stderr": "non-regular input: lib/pipe\n"
+      }
+    },
+    {
+      "case": "restored input",
+      "expected_accept": true,
+      "result": {
+        "exit": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    }
+  ],
+  "mutation_admission_controls": {
+    "named assertion outcome": true,
+    "unrelated error": true,
+    "crash status": true,
+    "wrong assertion": true,
+    "wrong total": true,
+    "success status": true,
+    "unexpected stderr": true,
+    "missing assertion": true,
+    "extra output": true
+  },
+  "cross_filesystem_compiler_copy": {
+    "original_device": 27,
+    "copied_device": 39,
+    "source_sha256": "82ff25bd12f92b608512a719626498e1d7f0f6841cd442eb748f36bc919f4b96",
+    "copied_sha256": "82ff25bd12f92b608512a719626498e1d7f0f6841cd442eb748f36bc919f4b96",
+    "bytes": 343583725,
+    "previous_hardlink": {
+      "accepted": false,
+      "errno": 18,
+      "message": "[Errno 18] Invalid cross-device link: '/workspace/scratch/fa06012609fb/integration-build/out/bin/idol' -> '/tmp/wsp-copy.619tvsl5/idol'"
+    }
+  }
+}

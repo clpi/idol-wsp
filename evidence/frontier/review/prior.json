@@ -1,0 +1,175 @@
+{
+  "schema": "idol.wsp.review.prior.v1",
+  "source_base": "a2ce68f6f51aebd1c8fced79b92fcc75ca0c9f5c",
+  "qualification": "Source-reviewed and compiler-check-qualified; direct native execution remains unqualified.",
+  "source_sha256": {
+    "src/numeric.id": "ad72da6e92d7371e1ec411ed90ea547b732d25b6162a8bade478f58d48bcd812",
+    "gate/ridge.id": "64302538a35b8ab3e5d46181070a4c81c0a486f6d5a64d19a55d813d84603992",
+    "ridge.md": "c94d134a7dab96bdf05f98d7b507b4990493ea94ccbcf05b009a9d1163b79f78"
+  },
+  "assessment": {
+    "finding": "Confirmed from the existing numeric owner and the documented prior contract. The published ridge path checks only the retained-data total, allowing live examples to mask a prior with a negative count or determinant.",
+    "correction": "The existing exact determinant/count check is factored into normal(n,x,diagonal). Ridge checks the raw anchor without a penalty and checks the final aggregate with its penalty through that same relation. Negative prior count or unregularized determinant returns the existing contract refusal.",
+    "singularity": "Zero-determinant priors remain admissible. Only the final retained-data normal equation must be nonsingular.",
+    "support": "Existing penalty and total/livewalk support checks execute before the new independent numeric prior check. All result arithmetic continues through the same support-carrying numeric operations; no new solver, support owner, or hash shim is introduced."
+  },
+  "independent_arithmetic_witnesses": [
+    {
+      "prior": [
+        -1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "examples": [
+        [
+          1,
+          0
+        ],
+        [
+          -1,
+          0
+        ]
+      ],
+      "prior_count": -1,
+      "prior_determinant": 0,
+      "aggregate": [
+        1,
+        0,
+        0,
+        2,
+        0
+      ],
+      "aggregate_determinant": 2,
+      "required_refusal": -11
+    },
+    {
+      "prior": [
+        1,
+        2,
+        0,
+        1,
+        0
+      ],
+      "examples": [
+        [
+          -2,
+          0
+        ]
+      ],
+      "prior_count": 1,
+      "prior_determinant": -3,
+      "aggregate": [
+        2,
+        0,
+        0,
+        5,
+        0
+      ],
+      "aggregate_determinant": 10,
+      "required_refusal": -11
+    },
+    {
+      "prior": [
+        1,
+        2,
+        0,
+        1,
+        0
+      ],
+      "examples": [],
+      "penalty": 4,
+      "prior_determinant": -3,
+      "regularized_determinant": 1,
+      "required_refusal": -11
+    }
+  ],
+  "regression_source": {
+    "added_assertions": 24,
+    "registered_path": "gate/ridge.id, already invoked by gate/frontier.sh",
+    "coverage": [
+      "Both supplied offset-invalid priors for fit and condition",
+      "Positive penalty cannot mask an indefinite prior",
+      "Valid singular prior remains singular until the aggregate is invertible",
+      "Positive prior exact coefficients and condition",
+      "Prior support membership/cardinality and historical withdrawal refusals"
+    ],
+    "executed_native_assertions": 0,
+    "execution_status": "Not executed: direct native lowering refused in the existing ml.space dependency."
+  },
+  "compiler_attempts": {
+    "compiler_sha256": "a64a893172dfb83da8acc2ff824fbcfb5a790f64d71068024c8b71ebb880d57e",
+    "published_native": {
+      "exit": 1,
+      "command": [
+        "idol",
+        "compile",
+        "--backend=native",
+        "--no-cache",
+        "gate/ridge.id",
+        "-o",
+        "result/published"
+      ],
+      "output": "error: DNB011 application: 139 relation: concat missing: table-relation-not-realized consumer: native realization producer: graph\nhint: bail site: lowerSubjectCall() at graph/lower.zig:43929\nhint: reached home: /workspace/scratch/fa06012609fb/recovery/wsp-stage/lib/ml/space.id\n"
+    },
+    "corrected_check": {
+      "command": [
+        "/workspace/scratch/f98d56222608/idol/tools/node/dev/idol-lock",
+        "--",
+        "/workspace/scratch/f98d56222608/sota/rebuild/out3/bin/idol",
+        "check",
+        "gate/ridge.id"
+      ],
+      "exit": 0,
+      "elapsed_ns": 274797182,
+      "stdout": "",
+      "stderr": ""
+    },
+    "corrected_native": {
+      "command": [
+        "/workspace/scratch/f98d56222608/idol/tools/node/dev/idol-lock",
+        "--",
+        "/workspace/scratch/f98d56222608/sota/rebuild/out3/bin/idol",
+        "compile",
+        "--backend=native",
+        "--no-cache",
+        "gate/ridge.id",
+        "-o",
+        "result/corrected"
+      ],
+      "exit": 1,
+      "elapsed_ns": 2163527601,
+      "stdout": "",
+      "stderr": "error: DNB011 application: 139 relation: concat missing: table-relation-not-realized consumer: native realization producer: graph\nhint: bail site: lowerSubjectCall() at graph/lower.zig:43929\nhint: reached home: /workspace/scratch/fa06012609fb/recovery/wsp-stage/lib/ml/space.id\n"
+    },
+    "corrected_inputs_sha256": {
+      "lib/wsp/agent.id": "d40db945ed1dd867591f904396de8d0ea3999f90ea43e88ba0bc6407ef8c3571",
+      "lib/wsp/numeric.id": "ad72da6e92d7371e1ec411ed90ea547b732d25b6162a8bade478f58d48bcd812",
+      "lib/wsp/grad.id": "49dc3d7d35e3eb904f835ffeb532a66ccc6e2e8d6fadc04ead39b1e5b96c1cde",
+      "lib/ml/space.id": "3af84c005ce6fa7f8e1b1eb3e265b6a97cc672b1d6fe3eda4803f4537c52a443",
+      "lib/ml/resident.id": "c7bbe21400d2e0a943a409f9dc7ac3eb6512cfa359e3cb1e03f216438798920f",
+      "gate/ridge.id": "64302538a35b8ab3e5d46181070a4c81c0a486f6d5a64d19a55d813d84603992"
+    },
+    "library_pairing": {
+      "surviving_build_baseline": "fe25c484a2012759f755a181dde2102e2c1c6133",
+      "verified_against_captured_tree": {
+        "lib/ml/space.id": "ea002af390293693a41cfdc3264de34d6a505f9c",
+        "lib/ml/resident.id": "9c5925393336cec22bf3b4d34a395884ae8e14c1"
+      },
+      "status": "Both copied library files match the captured baseline Git blobs. This exact source pairing still refuses table-relation concat before a native executable is produced."
+    }
+  },
+  "reproduction": "IDOL_ROOT=/absolute/path/to/a-compatible-native-compiler-source IDOL_BIN=/absolute/path/to/its-idol IDOL_BUILD_LOCK=/absolute/path/to/task/lock sh gate/frontier.sh",
+  "semantic_diff": {
+    "before": "Only the aggregate normal equation controlled numeric prior admission.",
+    "after": "The prior and aggregate each pass the same determinant/count checker; only the aggregate passes the singularity check.",
+    "preserved": "Exact numeric ownership, result support carriage, prior and selection withdrawal refusal ordering, and fit/condition formulas."
+  },
+  "limits": [
+    "This correction must not be described as native-qualified. The 24 new assertions were registered and type-checked but not executed.",
+    "No C fallback or replacement semantic implementation was used.",
+    "The checks enforce the existing documented count/determinant prior contract; they do not prove complete provenance or general statistical validity of arbitrary supplied sufficient statistics.",
+    "No end-to-end WSP/port aggregate rerun or performance claim is made."
+  ]
+}

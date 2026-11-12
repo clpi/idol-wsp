@@ -7,22 +7,27 @@ artifacts=${WSP_ARTIFACTS:-${TMPDIR:-/tmp}}
 mkdir -p "$artifacts"
 stage=$(mktemp -d "$artifacts/wsp-frontier.XXXXXX")
 mkdir -p "$stage/zig-out/bin" "$stage/lib/wsp" "$stage/gate" "$stage/result" "$stage/tools/node/dev"
-ln "$idol" "$stage/zig-out/bin/idol"
+cp -p "$idol" "$stage/zig-out/bin/idol"
 cp -R "$IDOL_ROOT/lib/." "$stage/lib/"
 cp -R "$IDOL_ROOT/tools/node/dev/grammar" "$stage/tools/node/dev/"
 cp "$IDOL_ROOT/gate/d1-hash-runtime.c" "$stage/gate/"
 cp "$root/src/agent.id" "$root/src/numeric.id" "$root/src/grad.id" "$stage/lib/wsp/"
 cp "$root/gate/merge.id" "$root/gate/ridge.id" "$root/gate/revision.id" "$root/gate/additive.id" "$stage/gate/"
+cp "$root/gate/frontier.sh" "$root/gate/receipt.py" "$stage/gate/"
 printf 'Artifacts: %s\n' "$stage"
 cat > "$stage/run.sh" <<'RUN'
 #!/bin/sh
 set -eu
 stage=$1
 cd "$stage"
-sha256sum zig-out/bin/idol lib/wsp/*.id gate/*.id > result/input.sha256
+python3 gate/receipt.py capture
+python3 gate/receipt.py controls > result/controls.json
 for name in merge ridge revision additive
 do
-    "$stage/zig-out/bin/idol" check "gate/$name.id" > "result/$name.check" 2>&1
+    if ! "$stage/zig-out/bin/idol" check "gate/$name.id" > "result/$name.check" 2>&1; then
+        cat "result/$name.check"
+        exit 1
+    fi
     if ! "$stage/zig-out/bin/idol" compile --no-cache --backend=c --emit=exe --libc "gate/$name.id" -o "result/$name" > "result/$name.compile" 2>&1; then
         cat "result/$name.compile"
         exit 1
@@ -56,12 +61,13 @@ if ! "$stage/zig-out/bin/idol" compile --no-cache gate/merge.id -o result/mutant
     cat result/mutant.compile
     exit 1
 fi
-if result/mutant > result/mutant.stdout 2> result/mutant.stderr; then
-    printf '%s\n' 'Selection-loss mutation escaped the independent oracle.' >&2
-    exit 1
-fi
+code=0
+result/mutant > result/mutant.stdout 2> result/mutant.stderr || code=$?
+printf '%s\n' "$code" > result/mutant.exit
 cp result/numeric.id lib/wsp/numeric.id
-sha256sum result/merge result/ridge result/revision result/additive result/native-merge result/native-ridge result/mutant result/*.stdout > result/output.sha256
+python3 gate/receipt.py mutation result/native-merge.stdout result/mutant.stdout result/mutant.stderr "$code" > result/mutant.verify
+python3 gate/receipt.py verify
+python3 gate/receipt.py outputs
 printf '%s\n' 'Native merge/ridge and selection-loss mutation passed; hosted C regressions passed.'
 RUN
 sh "$IDOL_ROOT/tools/node/dev/idol-lock" --timeout "${IDOL_LOCK_TIMEOUT:-60}" -- sh "$stage/run.sh" "$stage"

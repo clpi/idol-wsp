@@ -1,0 +1,45 @@
+{
+  "scope": "Integrated compiler compatibility refusal; no semantic gate executed",
+  "compiler_sha256": "82ff25bd12f92b608512a719626498e1d7f0f6841cd442eb748f36bc919f4b96",
+  "native_compile": {
+    "exit": 1,
+    "stderr": "error: DNB011 application: 667 relation: digest missing: missing-application-id-unresolved consumer: native realization producer: graph\nhint: bail site: lowerModuleWithGraphObservedMode() at graph/lower.zig:7480\nhint: reached home: /workspace/scratch/fa06012609fb/verification/wsp-before.l1qkt6tp/lib/wsp/agent.id\n",
+    "argv": [
+      "idol",
+      "compile",
+      "--no-cache",
+      "gate/ridge.id",
+      "-o",
+      "result/ridge"
+    ]
+  },
+  "hosted_compile": {
+    "exit": 1,
+    "output": "error: C99 realizer: graph-to-DNIR refused (GraphFactsInvalid) (reached partition /workspace/scratch/fa06012609fb/verification/wsp-frontier.l5U5dY/lib/wsp/agent.id)\nhint: refused at: missing-application-id-unresolved\nhint: bail site: lowerModuleWithGraphObservedMode() at graph/lower.zig:7480\nhint: in relation: digest\nhint: application id: 667\nhint: in home: ml.space\nerror: cannot realize the source partition this program reaches: /workspace/scratch/fa06012609fb/verification/wsp-frontier.l5U5dY/lib/wsp/agent.id\nhint: compile it on its own to see the refusal: idol compile --backend=c --emit=c /workspace/scratch/fa06012609fb/verification/wsp-frontier.l5U5dY/lib/wsp/agent.id\n",
+    "argv": [
+      "idol",
+      "compile",
+      "--no-cache",
+      "--backend=c",
+      "--emit=exe",
+      "--libc",
+      "gate/merge.id",
+      "-o",
+      "result/merge"
+    ]
+  },
+  "native_inputs": {
+    "lib/wsp/agent.id": "d40db945ed1dd867591f904396de8d0ea3999f90ea43e88ba0bc6407ef8c3571",
+    "lib/wsp/numeric.id": "4c868052e54c61e03576dadb6edfd9a014e76ba68804551c8eeb6e0d32d9d37d",
+    "lib/ml/space.id": "93bde6792ecd7027686dba900a3612778eaed9051d7f81e21a331c259e97dccf",
+    "lib/ml/resident.id": "c7bbe21400d2e0a943a409f9dc7ac3eb6512cfa359e3cb1e03f216438798920f",
+    "gate/ridge.id": "bb587990bf76491fa7cdfbb7238278fb626176968bf482b8e104fc96d34a414b"
+  },
+  "hosted_inputs": {
+    "lib/wsp/agent.id": "d40db945ed1dd867591f904396de8d0ea3999f90ea43e88ba0bc6407ef8c3571",
+    "lib/wsp/numeric.id": "5b1f3580b43650e987b2a96d70e62872f131382b8066bec0b3fae1b27e47d7d5",
+    "lib/ml/space.id": "93bde6792ecd7027686dba900a3612778eaed9051d7f81e21a331c259e97dccf",
+    "lib/ml/resident.id": "c7bbe21400d2e0a943a409f9dc7ac3eb6512cfa359e3cb1e03f216438798920f",
+    "gate/ridge.id": "bb587990bf76491fa7cdfbb7238278fb626176968bf482b8e104fc96d34a414b"
+  }
+}

@@ -1849,6 +1849,20 @@ example: i64 = (anchor: i64, x: i64, y: i64, support: str)
     delta = replace(delta, "4", product)
     event(anchor, delta, support)
 
+normal: i64 = (n: i64, x: i64, diagonal: i64)
+    determinant = mul(n, diagonal)
+    if determinant < 0
+        return determinant
+    xx = mul(x, x)
+    if xx < 0
+        return xx
+    determinant = sub(determinant, xx)
+    if determinant < 0
+        return determinant
+    if rnum[at(n, 0)] < 0 or rnum[at(determinant, 0)] < 0
+        return fail(-11)
+    determinant
+
 ridge: i64 = (rev: i64, penalty: i64, query: i64)
     st.why = 0
     if rev < 1 or rev > rvanc:len() or penalty < 1 or penalty > wdt:len()
@@ -1872,6 +1886,12 @@ ridge: i64 = (rev: i64, penalty: i64, query: i64)
         return statistic
     if rankof(statistic) != 1 or cardof(statistic) != 5
         return fail(-1)
+    # Prior admission is independent of live examples and the slope penalty.
+    # A zero determinant is a valid prior; only the final system must invert.
+    anchor = rvanc[rev]
+    prior = normal(read(anchor, "0"), read(anchor, "1"), read(anchor, "3"))
+    if prior < 0
+        return prior
     n = read(statistic, "0")
     x = read(statistic, "1")
     y = read(statistic, "2")
@@ -1880,19 +1900,11 @@ ridge: i64 = (rev: i64, penalty: i64, query: i64)
     diagonal = add(square, penalty)
     if diagonal < 0
         return diagonal
-    determinant = mul(n, diagonal)
-    if determinant < 0
-        return determinant
-    xx = mul(x, x)
-    if xx < 0
-        return xx
-    determinant = sub(determinant, xx)
+    determinant = normal(n, x, diagonal)
     if determinant < 0
         return determinant
     if rnum[at(n, 0)] == 0 or rnum[at(determinant, 0)] == 0
         return fail(-18)
-    if rnum[at(n, 0)] < 0 or rnum[at(determinant, 0)] < 0
-        return fail(-11)
     if query == 2
         magnitude = x
         if rnum[at(x, 0)] < 0
